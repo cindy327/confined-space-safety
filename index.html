@@ -1458,7 +1458,7 @@ function permitKey(s){return s?.manageNo||"NEW"}
 function renderPermitChecks(saved={}){$("#permitChecklistBody").innerHTML=PERMIT_CHECKS.map((r,i)=>`<tr><td class="cat">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="ck"><input type="checkbox" data-pneed="${i}" ${saved.need?.[i]?"checked":""}></td><td class="ck"><input type="checkbox" data-pok="${i}" ${saved.ok?.[i]?"checked":""}></td></tr>`).join("")}
 function formObject(){syncGasHidden();syncWorkerSignsHidden();const f=$("#permitForm"),o={};new FormData(f).forEach((v,k)=>o[k]=v);o.need=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pneed="${i}"]`)?.checked);o.ok=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pok="${i}"]`)?.checked);o.finalApproved=$("#finalPermitApproved").checked;return o}
 function fillPermit(o={}){const f=$("#permitForm");[...f.elements].forEach(el=>{if(!el.name)return;if(el.type!=="checkbox")el.value=o[el.name]??""});renderPermitChecks(o);$("#finalPermitApproved").checked=!!o.finalApproved;checkPermitDuration();gasMeasure=parseGasMeasure(o.gasMeasureJson||"");renderGasMeasure();loadWorkerSignsFromPermit(o);setTimeout(loadSignPadsFromHidden,0)}
-function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:ctx.workDept||saved.appDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:ctx.coopDept||saved.coopDept,workApproveDept:ctx.workDept||saved.workApproveDept,manageApproveDept:(ctx.group==="korail"?"":ctx.manageDept)||saved.manageApproveDept});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow()},0)}
+function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:ctx.workDept||saved.appDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:ctx.coopDept||saved.coopDept,workApproveDept:ctx.workDept||saved.workApproveDept,manageApproveDept:(ctx.group==="korail"?"":ctx.manageDept)||saved.manageApproveDept});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow();if(typeof updatePermitWizardStatus==="function")try{updatePermitWizardStatus()}catch(e){}},0)}
 function choosePermitFromInput(){const s=findSpaceByInput($("#permitSpaceSearch").value);if(!s){alert("밀폐공간을 찾지 못했습니다.");return}loadPermitForSpace(s)}
 $("#permitLoadBtn").onclick=choosePermitFromInput;$("#permitSpaceSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();choosePermitFromInput()}});
 function savePermit(){const s=spaces.find(x=>x.id===Number(permitSelectedId));const o=formObject();permitForms[permitKey(s)]=o;localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));if(s){const c=getChecks(s);c.permit=o.finalApproved?"yes":"unknown";saveChecks(s,c);if(fieldSelectedId===s.id)renderField()}$("#permitSideStatus").innerHTML=`<span class="good">허가서 저장 완료</span>${s?` · ${esc(s.manageNo)}`:""}`;renderApprovalWorkflow()}
@@ -2008,6 +2008,17 @@ if(location.hash&&location.hash.length>2){setTimeout(()=>{fillPermit({permitDate
    tabs.forEach((tab,i)=>{const st=permitStepState(i);tab.classList.remove('step-done','step-warn','step-block');tab.classList.add('step-'+st.status);let badge=tab.querySelector('.wizard-state');if(!badge){badge=document.createElement('span');badge.className='wizard-state';tab.appendChild(badge)}badge.textContent=st.status==='done'?'✓':st.status==='block'?'!':'•';tab.title=st.label});
    slides.forEach((slide,i)=>{const st=permitStepState(i);let prog=slide.querySelector('.permit-step-progress');if(!prog){prog=document.createElement('div');prog.className='permit-step-progress';const head=slide.querySelector('.permit-step-head');(head||slide).insertAdjacentElement(head?'afterend':'afterbegin',prog)}prog.className=`permit-step-progress ${st.status}`;prog.innerHTML=`<b>${i+1}/5 ${STEP_NAMES[i]}</b><span>${st.status==='done'?'✓ '+st.label:st.status==='block'?'⛔ '+st.label:'⚠ '+st.label}</span>`});
    const next=$q('#permitWizardNext');if(next&&wizardIndex<4){const st=permitStepState(wizardIndex);next.textContent=st.status==='done'||(wizardIndex===3&&st.status==='warn')?'다음 →':'필수항목 확인 →'}
+   try{
+     const bar=document.getElementById('permitMobileStepBar');
+     if(bar){
+       let target=0;
+       for(let i=0;i<5;i++){const st=permitStepState(i);if(st.status!=='done'){target=i;break}if(i===4)target=4}
+       const st=permitStepState(target);
+       bar.className=st.status;
+       document.getElementById('permitMobileStepLabel').textContent=`${target+1}/5 ${STEP_NAMES[target]}`;
+       document.getElementById('permitMobileStepState').textContent=st.status==='done'?'✓ 모든 단계 완료':st.status==='block'?'⛔ '+st.label:'⚠ '+st.label;
+     }
+   }catch(e){}
  }
  function showStepAlert(step,state){const slide=$q(`.permit-wizard-slide[data-step="${step}"]`);if(!slide)return;let box=slide.querySelector('.permit-step-alert');if(!box){box=document.createElement('div');box.className='permit-step-alert';const prog=slide.querySelector('.permit-step-progress')||slide.querySelector('.permit-step-head');(prog||slide).insertAdjacentElement(prog?'afterend':'afterbegin',box)}box.innerHTML=`<strong>⚠ 다음 단계로 가기 전 확인</strong>${state.message||'필수항목을 확인해주세요.'}`;box.classList.add('show');setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'center'}),40)}
  function validatePermitStep(step,show=true){clearInvalid();const st=permitStepState(step);const pass=st.status==='done'||(step===3&&st.status==='warn');if(!pass&&show){markInvalid(st.fields||[]);showStepAlert(step,st)}return pass}
@@ -2682,6 +2693,7 @@ body.safe-stage-permit .tbm-permit-back{
   <div id="permitMobilePlace" class="empty">작업개소 미선택</div>
   <button type="button" id="permitMobileSaveBtn">💾 저장</button>
 </div>
+<div id="permitMobileStepBar"><b id="permitMobileStepLabel">1/5 기본정보</b><span id="permitMobileStepState">확인 중…</span></div>
 <script id="permitCompactTopBarJS20260912">
 (function(){
   const q=(s)=>document.querySelector(s);
@@ -3066,24 +3078,49 @@ body.tbm-old-open #view-permit .permit-actions{position:static!important;top:aut
 #view-permit{padding-top:0!important}
 /* 상단 검색창(작업장소가 적힌 검정 박스)은 1단계에서 이미 장소를 선택했으므로 제거 */
 #permitSpaceSearch,#permitLoadBtn{display:none!important}
+/* 스와이프로 한 단계씩 넘기는 방식 대신, 5개 단계를 전부 세로로 이어서 한 페이지에 표시 */
+body.safe-stage-permit #view-permit .permit-wizard-slide{display:block!important;margin:0 0 14px!important}
+body.safe-stage-permit #view-permit .permit-wizard-controls{display:none!important}
+body.safe-stage-permit #view-permit .permit-wizard-track{gap:0!important}
 /* 위 규칙보다 더 구체적인 예전 규칙(#view-permit .permit-actions #permitSpaceSearch{display:block})이
    존재해서 검색창이 다시 나타나는 문제가 있었음 — 그보다 더 구체적으로 확실히 숨김 */
 body.tbm-one-question #view-permit .permit-actions #permitSpaceSearch,
 body.tbm-one-question #view-permit .permit-actions #permitLoadBtn{display:none!important}
+/* "N/5 현재 단계" 표시를 상단바 바로 아래에 진짜로 고정(position:fixed) — sticky는 부모 컨테이너 구조 때문에
+   안정적으로 붙지 않아서, 확실하게 항상 보이도록 fixed로 전환하고 내용은 JS가 실시간으로 갱신 */
+#permitMobileStepBar{display:none}
+@media(max-width:760px){
+  body.safe-stage-permit #permitMobileStepBar{
+    display:flex!important;
+    align-items:center;justify-content:space-between;gap:8px;
+    position:fixed!important;
+    top:calc(75px + env(safe-area-inset-top))!important;
+    left:8px;right:8px;
+    z-index:11999;
+    min-height:40px;
+    padding:8px 12px;
+    box-sizing:border-box;
+    border-radius:12px;
+    border:1px solid #d5dde5;
+    background:#eef2f6;
+    color:#374554;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);
+  }
+  #permitMobileStepBar b{font-size:13px;white-space:nowrap}
+  #permitMobileStepBar span{font-size:11px;font-weight:900;border-radius:999px;padding:4px 8px;background:#dfe7ee;color:#536170;white-space:nowrap}
+  #permitMobileStepBar.done span{background:#d9f1e3;color:#17663d}
+  #permitMobileStepBar.warn span{background:#fff0c8;color:#785400}
+  #permitMobileStepBar.block span{background:#fde0de;color:#9a302b}
+  body.safe-stage-permit #view-permit{padding-top:calc(128px + env(safe-area-inset-top))!important}
+  /* 개별 슬라이드 안의 "N/5" 헤더는 위의 고정바가 대신하므로 중복 숨김 */
+  body.safe-stage-permit #view-permit .permit-step-progress{display:none!important}
+}
 .permit-actions{margin:0!important;padding:0!important;min-height:0!important}
 </style>
 <style>
 /* safe-stage-permit(모바일 단계형 허가서)에는 이미 자체 고정 상단바(#permitMobileTopBar: 목록·작업개소·저장)가 있으므로,
    새로 만든 permit-top-bar(뒤로가기+저장/인쇄/새허가서 묶음)는 이 모드에서 완전히 숨겨 중복 표시를 막는다. */
 body.safe-stage-permit .permit-top-bar{display:none!important}
-/* "N/5 기본정보" 진행 표시도 상단 고정바 바로 아래에 함께 붙어있도록(스크롤/페이지 이동해도 계속 보이게) */
-@media(max-width:760px){
-  body.safe-stage-permit #view-permit .permit-step-progress{
-    position:sticky!important;
-    top:calc(64px + env(safe-area-inset-top))!important;
-    z-index:400!important;
-  }
-}
 </style>
 </body>
 </html>
