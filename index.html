@@ -398,23 +398,6 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
 .alive-call-btn.watcher{background:#ff9f0a;color:#241400}
 .alive-call-btn.sos{background:#ff453a;color:#fff}
 </style>
-
-<style id="step2DetectorAndAlarmFix20260917">
-/* 검정 경보 오버레이는 사용자가 생존확인을 직접 시작한 경우에만 JS가 open을 붙입니다. */
-#aliveAlarmOverlay:not(.open){display:none!important}
-.tbm-device-list{display:grid;gap:8px;margin-top:9px}
-.tbm-device-item{display:grid;gap:3px;border:1px solid #cfd9e4;background:#f8fbfe;border-radius:11px;padding:10px 11px;color:#1b293a}
-.tbm-device-item b{font-size:15px;line-height:1.35;color:#123e69}
-.tbm-device-item span{font-size:12.5px;line-height:1.45;color:#53657a}
-.tbm-device-item.warn{border-color:#e0bc72;background:#fff9e9}
-.tbm-device-item.warn b{color:#8a5a00}
-@media(max-width:420px){
-  .tbm-device-item{padding:11px 12px}
-  .tbm-device-item b{font-size:16px}
-  .tbm-device-item span{font-size:13px}
-}
-</style>
-
 </head>
 <body class="field-active simple-flow-home simple-flow-ui tbm-one-question">
 <div id="bootSplash" role="status" aria-live="polite"><div class="boot-box"><div class="boot-mark"></div><div class="boot-title">KORAIL 밀폐 SAFE PASS</div><div class="boot-sub">현장 안전정보를 준비하고 있습니다.</div><div class="boot-fallback">잠시 후 자동으로 열립니다.</div></div></div>
@@ -1378,12 +1361,7 @@ function openPermitStep(){const s=selectedSpace();if(!s){alert("작업허가서 
 function openMore(){const o=$("#moreOverlay");if(o)o.classList.add("open")}
 function closeMore(){const o=$("#moreOverlay");if(o)o.classList.remove("open")}
 if($("#homeSpaceBtn"))$("#homeSpaceBtn").onclick=()=>{
-  try{
-    if(typeof aliveRuntimeArmed!=="undefined"&&!aliveRuntimeArmed){
-      const ov=$("#aliveAlarmOverlay");if(ov)ov.classList.remove("open","escalate");
-      navigator.vibrate&&navigator.vibrate(0);
-    }
-  }catch(e){}
+  try{window.resetAliveAlarmUI&&window.resetAliveAlarmUI()}catch(e){}
   focusSpaceStep();
 };
 if($("#homeCheckBtn"))$("#homeCheckBtn").onclick=focusCheckStep;
@@ -1418,25 +1396,7 @@ function permitKey(s){return s?.manageNo||"NEW"}
 function renderPermitChecks(saved={}){$("#permitChecklistBody").innerHTML=PERMIT_CHECKS.map((r,i)=>`<tr><td class="cat">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="ck"><input type="checkbox" data-pneed="${i}" ${saved.need?.[i]?"checked":""}></td><td class="ck"><input type="checkbox" data-pok="${i}" ${saved.ok?.[i]?"checked":""}></td></tr>`).join("")}
 function formObject(){syncGasHidden();syncWorkerSignsHidden();const f=$("#permitForm"),o={};new FormData(f).forEach((v,k)=>o[k]=v);o.need=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pneed="${i}"]`)?.checked);o.ok=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pok="${i}"]`)?.checked);o.finalApproved=$("#finalPermitApproved").checked;return o}
 function fillPermit(o={}){const f=$("#permitForm");[...f.elements].forEach(el=>{if(!el.name)return;if(el.type!=="checkbox")el.value=o[el.name]??""});renderPermitChecks(o);$("#finalPermitApproved").checked=!!o.finalApproved;checkPermitDuration();gasMeasure=parseGasMeasure(o.gasMeasureJson||"");renderGasMeasure();loadWorkerSignsFromPermit(o);setTimeout(loadSignPadsFromHidden,0)}
-function loadPermitForSpace(s){
- permitSelectedId=s.id;const ctx=workContextFor(s);
- $("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;
- const saved=permitForms[permitKey(s)]||{};
- fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});
- // 기존 저장값이 없을 때만 엑셀 장비자료의 측정기 종류·모델을 자동 입력
- try{
-   const autoDevice=(window.gasDetectorAutoText&&window.gasDetectorAutoText(s))||"";
-   const deviceEl=$("#gasDevice");
-   if(deviceEl&&!String(deviceEl.value||"").trim()&&autoDevice){
-     deviceEl.value=autoDevice;
-     gasMeasure.meta=gasMeasure.meta||{};
-     gasMeasure.meta.device=autoDevice;
-     syncGasHidden();
-   }
- }catch(e){console.warn("gas device auto fill",e)}
- $("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;
- setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow()},0)
-}
+function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow()},0)}
 function choosePermitFromInput(){const s=findSpaceByInput($("#permitSpaceSearch").value);if(!s){alert("밀폐공간을 찾지 못했습니다.");return}loadPermitForSpace(s)}
 $("#permitLoadBtn").onclick=choosePermitFromInput;$("#permitSpaceSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();choosePermitFromInput()}});
 function savePermit(){const s=spaces.find(x=>x.id===Number(permitSelectedId));const o=formObject();permitForms[permitKey(s)]=o;localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));if(s){const c=getChecks(s);c.permit=o.finalApproved?"yes":"unknown";saveChecks(s,c);if(fieldSelectedId===s.id)renderField()}$("#permitSideStatus").innerHTML=`<span class="good">허가서 저장 완료</span>${s?` · ${esc(s.manageNo)}`:""}`;renderApprovalWorkflow()}
@@ -2225,46 +2185,8 @@ if(location.hash&&location.hash.length>2){setTimeout(()=>{fillPermit({permitDate
  function managerText(c){return c.group==='korail'?'없음 · 공사 직접작업':(c.manageDept||(c.group==='subsidiary'?'공사 관리사업소 확인 필요':'발주처 확인 필요'))}
  function renderDept(){const s=sp();if(!s)return;const c=workContextFor(s);q('#tbmDeptCard').innerHTML=`<div class="tbm-info-row"><span>📍 작업개소</span><b>${esc(s.site)} · ${esc(s.detailName)}</b></div><div class="tbm-info-row"><span>👷 작업부서</span><b>${esc(c.workDept)}</b></div><div class="tbm-info-row"><span>🏢 작업관리부서</span><b>${esc(managerText(c))}</b></div><div class="tbm-info-row"><span>🚉 협조부서</span><b>${esc(c.coopDept||'해당 역 확인 필요')}</b></div>`;const depts=uniq(splitWorkDepts(s.workDept).map(canonicalDeptName));const sel=q('#tbmDeptSelect');sel.innerHTML=depts.map(d=>`<option value="${esc(d)}" ${d===c.workDept?'selected':''}>${esc(d)}</option>`).join('')||`<option>${esc(c.workDept)}</option>`}
  function renderRisk(){const s=sp();if(!s)return;q('#tbmRiskCard').innerHTML=`<div class="tbm-risk">⚠ ${esc(s.hazards||'질식·산소결핍 등 밀폐공간 위험')}</div><div class="tbm-info-row"><span>세부위치</span><b>${esc(s.detailLocation||s.site)}</b></div><div class="tbm-info-row"><span>평상 작업</span><b>${esc(s.internalWork||'작업내용 현장 확인')}</b></div><div class="tbm-info-row"><span>관리번호</span><b>${esc(s.manageNo)}</b></div>`}
- function validEquip(v){return v&&String(v).trim()&&String(v).trim()!=="-"}
- function gasDetectorRows(rows){
-   const out=[],seen=new Set();
-   (rows||[]).forEach(e=>{
-     if(!validEquip(e.gasType)&&!validEquip(e.gasModel))return;
-     const item={
-       dept:validEquip(e.dept)?String(e.dept).trim():"",
-       type:validEquip(e.gasType)?String(e.gasType).trim():"가스농도측정기",
-       model:validEquip(e.gasModel)?String(e.gasModel).trim():"모델 미기재",
-       cycle:validEquip(e.gasCycle)?String(e.gasCycle).trim():""
-     };
-     const key=[item.dept,item.type,item.model,item.cycle].join("|");
-     if(!seen.has(key)){seen.add(key);out.push(item)}
-   });
-   return out;
- }
- function gasDetectorAutoText(s){
-   if(!s)return "";
-   const ev=evidenceFor(s), rows=gasDetectorRows(ev.gasRows);
-   return rows.slice(0,4).map(x=>`${x.type} · ${x.model}`).join(" / ");
- }
- window.gasDetectorAutoText=gasDetectorAutoText;
- function equipText(rows,type){
-   if(!rows||!rows.length)return '장비자료에서 확인되지 않음 · 현장 확인 필요';
-   if(type==='gas'){
-     const ds=gasDetectorRows(rows);
-     if(!ds.length)return '가스측정기 종류·모델 미기재 · 현장 확인 필요';
-     return ds.slice(0,4).map(x=>`${x.type} | 모델 ${x.model}${x.dept?` | ${x.dept}`:""}${x.cycle?` | 교정 ${x.cycle}`:""}`).join(' / ');
-   }
-   const vals=[];
-   rows.slice(0,4).forEach(e=>{if(validEquip(e.respType)||validEquip(e.respModel))vals.push([e.respType,e.respModel,e.dept,e.respQty?e.respQty+'개':''].filter(validEquip).join(' · '))});
-   return vals.length?vals.join(' / '):'보호구·구조장비 상세 미기재 · 현장 확인 필요';
- }
- function renderEquip(){
-   const s=sp();if(!s)return;const ev=evidenceFor(s),gasRows=gasDetectorRows(ev.gasRows);
-   const gasHtml=gasRows.length
-     ?gasRows.slice(0,4).map(x=>`<div class="tbm-device-item"><b>${esc(x.type)}</b><span>모델 ${esc(x.model)}</span>${x.dept?`<span>보유부서 ${esc(x.dept)}</span>`:""}${x.cycle?`<span>교정주기 ${esc(x.cycle)}</span>`:""}</div>`).join("")
-     :`<div class="tbm-device-item warn"><b>측정기 정보 확인 필요</b><span>등록 장비자료에서 종류·모델을 찾지 못했습니다.</span></div>`;
-   q('#tbmEquipCard').innerHTML=`<div class="tbm-equip-row"><strong>📟 가스농도측정기 · 자동조회</strong><div class="tbm-device-list">${gasHtml}</div></div><div class="tbm-equip-row"><strong>🦺 보호구·구조장비</strong><p>${esc(equipText(ev.ppeRows,'ppe'))}</p></div>`;
- }
+ function equipText(rows,type){if(!rows||!rows.length)return '장비자료에서 확인되지 않음 · 현장 확인 필요';const vals=[];rows.slice(0,3).forEach(e=>{if(type==='gas')vals.push([e.dept,e.gasType,e.gasQty?e.gasQty+'대':''].filter(Boolean).join(' · '));else vals.push([e.dept,e.respType,e.respQty?e.respQty+'개':''].filter(Boolean).join(' · '))});return vals.join(' / ')}
+ function renderEquip(){const s=sp();if(!s)return;const ev=evidenceFor(s);q('#tbmEquipCard').innerHTML=`<div class="tbm-equip-row"><strong>📟 가스농도측정기</strong><p>${esc(equipText(ev.gasRows,'gas'))}</p></div><div class="tbm-equip-row"><strong>🦺 보호구·구조장비</strong><p>${esc(equipText(ev.ppeRows,'ppe'))}</p></div>`}
  function setCheck(key,val='yes'){const s=sp();if(!s)return;const c=getChecks(s);c[key]=val;saveChecks(s,c)}
  function openPermit(){const s=sp();if(!s)return;permitSelectedId=s.id;selectedId=fieldSelectedId=s.id;try{loadPermitForSpace(s)}catch(e){console.warn(e)};document.body.classList.add('tbm-permit-open');showView('permit');setTimeout(()=>window.ensurePermitMobileEnhancements?.(),0)}
  function updateFinal(){const s=sp();if(!s)return;const c=getChecks(s),sig=signalInfo(c),box=q('#tbmFinalStatus');box.className='tbm-status '+sig.state;box.innerHTML=`<div class="light">${sig.state==='green'?'🟢':sig.state==='red'?'🔴':'🟡'}</div><h3>${esc(sig.head.replace(/^[^ ]+\s*/,''))}</h3><p>${esc(sig.reason)}</p>`}
@@ -2327,7 +2249,11 @@ body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-copy small,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-copy small{color:#a1aab5!important}
 body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-chevron,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-chevron{color:#c4cbd3!important}
-body.tbm-one-question.safe-stage-open > .shell{display:none!important}
+body.tbm-one-question.safe-stage-open > .shell{display:block!important;width:100%!important;max-width:none!important;min-height:100dvh!important;margin:0!important;padding:0!important;background:#fff!important}
+body.tbm-one-question.safe-stage-open > .shell > *{display:none!important}
+body.tbm-one-question.safe-stage-open > .shell > #safeStageBar,
+body.tbm-one-question.safe-stage-open > .shell > #tbmWizard{display:block!important}
+body.tbm-one-question.safe-stage-open > .shell > #safeStageBar{display:flex!important}
 body.tbm-one-question.safe-stage-open #tbmWizard{display:block!important;min-height:100dvh!important;background:#fff!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-top{display:none!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;margin:0 auto!important;box-shadow:none!important;border-left:1px solid #edf0f4!important;border-right:1px solid #edf0f4!important}
@@ -2870,13 +2796,6 @@ function openAliveOverlay(){
   const wbtn=$("#aliveCallWatcher");if(wbtn)wbtn.href=aliveState.watcherPhone?("tel:"+aliveState.watcherPhone.replace(/[^0-9+]/g,"")):"tel:119";
 }
 function closeAliveOverlay(){const ov=$("#aliveAlarmOverlay");if(ov){ov.classList.remove("open","escalate")}}
-window.resetAliveAlarmUI=function(){
-  if(!aliveRuntimeArmed){
-    stopAlarmFx();
-    closeAliveOverlay();
-    navigator.vibrate&&navigator.vibrate(0);
-  }
-};
 
 function triggerAlivePrompt(){
   if(!aliveRuntimeArmed||!aliveState.active)return;
@@ -2922,10 +2841,8 @@ function stopAliveCheck(){
 
 document.addEventListener("DOMContentLoaded",()=>{
   loadAlive();
-
-  // 중요: 이전 접속/새로고침에서 남은 생존확인 상태를 자동 복원하지 않습니다.
-  // 현장에서는 검정 경보화면·진동·삐 소리가 임의로 켜지면 혼란을 줄 수 있으므로,
-  // 매 접속마다 '생존확인 시작' 버튼을 사용자가 직접 눌러야만 경보가 활성화됩니다.
+  // 안전상 페이지를 열거나 단계 이동만으로 경보가 복원되지 않게 항상 초기화합니다.
+  // 생존확인은 STEP 2에서 사용자가 '생존확인 시작'을 직접 눌렀을 때만 현재 실행 중에 활성화됩니다.
   aliveRuntimeArmed=false;
   try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
   aliveState.active=false;
@@ -2937,6 +2854,13 @@ document.addEventListener("DOMContentLoaded",()=>{
   stopAlarmFx();
   closeAliveOverlay();
   releaseAliveWakeLock();
+  window.resetAliveAlarmUI=function(){
+    aliveRuntimeArmed=false;
+    try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
+    aliveState.active=false;aliveState.prompting=false;aliveState.escalated=false;
+    aliveState.nextDueAt=0;aliveState.promptDeadlineAt=0;
+    stopAlarmFx();closeAliveOverlay();releaseAliveWakeLock();saveAlive();
+  };
   $$("#aliveIntervalGroup button").forEach(b=>b.addEventListener("click",()=>{
     aliveState.intervalMin=Number(b.dataset.aliveInterval);saveAlive();
     const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
