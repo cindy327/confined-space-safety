@@ -434,6 +434,7 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
     </button>
   </div>
   <div class="safe-home-tools"><button type="button" id="safeHomeMoreBtn">☰ 기타 기능</button></div>
+</div>
 <div class="mobile-context" id="mobileContext"></div>
 
 
@@ -1930,6 +1931,26 @@ body.safe-stage-permit #view-permit .permit-actions{
 @media print{.permit-inline-toolbar{display:none!important}}
 </style>
 
+
+<style id="stage3PermitVisibilityFinalFix20260917">
+body.tbm-one-question.safe-stage-permit > .shell{display:block!important;width:100%!important;max-width:100%!important;padding:0!important;margin:0!important;background:#000!important}
+body.tbm-one-question.safe-stage-permit > .shell > *{display:none!important}
+body.tbm-one-question.safe-stage-permit > .shell > #view-permit{display:block!important}
+body.tbm-one-question.safe-stage-permit > #tbmWizard{display:none!important}
+@media(max-width:760px){
+ body.safe-stage-permit{background:#000!important;overflow-x:hidden!important}
+ body.safe-stage-permit #view-permit{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;max-width:620px!important;min-width:0!important;margin:0 auto!important;padding:68px 8px calc(24px + env(safe-area-inset-bottom))!important;box-sizing:border-box!important;background:#000!important;overflow-x:hidden!important}
+ body.safe-stage-permit .tbm-permit-back,body.safe-stage-permit #view-permit .permit-actions,body.safe-stage-permit #permitInlineToolbar,body.safe-stage-permit .permit-inline-toolbar{display:none!important}
+ body.safe-stage-permit #permitMobileTopBar{display:grid!important;visibility:visible!important;opacity:1!important;grid-template-columns:72px minmax(0,1fr) 68px!important;position:fixed!important;top:max(7px,env(safe-area-inset-top))!important;left:8px!important;right:8px!important;z-index:20000!important;min-height:50px!important;padding:5px!important;margin:0!important;border:1px solid #293648!important;border-radius:14px!important;background:rgba(10,15,22,.98)!important;box-shadow:0 8px 24px rgba(0,0,0,.34)!important;box-sizing:border-box!important}
+ body.safe-stage-permit #permitMobileTopBar button{height:40px!important;min-height:40px!important}
+ body.safe-stage-permit #permitMobilePlace{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+ body.safe-stage-permit #view-permit .permit-form,body.safe-stage-permit #view-permit .permit-wizard-track{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;transform:none!important}
+ body.safe-stage-permit #view-permit .permit-wizard-slide{display:none!important}
+ body.safe-stage-permit #view-permit .permit-wizard-slide.mobile-active{display:block!important;visibility:visible!important;opacity:1!important}
+ body.safe-stage-permit #view-permit .permit-wizard-controls{position:static!important;inset:auto!important;transform:none!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important;margin:14px 0 0!important;padding:0!important;background:transparent!important}
+}
+@media print{#permitMobileTopBar{display:none!important}}
+</style>
 </head><body>
 ${area.innerHTML}</body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},250)}
 if($("#drillLoadBtn"))$("#drillLoadBtn").onclick=chooseDrillFromInput;
@@ -2950,5 +2971,20 @@ document.addEventListener("DOMContentLoaded",()=>{
 })();
 </script>
 
+
+<script id="stage3PermitVisibilityFinalJS20260917">
+(function(){'use strict';function ensureStage3(){if(!document.body.classList.contains('safe-stage-permit'))return;const view=document.getElementById('view-permit');if(!view)return;view.classList.add('active');const slides=[...view.querySelectorAll('.permit-wizard-slide')];if(slides.length&&!slides.some(s=>s.classList.contains('mobile-active')))slides[0].classList.add('mobile-active');const src=document.getElementById('permitSpaceSearch'),place=document.getElementById('permitMobilePlace');if(place&&src&&src.value)place.textContent=src.value;}new MutationObserver(()=>setTimeout(ensureStage3,0)).observe(document.body,{attributes:true,attributeFilter:['class']});document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#homePermitBtn,#tbmStage2CompleteBtn,#view-permit'))setTimeout(ensureStage3,30)},true);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureStage3);else ensureStage3();})();
+</script>
+
+<style id="stage3PermitTopbarLastOverride20260917">
+@media(max-width:760px){
+ body.safe-stage-permit #permitInlineToolbar,
+ body.safe-stage-permit .permit-inline-toolbar,
+ body.safe-stage-permit #view-permit .permit-actions,
+ body.safe-stage-permit .tbm-permit-back{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important}
+ body.safe-stage-permit #permitMobileTopBar{display:grid!important;visibility:visible!important;opacity:1!important;height:auto!important;min-height:50px!important;max-height:none!important}
+ body.safe-stage-permit #view-permit{padding-top:68px!important}
+}
+</style>
 </body>
 </html>
