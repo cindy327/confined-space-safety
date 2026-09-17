@@ -2270,11 +2270,11 @@ body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-copy small,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-copy small{color:#a1aab5!important}
 body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-chevron,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-chevron{color:#c4cbd3!important}
-body.tbm-one-question.safe-stage-open > .shell{display:block!important;width:100%!important;max-width:none!important;min-height:100dvh!important;margin:0!important;padding:0!important;background:#fff!important}
-body.tbm-one-question.safe-stage-open > .shell > *{display:none!important}
-body.tbm-one-question.safe-stage-open > .shell > #safeStageBar,
-body.tbm-one-question.safe-stage-open > .shell > #tbmWizard{display:block!important}
-body.tbm-one-question.safe-stage-open > .shell > #safeStageBar{display:flex!important}
+/* FIX 2026-09-17: #tbmWizard/#safeStageBar are direct children of <body>, not .shell.
+   Hiding only .shell children left an empty 100dvh white page before the wizard. */
+body.tbm-one-question.safe-stage-open > .shell{display:none!important;width:0!important;max-width:0!important;min-height:0!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+body.tbm-one-question.safe-stage-open > #safeStageBar{display:flex!important}
+body.tbm-one-question.safe-stage-open > #tbmWizard{display:block!important;width:100%!important;min-height:100dvh!important;margin:0!important;background:#fff!important}
 body.tbm-one-question.safe-stage-open #tbmWizard{display:block!important;min-height:100dvh!important;background:#fff!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-top{display:none!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;margin:0 auto!important;box-shadow:none!important;border-left:1px solid #edf0f4!important;border-right:1px solid #edf0f4!important}
@@ -2986,5 +2986,60 @@ document.addEventListener("DOMContentLoaded",()=>{
  body.safe-stage-permit #view-permit{padding-top:68px!important}
 }
 </style>
+
+<style id="stageFlowWhiteScreenFinalFix20260917">
+/* Final visibility guard: prevent an empty legacy .shell from occupying the first viewport. */
+body.tbm-one-question.safe-stage-open > .shell{
+  display:none!important;
+  width:0!important;max-width:0!important;height:0!important;min-height:0!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;
+}
+body.tbm-one-question.safe-stage-open > #safeStageBar{
+  display:flex!important;
+  visibility:visible!important;opacity:1!important;
+}
+body.tbm-one-question.safe-stage-open > #tbmWizard{
+  display:block!important;
+  visibility:visible!important;opacity:1!important;
+  width:100%!important;min-height:100dvh!important;
+  margin:0!important;background:#fff!important;
+}
+body.tbm-one-question.safe-stage-open > #tbmWizard > .tbm-shell{
+  display:flex!important;width:min(100%,520px)!important;max-width:520px!important;
+  min-height:100dvh!important;margin:0 auto!important;background:#fff!important;
+}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{display:flex!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{display:block!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen:not(.active){display:none!important}
+</style>
+<script id="stageFlowWhiteScreenFinalFixJS20260917">
+(function(){
+  'use strict';
+  const body=document.body;
+  function repairStageView(){
+    if(!body.classList.contains('safe-stage-open'))return;
+    const wiz=document.getElementById('tbmWizard');
+    if(!wiz)return;
+    let active=wiz.querySelector('.tbm-screen.active');
+    if(!active){
+      const screens=wiz.querySelectorAll('.tbm-screen');
+      if(screens.length){
+        screens.forEach((el,i)=>el.classList.toggle('active',i===0));
+        active=screens[0];
+      }
+    }
+    const bar=document.getElementById('safeStageBar');
+    if(bar)bar.setAttribute('aria-hidden','false');
+  }
+  document.addEventListener('click',function(e){
+    if(e.target.closest&&e.target.closest('#homeSpaceBtn,#homeCheckBtn')){
+      requestAnimationFrame(()=>requestAnimationFrame(repairStageView));
+    }
+  },true);
+  new MutationObserver(repairStageView).observe(body,{attributes:true,attributeFilter:['class']});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repairStageView);
+  else repairStageView();
+})();
+</script>
 </body>
 </html>
