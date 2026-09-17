@@ -398,6 +398,23 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
 .alive-call-btn.watcher{background:#ff9f0a;color:#241400}
 .alive-call-btn.sos{background:#ff453a;color:#fff}
 </style>
+
+<style id="step2DetectorAndAlarmFix20260917">
+/* 검정 경보 오버레이는 사용자가 생존확인을 직접 시작한 경우에만 JS가 open을 붙입니다. */
+#aliveAlarmOverlay:not(.open){display:none!important}
+.tbm-device-list{display:grid;gap:8px;margin-top:9px}
+.tbm-device-item{display:grid;gap:3px;border:1px solid #cfd9e4;background:#f8fbfe;border-radius:11px;padding:10px 11px;color:#1b293a}
+.tbm-device-item b{font-size:15px;line-height:1.35;color:#123e69}
+.tbm-device-item span{font-size:12.5px;line-height:1.45;color:#53657a}
+.tbm-device-item.warn{border-color:#e0bc72;background:#fff9e9}
+.tbm-device-item.warn b{color:#8a5a00}
+@media(max-width:420px){
+  .tbm-device-item{padding:11px 12px}
+  .tbm-device-item b{font-size:16px}
+  .tbm-device-item span{font-size:13px}
+}
+</style>
+
 </head>
 <body class="field-active simple-flow-home simple-flow-ui tbm-one-question">
 <div id="bootSplash" role="status" aria-live="polite"><div class="boot-box"><div class="boot-mark"></div><div class="boot-title">KORAIL 밀폐 SAFE PASS</div><div class="boot-sub">현장 안전정보를 준비하고 있습니다.</div><div class="boot-fallback">잠시 후 자동으로 열립니다.</div></div></div>
@@ -637,26 +654,11 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
   <div class="gas-meta">
     <label>측정자<input id="gasMeasurer" type="text" placeholder="성명"></label>
     <label>측정일시<input id="gasMeasuredAt" type="datetime-local"></label>
-    <label>측정기<select id="gasDevice" aria-label="가스측정기 모델"><option value="">등록 모델 불러오는 중…</option></select></label>
-    <div class="gas-device-check-field">
-      <span class="gas-device-check-label">장비 상태</span>
-      <input id="gasDeviceCheck" type="hidden" value="">
-      <div class="gas-device-check-buttons" role="group" aria-label="장비 상태 선택">
-        <button type="button" data-gas-device-check="정상">✅ 정상</button>
-        <button type="button" data-gas-device-check="교정확인">🛠 교정확인</button>
-      </div>
-    </div>
+    <label>측정기<input id="gasDevice" type="text" placeholder="모델 / 관리번호"></label>
+    <label>장비 이상유무<input id="gasDeviceCheck" type="text" placeholder="예: 정상 / 교정확인"></label>
   </div>
   <div class="gas-grid-wrap">
-    <div>
-      <div class="gas-point-actions">
-        <button type="button" id="gasSelectAllBtn">✓ 전체 9개 측정 선택</button>
-        <button type="button" id="gasClearPointsBtn">선택 초기화</button>
-      </div>
-      <div class="gas-point-grid" id="gasPointGrid"></div>
-      <div id="gasPointCount" class="gas-point-count"></div>
-      <div style="font-size:9.5px;color:#66717d;line-height:1.5;margin-top:6px">※ 9개 후보는 상·중·하 × 좌·중·우 위치를 직관적으로 표시한 사내 입력 UI입니다. 실제 측정지점은 공간의 구조·공기흐름·작업자 호흡위치를 고려해 선정하세요.</div>
-    </div>
+    <div><div class="gas-point-grid" id="gasPointGrid"></div><div id="gasPointCount" class="gas-point-count"></div><div style="font-size:9.5px;color:#66717d;line-height:1.5;margin-top:6px">※ 9개 후보는 상·중·하 × 좌·중·우 위치를 직관적으로 표시한 사내 입력 UI입니다. 실제 측정지점은 공간의 구조·공기흐름·작업자 호흡위치를 고려해 선정하세요.</div></div>
     <div class="gas-reading-list" id="gasReadingList"></div>
   </div>
   <input type="hidden" name="gasMeasureJson" id="gasMeasureJson">
@@ -1416,7 +1418,25 @@ function permitKey(s){return s?.manageNo||"NEW"}
 function renderPermitChecks(saved={}){$("#permitChecklistBody").innerHTML=PERMIT_CHECKS.map((r,i)=>`<tr><td class="cat">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="ck"><input type="checkbox" data-pneed="${i}" ${saved.need?.[i]?"checked":""}></td><td class="ck"><input type="checkbox" data-pok="${i}" ${saved.ok?.[i]?"checked":""}></td></tr>`).join("")}
 function formObject(){syncGasHidden();syncWorkerSignsHidden();const f=$("#permitForm"),o={};new FormData(f).forEach((v,k)=>o[k]=v);o.need=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pneed="${i}"]`)?.checked);o.ok=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pok="${i}"]`)?.checked);o.finalApproved=$("#finalPermitApproved").checked;return o}
 function fillPermit(o={}){const f=$("#permitForm");[...f.elements].forEach(el=>{if(!el.name)return;if(el.type!=="checkbox")el.value=o[el.name]??""});renderPermitChecks(o);$("#finalPermitApproved").checked=!!o.finalApproved;checkPermitDuration();gasMeasure=parseGasMeasure(o.gasMeasureJson||"");renderGasMeasure();loadWorkerSignsFromPermit(o);setTimeout(loadSignPadsFromHidden,0)}
-function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow()},0)}
+function loadPermitForSpace(s){
+ permitSelectedId=s.id;const ctx=workContextFor(s);
+ $("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;
+ const saved=permitForms[permitKey(s)]||{};
+ fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});
+ // 기존 저장값이 없을 때만 엑셀 장비자료의 측정기 종류·모델을 자동 입력
+ try{
+   const autoDevice=(window.gasDetectorAutoText&&window.gasDetectorAutoText(s))||"";
+   const deviceEl=$("#gasDevice");
+   if(deviceEl&&!String(deviceEl.value||"").trim()&&autoDevice){
+     deviceEl.value=autoDevice;
+     gasMeasure.meta=gasMeasure.meta||{};
+     gasMeasure.meta.device=autoDevice;
+     syncGasHidden();
+   }
+ }catch(e){console.warn("gas device auto fill",e)}
+ $("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;
+ setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow()},0)
+}
 function choosePermitFromInput(){const s=findSpaceByInput($("#permitSpaceSearch").value);if(!s){alert("밀폐공간을 찾지 못했습니다.");return}loadPermitForSpace(s)}
 $("#permitLoadBtn").onclick=choosePermitFromInput;$("#permitSpaceSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();choosePermitFromInput()}});
 function savePermit(){const s=spaces.find(x=>x.id===Number(permitSelectedId));const o=formObject();permitForms[permitKey(s)]=o;localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));if(s){const c=getChecks(s);c.permit=o.finalApproved?"yes":"unknown";saveChecks(s,c);if(fieldSelectedId===s.id)renderField()}$("#permitSideStatus").innerHTML=`<span class="good">허가서 저장 완료</span>${s?` · ${esc(s.manageNo)}`:""}`;renderApprovalWorkflow()}
@@ -1546,69 +1566,18 @@ async function captureGasPoint(n){
  input.click()
 }
 function confirmGasAiReading(n){const r=gasMeasure.readings[n];if(!r)return;const missing=[['o2','O₂'],['h2s','H₂S'],['co','CO'],['co2','CO₂']].filter(([k])=>gasSafeNumber(r[k])==="").map(x=>x[1]);if(missing.length){alert(`아직 입력되지 않은 값이 있습니다: ${missing.join(', ')}. 실제 측정기에서 확인하여 직접 입력한 뒤 확인하세요.`);return}if(!confirm(`P${n}의 O₂·H₂S·CO·CO₂ 값이 실제 가스측정기 표시와 동일한지 확인했습니까?`))return;r.aiPending=false;r.aiConfirmedAt=new Date().toISOString();r.aiError="";syncGasHidden();renderGasMeasure();syncGasToSignal();renderApprovalWorkflow()}
-
-function gasDeviceModelsForPermit(){
- const s=spaces.find(x=>x.id===Number(permitSelectedId));
- if(!s)return[];
- const ev=evidenceFor(s),out=[];
- (ev.gasRows||[]).forEach(e=>{
-   String(e.gasModel||"").split(/[\n,;/]+/).map(x=>x.trim()).filter(x=>x&&x!=="-").forEach(x=>{if(!out.includes(x))out.push(x)})
- });
- return out;
-}
-function refreshGasDeviceOptions(preferred=""){
- const el=$("#gasDevice");if(!el)return;
- const models=gasDeviceModelsForPermit();
- const current=String(preferred||gasMeasure.meta?.device||el.value||"").trim();
- const opts=[...models];
- if(current&&current!=="-"&&!opts.includes(current))opts.unshift(current);
- el.innerHTML=`<option value="">측정기 모델 선택</option>`+opts.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
- const chosen=current||models[0]||"";
- el.value=chosen;
- gasMeasure.meta=gasMeasure.meta||{};
- if(chosen&&!gasMeasure.meta.device)gasMeasure.meta.device=chosen;
-}
-function gasDeviceCheckValues(){
- return String($("#gasDeviceCheck")?.value||"").split(/[·,/]+/).map(x=>x.trim()).filter(Boolean);
-}
-function syncGasDeviceCheckButtons(){
- const vals=new Set(gasDeviceCheckValues());
- $$('[data-gas-device-check]').forEach(b=>b.classList.toggle("selected",vals.has(b.dataset.gasDeviceCheck)));
-}
-function toggleGasDeviceCheck(value){
- const input=$("#gasDeviceCheck");if(!input)return;
- const vals=new Set(gasDeviceCheckValues());
- if(vals.has(value))vals.delete(value);else vals.add(value);
- input.value=["정상","교정확인"].filter(v=>vals.has(v)).join(" · ");
- syncGasDeviceCheckButtons();syncGasHidden();
- if(typeof window.schedulePermitStatus==="function")window.schedulePermitStatus(30);
-}
-function selectAllGasPoints(){
- gasMeasure.selected=GAS_POINT_LABELS.map((_,i)=>i+1);
- gasMeasure.selected.forEach(n=>{gasMeasure.readings[n]=gasMeasure.readings[n]||{o2:"",h2s:"",co:"",co2:""}});
- syncGasHidden();renderGasMeasure();syncGasToSignal();renderApprovalWorkflow();
-}
-function clearAllGasPoints(){
- gasMeasure.selected=[];
- syncGasHidden();renderGasMeasure();syncGasToSignal();renderApprovalWorkflow();
-}
-
 function renderGasMeasure(){
  const grid=$("#gasPointGrid"),list=$("#gasReadingList");if(!grid||!list)return;
- refreshGasDeviceOptions(gasMeasure.meta?.device||"");
- ["gasMeasurer","gasMeasuredAt","gasDevice","gasDeviceCheck"].forEach((id,idx)=>{const el=$("#"+id);if(el){const k=["measurer","measuredAt","device","deviceCheck"][idx];const v=gasMeasure.meta?.[k]||el.value||"";el.value=v}});
- syncGasDeviceCheckButtons();
+ ["gasMeasurer","gasMeasuredAt","gasDevice","gasDeviceCheck"].forEach((id,idx)=>{const el=$("#"+id);if(el){const k=["measurer","measuredAt","device","deviceCheck"][idx];el.value=gasMeasure.meta?.[k]||el.value||""}});
  grid.innerHTML=GAS_POINT_LABELS.map((lab,i)=>{const n=i+1,sel=gasMeasure.selected.includes(n),ev=sel?gasPointEval(gasMeasure.readings[n]):"",pending=!!gasMeasure.readings[n]?.aiPending;return`<button type="button" class="gas-point-btn ${sel?"selected":""} ${ev==="ok"?"complete":ev==="bad"?"fail":""}" data-gas-point="${n}">P${n}<span>${lab}${pending?" · AI확인대기":""}</span></button>`}).join("");
  const selected=[...(gasMeasure.selected||[])].sort((a,b)=>a-b);const rowCov=new Set(selected.map(n=>Math.floor((n-1)/3))).size,colCov=new Set(selected.map(n=>(n-1)%3)).size;$("#gasPointCount").textContent=`선택 ${selected.length}개 · 상·중·하 ${rowCov}/3 · 좌·중·우 ${colCov}/3`;
  list.innerHTML=selected.length?selected.map(n=>{const r=gasMeasure.readings[n]||{o2:"",h2s:"",co:"",co2:""},ev=gasPointEval(r),provisional=r.aiPending?gasPendingEval(r):ev,busy=gasCameraBusyPoint===n,aiClass=r.aiPending?"ai-pending":r.aiConfirmedAt?"ai-confirmed":"";const statusLabel=r.aiPending?"AI 값 확인 필요":ev==="ok"?"적정":ev==="bad"?"부적정":"입력중";const conf=r.aiConfidence?` · 인식신뢰 ${r.aiConfidence==="high"?"높음":r.aiConfidence==="medium"?"보통":"낮음"}`:"";const provisionalWarn=r.aiPending&&provisional==="bad"?"<b> · 기준 이탈 가능성 — 즉시 실제 계기판 확인</b>":"";return`<div class="gas-reading-card ${aiClass}"><h4><span>P${n} · ${GAS_POINT_LABELS[n-1]}</span><span class="gas-eval ${r.aiPending?"wait":ev}">${statusLabel}</span></h4><div class="gas-reading-fields"><label>O₂ (%)<input class="${r.aiPending?"ai-filled":""}" type="number" step="0.1" inputmode="decimal" data-gas-read="${n}" data-gas-key="o2" value="${esc(r.o2??"")}" placeholder="18~23.5"></label><label>H₂S (ppm)<input class="${r.aiPending?"ai-filled":""}" type="number" step="0.1" inputmode="decimal" data-gas-read="${n}" data-gas-key="h2s" value="${esc(r.h2s??"")}" placeholder="<10"></label><label>CO (ppm)<input class="${r.aiPending?"ai-filled":""}" type="number" step="0.1" inputmode="decimal" data-gas-read="${n}" data-gas-key="co" value="${esc(r.co??"")}" placeholder="<30"></label><label>CO₂ (%)<input class="${r.aiPending?"ai-filled":""}" type="number" step="0.1" inputmode="decimal" data-gas-read="${n}" data-gas-key="co2" value="${esc(r.co2??"")}" placeholder="<1.5"></label></div><div class="gas-camera-actions"><button type="button" class="gas-camera-btn" data-gas-camera="${n}" ${busy?"disabled":""}>${busy?'<span class="gas-camera-spinner"></span>AI가 표시값 읽는 중…':'📷 사진 또는 카메라로 측정값 입력'}</button>${r.aiPending?`<div class="gas-ai-status pending">⚠ <b>AI 자동입력값</b>${conf}${provisionalWarn}<br>${esc(r.aiNote||"실제 가스측정기 표시와 숫자·단위를 반드시 대조하세요.")}</div><button type="button" class="gas-ai-confirm" data-gas-confirm="${n}">✓ 실제 계기판과 대조 · 측정값 확인</button>`:r.aiConfirmedAt?`<div class="gas-ai-status confirmed">✅ 사진 인식값을 작업자가 실제 계기판과 대조하여 확인했습니다.</div>`:r.aiError?`<div class="gas-ai-status error">⚠ ${esc(r.aiError)}</div>`:""}<div class="gas-photo-note">선택한 사진은 수치 인식용으로만 전송하며 허가서·공유링크에는 저장하지 않습니다. AI가 읽지 못한 값은 직접 입력하세요.</div></div></div>`}).join(""):'<div style="font-size:11px;color:#66717d;padding:10px">왼쪽 9개 후보지점에서 먼저 측정할 위치를 선택하세요.</div>';
  $$('[data-gas-point]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.gasPoint);if(gasMeasure.selected.includes(n)){gasMeasure.selected=gasMeasure.selected.filter(x=>x!==n)}else{gasMeasure.selected.push(n);gasMeasure.readings[n]=gasMeasure.readings[n]||{o2:"",h2s:"",co:"",co2:""}}syncGasHidden();renderGasMeasure();syncGasToSignal();renderApprovalWorkflow()});
  $$('[data-gas-read]').forEach(inp=>inp.addEventListener('change',()=>{const n=Number(inp.dataset.gasRead),k=inp.dataset.gasKey;gasMeasure.readings[n]=gasMeasure.readings[n]||{};gasMeasure.readings[n][k]=inp.value;gasMeasure.readings[n].aiError="";syncGasHidden();renderGasMeasure();syncGasToSignal();renderApprovalWorkflow()}));
  $$('[data-gas-camera]').forEach(b=>b.onclick=()=>captureGasPoint(Number(b.dataset.gasCamera)));$$('[data-gas-confirm]').forEach(b=>b.onclick=()=>confirmGasAiReading(Number(b.dataset.gasConfirm)));
- const allBtn=$("#gasSelectAllBtn"),clearBtn=$("#gasClearPointsBtn");if(allBtn)allBtn.onclick=selectAllGasPoints;if(clearBtn)clearBtn.onclick=clearAllGasPoints;
  const st=gasOverallEval(),badge=$("#gasOverall"),msg=$("#gasOverallMessage"),pendingCount=selected.filter(n=>gasMeasure.readings[n]?.aiPending).length;if(badge){badge.className="gas-eval "+st;badge.textContent=st==="ok"?"적정공기":st==="bad"?"부적정 · 작업중지":pendingCount?`AI값 확인 ${pendingCount}건`:"측정 확인 필요"}if(msg){msg.className="gas-overall "+st;msg.textContent=st==="ok"?`✅ ${selected.length}개 지점 측정값이 입력 기준 내 적정입니다. 작업 중에도 현장 기준에 따라 지속 측정·환기하세요.`:st==="bad"?"⛔ 한 곳 이상 적정공기 기준을 벗어났습니다. 작업을 시작하지 말고 환기·원인조치 후 재측정하세요.":pendingCount?`⚠ 카메라로 자동입력한 ${pendingCount}개 지점의 값이 아직 작업자 확인 전입니다. 실제 측정기 표시와 대조 후 ‘측정값 확인’을 누르세요.`:"⚠ 최소 3개 지점을 선택하되 상·중·하와 좌·중·우가 모두 포함되도록 하고, O₂·H₂S·CO·CO₂ 값을 입력하세요."}syncGasHidden()
 }
-["gasMeasurer","gasMeasuredAt","gasDevice"].forEach(id=>{const el=$("#"+id);el?.addEventListener("input",syncGasHidden);el?.addEventListener("change",syncGasHidden)});
-$$('[data-gas-device-check]').forEach(b=>b.addEventListener("click",()=>toggleGasDeviceCheck(b.dataset.gasDeviceCheck)));
+["gasMeasurer","gasMeasuredAt","gasDevice","gasDeviceCheck"].forEach(id=>$("#"+id)?.addEventListener("input",syncGasHidden));
 
 const signPads={};
 function signKey(role){return role+"SignJson"}function signAtKey(role){return role+"SignAt"}
@@ -2256,8 +2225,46 @@ if(location.hash&&location.hash.length>2){setTimeout(()=>{fillPermit({permitDate
  function managerText(c){return c.group==='korail'?'없음 · 공사 직접작업':(c.manageDept||(c.group==='subsidiary'?'공사 관리사업소 확인 필요':'발주처 확인 필요'))}
  function renderDept(){const s=sp();if(!s)return;const c=workContextFor(s);q('#tbmDeptCard').innerHTML=`<div class="tbm-info-row"><span>📍 작업개소</span><b>${esc(s.site)} · ${esc(s.detailName)}</b></div><div class="tbm-info-row"><span>👷 작업부서</span><b>${esc(c.workDept)}</b></div><div class="tbm-info-row"><span>🏢 작업관리부서</span><b>${esc(managerText(c))}</b></div><div class="tbm-info-row"><span>🚉 협조부서</span><b>${esc(c.coopDept||'해당 역 확인 필요')}</b></div>`;const depts=uniq(splitWorkDepts(s.workDept).map(canonicalDeptName));const sel=q('#tbmDeptSelect');sel.innerHTML=depts.map(d=>`<option value="${esc(d)}" ${d===c.workDept?'selected':''}>${esc(d)}</option>`).join('')||`<option>${esc(c.workDept)}</option>`}
  function renderRisk(){const s=sp();if(!s)return;q('#tbmRiskCard').innerHTML=`<div class="tbm-risk">⚠ ${esc(s.hazards||'질식·산소결핍 등 밀폐공간 위험')}</div><div class="tbm-info-row"><span>세부위치</span><b>${esc(s.detailLocation||s.site)}</b></div><div class="tbm-info-row"><span>평상 작업</span><b>${esc(s.internalWork||'작업내용 현장 확인')}</b></div><div class="tbm-info-row"><span>관리번호</span><b>${esc(s.manageNo)}</b></div>`}
- function equipText(rows,type){if(!rows||!rows.length)return '장비자료에서 확인되지 않음 · 현장 확인 필요';const vals=[];rows.slice(0,3).forEach(e=>{if(type==='gas')vals.push([e.dept,e.gasType,e.gasQty?e.gasQty+'대':''].filter(Boolean).join(' · '));else vals.push([e.dept,e.respType,e.respQty?e.respQty+'개':''].filter(Boolean).join(' · '))});return vals.join(' / ')}
- function renderEquip(){const s=sp();if(!s)return;const ev=evidenceFor(s);q('#tbmEquipCard').innerHTML=`<div class="tbm-equip-row"><strong>📟 가스농도측정기</strong><p>${esc(equipText(ev.gasRows,'gas'))}</p></div><div class="tbm-equip-row"><strong>🦺 보호구·구조장비</strong><p>${esc(equipText(ev.ppeRows,'ppe'))}</p></div>`}
+ function validEquip(v){return v&&String(v).trim()&&String(v).trim()!=="-"}
+ function gasDetectorRows(rows){
+   const out=[],seen=new Set();
+   (rows||[]).forEach(e=>{
+     if(!validEquip(e.gasType)&&!validEquip(e.gasModel))return;
+     const item={
+       dept:validEquip(e.dept)?String(e.dept).trim():"",
+       type:validEquip(e.gasType)?String(e.gasType).trim():"가스농도측정기",
+       model:validEquip(e.gasModel)?String(e.gasModel).trim():"모델 미기재",
+       cycle:validEquip(e.gasCycle)?String(e.gasCycle).trim():""
+     };
+     const key=[item.dept,item.type,item.model,item.cycle].join("|");
+     if(!seen.has(key)){seen.add(key);out.push(item)}
+   });
+   return out;
+ }
+ function gasDetectorAutoText(s){
+   if(!s)return "";
+   const ev=evidenceFor(s), rows=gasDetectorRows(ev.gasRows);
+   return rows.slice(0,4).map(x=>`${x.type} · ${x.model}`).join(" / ");
+ }
+ window.gasDetectorAutoText=gasDetectorAutoText;
+ function equipText(rows,type){
+   if(!rows||!rows.length)return '장비자료에서 확인되지 않음 · 현장 확인 필요';
+   if(type==='gas'){
+     const ds=gasDetectorRows(rows);
+     if(!ds.length)return '가스측정기 종류·모델 미기재 · 현장 확인 필요';
+     return ds.slice(0,4).map(x=>`${x.type} | 모델 ${x.model}${x.dept?` | ${x.dept}`:""}${x.cycle?` | 교정 ${x.cycle}`:""}`).join(' / ');
+   }
+   const vals=[];
+   rows.slice(0,4).forEach(e=>{if(validEquip(e.respType)||validEquip(e.respModel))vals.push([e.respType,e.respModel,e.dept,e.respQty?e.respQty+'개':''].filter(validEquip).join(' · '))});
+   return vals.length?vals.join(' / '):'보호구·구조장비 상세 미기재 · 현장 확인 필요';
+ }
+ function renderEquip(){
+   const s=sp();if(!s)return;const ev=evidenceFor(s),gasRows=gasDetectorRows(ev.gasRows);
+   const gasHtml=gasRows.length
+     ?gasRows.slice(0,4).map(x=>`<div class="tbm-device-item"><b>${esc(x.type)}</b><span>모델 ${esc(x.model)}</span>${x.dept?`<span>보유부서 ${esc(x.dept)}</span>`:""}${x.cycle?`<span>교정주기 ${esc(x.cycle)}</span>`:""}</div>`).join("")
+     :`<div class="tbm-device-item warn"><b>측정기 정보 확인 필요</b><span>등록 장비자료에서 종류·모델을 찾지 못했습니다.</span></div>`;
+   q('#tbmEquipCard').innerHTML=`<div class="tbm-equip-row"><strong>📟 가스농도측정기 · 자동조회</strong><div class="tbm-device-list">${gasHtml}</div></div><div class="tbm-equip-row"><strong>🦺 보호구·구조장비</strong><p>${esc(equipText(ev.ppeRows,'ppe'))}</p></div>`;
+ }
  function setCheck(key,val='yes'){const s=sp();if(!s)return;const c=getChecks(s);c[key]=val;saveChecks(s,c)}
  function openPermit(){const s=sp();if(!s)return;permitSelectedId=s.id;selectedId=fieldSelectedId=s.id;try{loadPermitForSpace(s)}catch(e){console.warn(e)};document.body.classList.add('tbm-permit-open');showView('permit');setTimeout(()=>window.ensurePermitMobileEnhancements?.(),0)}
  function updateFinal(){const s=sp();if(!s)return;const c=getChecks(s),sig=signalInfo(c),box=q('#tbmFinalStatus');box.className='tbm-status '+sig.state;box.innerHTML=`<div class="light">${sig.state==='green'?'🟢':sig.state==='red'?'🔴':'🟡'}</div><h3>${esc(sig.head.replace(/^[^ ]+\s*/,''))}</h3><p>${esc(sig.reason)}</p>`}
@@ -2414,7 +2421,7 @@ body.tbm-one-question.tbm-old-open.show-ai-brief #aiBriefCard{display:block!impo
     btn2.setAttribute('aria-disabled',String(btn2.disabled));btn3.setAttribute('aria-disabled',String(btn3.disabled));
   }
   function home(){currentStage=0;body.classList.add('safe-3step-home');body.classList.remove('safe-stage-open','safe-stage-one','safe-stage-two','safe-stage2-final','safe-stage-permit','tbm-old-open','tbm-permit-open','show-ai-brief');updateHome();window.scrollTo({top:0,behavior:'auto'})}
-  function stageMode(n){currentStage=n;body.classList.remove('safe-3step-home','tbm-old-open','tbm-permit-open','safe-stage-permit','safe-stage2-final');body.classList.add('safe-stage-open');body.classList.toggle('safe-stage-one',n===1);body.classList.toggle('safe-stage-two',n===2);stageTitle.textContent=n===1?'1단계 · 작업부서 및 개소 확인':'2단계 · 작업 전 확인';window.scrollTo({top:0,behavior:'auto'})}
+  function stageMode(n){currentStage=n;try{window.resetAliveAlarmUI&&window.resetAliveAlarmUI()}catch(e){}body.classList.remove('safe-3step-home','tbm-old-open','tbm-permit-open','safe-stage-permit','safe-stage2-final');body.classList.add('safe-stage-open');body.classList.toggle('safe-stage-one',n===1);body.classList.toggle('safe-stage-two',n===2);stageTitle.textContent=n===1?'1단계 · 작업부서 및 개소 확인':'2단계 · 작업 전 확인';window.scrollTo({top:0,behavior:'auto'})}
   function driveTo(target){let guard=20;while(activeScreen()>target&&guard-->0)originalPrev&&originalPrev();guard=20;while(activeScreen()<target&&guard-->0)originalNext&&originalNext()}
   function openStage1(){driveTo(0);stageMode(1);setTimeout(()=>$('#tbmSiteSearch')?.focus({preventScroll:true}),120)}
   function openStage2(){if(!stage1Done){home();return}body.classList.remove('safe-stage2-final');driveTo(3);stageMode(2)}
@@ -2863,6 +2870,13 @@ function openAliveOverlay(){
   const wbtn=$("#aliveCallWatcher");if(wbtn)wbtn.href=aliveState.watcherPhone?("tel:"+aliveState.watcherPhone.replace(/[^0-9+]/g,"")):"tel:119";
 }
 function closeAliveOverlay(){const ov=$("#aliveAlarmOverlay");if(ov){ov.classList.remove("open","escalate")}}
+window.resetAliveAlarmUI=function(){
+  if(!aliveRuntimeArmed){
+    stopAlarmFx();
+    closeAliveOverlay();
+    navigator.vibrate&&navigator.vibrate(0);
+  }
+};
 
 function triggerAlivePrompt(){
   if(!aliveRuntimeArmed||!aliveState.active)return;
@@ -2908,24 +2922,21 @@ function stopAliveCheck(){
 
 document.addEventListener("DOMContentLoaded",()=>{
   loadAlive();
-  try{aliveRuntimeArmed=sessionStorage.getItem(ALIVE_RUNTIME_KEY)==="1"}catch(e){aliveRuntimeArmed=false}
 
-  // 새 탭/다시 접속에서는 이전 생존확인 경보를 자동 재생하지 않습니다.
-  // 생존확인은 STEP 2에서 사용자가 '생존확인 시작'을 직접 눌렀을 때만 작동합니다.
-  if(aliveState.active&&!aliveRuntimeArmed){
-    aliveState.active=false;
-    aliveState.prompting=false;
-    aliveState.escalated=false;
-    aliveState.nextDueAt=0;
-    aliveState.promptDeadlineAt=0;
-    saveAlive();
-    stopAlarmFx();
-    closeAliveOverlay();
-    releaseAliveWakeLock();
-  }else if(aliveState.active&&aliveState.prompting&&aliveRuntimeArmed){
-    // 같은 탭에서 새로고침한 경우에만 진행 중 경보를 복원합니다.
-    setTimeout(()=>{openAliveOverlay();startAlarmFx(aliveState.escalated)},300);
-  }
+  // 중요: 이전 접속/새로고침에서 남은 생존확인 상태를 자동 복원하지 않습니다.
+  // 현장에서는 검정 경보화면·진동·삐 소리가 임의로 켜지면 혼란을 줄 수 있으므로,
+  // 매 접속마다 '생존확인 시작' 버튼을 사용자가 직접 눌러야만 경보가 활성화됩니다.
+  aliveRuntimeArmed=false;
+  try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
+  aliveState.active=false;
+  aliveState.prompting=false;
+  aliveState.escalated=false;
+  aliveState.nextDueAt=0;
+  aliveState.promptDeadlineAt=0;
+  saveAlive();
+  stopAlarmFx();
+  closeAliveOverlay();
+  releaseAliveWakeLock();
   $$("#aliveIntervalGroup button").forEach(b=>b.addEventListener("click",()=>{
     aliveState.intervalMin=Number(b.dataset.aliveInterval);saveAlive();
     const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
@@ -3012,202 +3023,6 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();
   setTimeout(init,600);
-})();
-</script>
-
-
-<style id="permitStickyHeaderAndGasUx20260917">
-/* ===== 허가서 모바일 상단 2단 고정 + 가스 입력 단순화 ===== */
-#permitMobileStepBar{display:none}
-.gas-device-check-field{display:flex;flex-direction:column;gap:5px}
-.gas-device-check-label{font-size:10.5px;font-weight:800;color:#3d4652}
-.gas-device-check-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.gas-device-check-buttons button{min-height:42px;border:1px solid #aeb8c3;border-radius:8px;background:#fff;color:#33404e;font-weight:900;font-size:11px;cursor:pointer}
-.gas-device-check-buttons button.selected{border-color:#176ec4;background:#e7f2ff;color:#0c5794;box-shadow:inset 0 0 0 1px #176ec4}
-.gas-point-actions{display:grid;grid-template-columns:1fr auto;gap:7px;margin:0 0 8px}
-.gas-point-actions button{min-height:44px;border-radius:9px;font-size:11px;font-weight:900;cursor:pointer}
-#gasSelectAllBtn{border:1px solid #176ec4;background:#e8f4ff;color:#0c5794}
-#gasClearPointsBtn{border:1px solid #aeb8c3;background:#fff;color:#56616d}
-#gasDevice{width:100%;min-height:42px;background:#fff;color:#111;border:1px solid #aab0b8;border-radius:6px;padding:8px}
-@media(max-width:760px){
-  /* 허가서 진입 중에는 메인 3단계 목록과 과거 중복 툴바를 완전히 제거 */
-  /* 현재 HTML 구조상 허가서가 flow-home-card 내부에 있으므로 컨테이너 자체는 숨기지 않음 */
-  body.safe-stage-permit .flow-home-card{
-    display:block!important;
-    max-width:none!important;
-    margin:0!important;
-    padding:0!important;
-    border:0!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-    overflow:visible!important;
-  }
-  body.safe-stage-permit .flow-home-card > .flow-home-head,
-  body.safe-stage-permit .flow-home-card > .mobile-primary,
-  body.safe-stage-permit .flow-home-card > .safe-home-tools,
-  body.safe-stage-permit .mobile-context,
-  body.safe-stage-permit #tbmWizard{display:none!important}
-  body.safe-stage-permit #view-permit .permit-inline-toolbar,
-  body.safe-stage-permit #view-permit .permit-actions{display:none!important}
-  body.safe-stage-permit #view-permit .permit-title{display:none!important}
-
-  body.safe-stage-permit #permitMobileTopBar{
-    top:max(6px,env(safe-area-inset-top))!important;
-    left:7px!important;right:7px!important;
-    z-index:13000!important;
-  }
-  body.safe-stage-permit #permitMobileStepBar{
-    display:flex!important;
-    position:fixed!important;
-    top:calc(max(6px,env(safe-area-inset-top)) + 58px)!important;
-    left:7px!important;right:7px!important;
-    z-index:12990!important;
-    min-height:54px;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    padding:8px 11px;
-    box-sizing:border-box;
-    border:1px solid #cfd9e3;
-    border-radius:13px;
-    background:rgba(239,244,248,.98);
-    color:#26374c;
-    box-shadow:0 7px 20px rgba(0,0,0,.22);
-    -webkit-backdrop-filter:blur(9px);
-    backdrop-filter:blur(9px);
-  }
-  #permitMobileStepLabel{font-size:15px;font-weight:950;white-space:nowrap}
-  #permitMobileStepState{font-size:12px;font-weight:950;border-radius:999px;padding:6px 9px;background:#dfe7ee;color:#536170;text-align:right}
-  #permitMobileStepState.done{background:#d9f1e3;color:#17663d}
-  #permitMobileStepState.warn{background:#fff0c8;color:#785400}
-  #permitMobileStepState.block{background:#fde0de;color:#9a302b}
-  body.safe-stage-permit #view-permit{
-    padding-top:calc(132px + env(safe-area-inset-top))!important;
-  }
-  body.safe-stage-permit #view-permit .permit-step-progress{
-    display:none!important;
-  }
-  .gas-meta{grid-template-columns:1fr 1fr!important}
-  .gas-device-check-buttons button{min-height:50px;font-size:13px}
-  .gas-point-actions{grid-template-columns:1fr 1fr}
-  .gas-point-actions button{min-height:50px;font-size:13px}
-  #gasDevice{min-height:50px;font-size:15px}
-}
-@media(max-width:390px){
-  .gas-meta{grid-template-columns:1fr!important}
-}
-@media print{#permitMobileStepBar{display:none!important}}
-</style>
-<div id="permitMobileStepBar" aria-live="polite">
-  <b id="permitMobileStepLabel">1/5 기본정보</b>
-  <span id="permitMobileStepState">확인 필요</span>
-</div>
-<script id="permitStickyHeaderAndGasUxJS20260917">
-(function(){
-  "use strict";
-  const labels=["기본정보","가스측정","안전조치","입·퇴장","승인·공유"];
-  const q=(s,r=document)=>r.querySelector(s);
-  const qa=(s,r=document)=>Array.from(r.querySelectorAll(s));
-
-  function activePermitStep(){
-    const slides=qa('#permitWizardTrack .permit-wizard-slide');
-    let i=slides.findIndex(s=>s.classList.contains('mobile-active'));
-    if(i<0){
-      const tabs=qa('.permit-wizard-tab');
-      i=tabs.findIndex(t=>t.classList.contains('active'));
-    }
-    return i<0?0:i;
-  }
-  function forcePermitChrome(){
-    if(!document.body.classList.contains('safe-stage-permit'))return;
-    const actions=q('#view-permit .permit-actions');
-    const inline=q('#view-permit .permit-inline-toolbar');
-    const home=q('.flow-home-card');
-    if(actions)actions.style.setProperty('display','none','important');
-    if(inline)inline.style.setProperty('display','none','important');
-    if(home){
-      home.style.setProperty('display','block','important');
-      home.style.setProperty('background','transparent','important');
-      home.style.setProperty('border','0','important');
-      home.style.setProperty('box-shadow','none','important');
-      home.style.setProperty('margin','0','important');
-      home.style.setProperty('max-width','none','important');
-      ['.flow-home-head','.mobile-primary','.safe-home-tools'].forEach(sel=>{
-        const el=home.querySelector(':scope > '+sel);
-        if(el)el.style.setProperty('display','none','important');
-      });
-    }
-  }
-  function syncStickyStep(){
-    if(!document.body.classList.contains('safe-stage-permit'))return;
-    forcePermitChrome();
-    const i=activePermitStep();
-    const label=q('#permitMobileStepLabel'),state=q('#permitMobileStepState');
-    if(label)label.textContent=`${i+1}/5 ${labels[i]||''}`;
-    if(state){
-      const slide=qa('#permitWizardTrack .permit-wizard-slide')[i];
-      const src=slide?.querySelector('.permit-step-progress span');
-      let text=(src?.textContent||'확인 필요').trim();
-      state.textContent=text;
-      state.className='';
-      if(/^✓/.test(text))state.classList.add('done');
-      else if(/^⛔/.test(text))state.classList.add('block');
-      else state.classList.add('warn');
-    }
-  }
-
-  function syncDeviceModel(){
-    try{
-      if(typeof refreshGasDeviceOptions==='function')refreshGasDeviceOptions(document.querySelector('#gasDevice')?.value||'');
-      if(typeof syncGasDeviceCheckButtons==='function')syncGasDeviceCheckButtons();
-    }catch(e){console.warn('gas device sync',e)}
-  }
-
-  function wrap(name,after){
-    const fn=window[name];
-    if(typeof fn!=='function'||fn.__stickyGasPatch)return;
-    const wrapped=function(){
-      const out=fn.apply(this,arguments);
-      requestAnimationFrame(()=>{try{after.apply(this,arguments)}catch(e){};forcePermitChrome()});
-      [80,180,460].forEach(ms=>setTimeout(()=>{try{after.apply(this,arguments)}catch(e){};forcePermitChrome()},ms));
-      return out;
-    };
-    wrapped.__stickyGasPatch=true;
-    window[name]=wrapped;
-  }
-
-  function init(){
-    wrap('goPermitWizardStep',syncStickyStep);
-    wrap('loadPermitForSpace',()=>{syncDeviceModel();syncStickyStep()});
-    wrap('renderGasMeasure',syncDeviceModel);
-    syncDeviceModel();
-    forcePermitChrome();
-    syncStickyStep();
-    setTimeout(forcePermitChrome,120);
-    setTimeout(forcePermitChrome,500);
-
-    const track=q('#permitWizardTrack');
-    if(track&&!track.__stickyObserver){
-      track.__stickyObserver=true;
-      new MutationObserver(()=>syncStickyStep()).observe(track,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
-    }
-  }
-
-  const bodyObs=new MutationObserver(()=>{
-    if(document.body.classList.contains('safe-stage-permit'))setTimeout(init,0);
-  });
-  bodyObs.observe(document.body,{attributes:true,attributeFilter:['class']});
-  document.addEventListener('click',e=>{
-    if(e.target.closest?.('#view-permit,#homePermitBtn,#tbmStage2CompleteBtn'))setTimeout(init,20);
-  },true);
-  document.addEventListener('change',e=>{
-    if(e.target.closest?.('#permitForm'))setTimeout(syncStickyStep,20);
-  },true);
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,250));
-  else setTimeout(init,250);
-  setTimeout(init,900);
 })();
 </script>
 
