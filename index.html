@@ -1762,20 +1762,20 @@ body.safe-3step-home .flow-list .flow-list-item:disabled .flow-chevron{color:#35
 .safe-home-tools button{color:#9fb0c5!important}
 .safe-home-tools button:active{background:#17202b!important;color:#7dc2ff!important}
 
-/* 단계 진행 화면 */
-body.tbm-one-question.safe-stage-open #tbmWizard,
-#tbmWizard{background:#000!important;color:#f4f7fb!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell,
-.tbm-shell{background:#000!important;border-color:#1e2631!important;box-shadow:none!important}
-#safeStageBar{background:#05070a!important;border-bottom-color:#252d39!important}
-#safeStageBack{background:#111722!important;color:#fff!important;border-color:#2c3746!important}
-#safeStageTitle{color:#f4f7fb!important}
-.tbm-question{color:#f4f7fb!important}
-.tbm-help{color:#9ca8b8!important}
-.tbm-kicker{color:#5daeff!important}
-.tbm-search{background:#111722!important;color:#f4f7fb!important;border-color:#344155!important}
-.tbm-search::placeholder{color:#667386!important}
-.tbm-results .tbm-choice,.tbm-choice{background:#111722!important;color:#f4f7fb!important;border-color:#2b3747!important;box-shadow:none!important}
+/* 단계 진행 화면: 밝은 단일 질문 UI */
+body.tbm-one-question.safe-stage-open #tbmWizard{background:#f5f7fa!important;color:#182230!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{background:#fff!important;border-color:#edf0f4!important;box-shadow:none!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{background:#fff!important}
+body.tbm-one-question.safe-stage-open #safeStageBar{background:#fff!important;border-bottom-color:#e5eaf0!important}
+body.tbm-one-question.safe-stage-open #safeStageBack{background:#fff!important;color:#1c2b3f!important;border-color:#d4dce6!important}
+body.tbm-one-question.safe-stage-open #safeStageTitle{color:#172033!important}
+body.tbm-one-question.safe-stage-open .tbm-question{color:#162033!important}
+body.tbm-one-question.safe-stage-open .tbm-help{color:#69788d!important}
+body.tbm-one-question.safe-stage-open .tbm-kicker{color:#1681d9!important}
+body.tbm-one-question.safe-stage-open .tbm-search{background:#fff!important;color:#172033!important;border-color:#cfd8e3!important}
+body.tbm-one-question.safe-stage-open .tbm-search::placeholder{color:#8290a2!important}
+body.tbm-one-question.safe-stage-open .tbm-results .tbm-choice,
+body.tbm-one-question.safe-stage-open .tbm-choice{background:#fff!important;color:#1a2638!important;border-color:#dbe2ea!important;box-shadow:0 2px 7px rgba(30,50,80,.04)!important}
 .tbm-choice strong{color:#f4f7fb!important}
 .tbm-choice small{color:#9ca8b8!important}
 .tbm-empty{border-color:#354154!important;color:#9ca8b8!important;background:#0d1117!important}
@@ -1933,6 +1933,66 @@ body.safe-stage-permit #view-permit .permit-actions{
   #view-drill .drill-case p,#view-drill .drill-step p,#view-drill .drill-role span{font-size:13px!important;line-height:1.65!important}
 }
 @media print{.permit-inline-toolbar{display:none!important}}
+</style>
+
+
+<style id="stage1BlackScreenFinalFix20260919">
+/* 1단계 검정화면 방지: 마지막 CSS 우선순위 */
+body.tbm-one-question.safe-stage-open #tbmWizard,
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell,
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{
+  background:#fff!important;color:#182230!important;
+}
+body.tbm-one-question.safe-stage-open #tbmWizard{min-height:100dvh!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{
+  display:flex!important;visibility:visible!important;opacity:1!important;
+}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{
+  display:block!important;visibility:visible!important;opacity:1!important;color:#182230!important;
+}
+body.tbm-one-question.safe-stage-open .tbm-question{color:#162033!important}
+body.tbm-one-question.safe-stage-open .tbm-help{color:#69788d!important}
+body.tbm-one-question.safe-stage-open .tbm-kicker{color:#1681d9!important}
+body.tbm-one-question.safe-stage-open .tbm-search{
+  background:#fff!important;color:#172033!important;border-color:#cfd8e3!important;
+}
+/* 홈/1단계에서는 생존확인 경보 오버레이가 절대 화면을 덮지 않음 */
+body.safe-3step-home #aliveAlarmOverlay,
+body.safe-stage-one #aliveAlarmOverlay{display:none!important}
+</style>
+
+
+<style id="stage1ShellVisibilityFinalGuard20260919">
+body.tbm-one-question.safe-stage-open > .shell{
+  display:block!important;
+  width:min(100%,520px)!important;
+  max-width:520px!important;
+  min-height:100dvh!important;
+  margin:0 auto!important;
+  padding:0!important;
+  background:#fff!important;
+}
+body.tbm-one-question.safe-stage-open > .shell > *{display:none!important}
+body.tbm-one-question.safe-stage-open > .shell > #safeStageBar{display:flex!important}
+body.tbm-one-question.safe-stage-open > .shell > #tbmWizard{display:block!important}
+body.tbm-one-question.safe-stage-open #tbmWizard,
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell,
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{
+  width:100%!important;
+  min-width:0!important;
+  background:#fff!important;
+  color:#182230!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{
+  min-height:calc(100dvh - 59px)!important;
+}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
 </style>
 
 </head><body>
@@ -2254,8 +2314,26 @@ body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-copy small,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-copy small{color:#a1aab5!important}
 body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-chevron,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-chevron{color:#c4cbd3!important}
-body.tbm-one-question.safe-stage-open > .shell{display:none!important}
-body.tbm-one-question.safe-stage-open #tbmWizard{display:block!important;min-height:100dvh!important;background:#fff!important}
+body.tbm-one-question.safe-stage-open > .shell{
+  display:block!important;
+  width:min(100%,520px)!important;
+  max-width:520px!important;
+  min-height:100dvh!important;
+  margin:0 auto!important;
+  padding:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+body.tbm-one-question.safe-stage-open > .shell > *{display:none!important}
+body.tbm-one-question.safe-stage-open > .shell > #safeStageBar,
+body.tbm-one-question.safe-stage-open > .shell > #tbmWizard{display:block!important}
+body.tbm-one-question.safe-stage-open > .shell > #safeStageBar{display:flex!important}
+body.tbm-one-question.safe-stage-open #tbmWizard{
+  display:block!important;
+  width:100%!important;
+  min-height:100dvh!important;
+  background:#fff!important;
+}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-top{display:none!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;margin:0 auto!important;box-shadow:none!important;border-left:1px solid #edf0f4!important;border-right:1px solid #edf0f4!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{padding-top:18px!important}
@@ -2350,7 +2428,11 @@ body.tbm-one-question.tbm-old-open.show-ai-brief #aiBriefCard{display:block!impo
   function home(){currentStage=0;body.classList.add('safe-3step-home');body.classList.remove('safe-stage-open','safe-stage-one','safe-stage-two','safe-stage2-final','safe-stage-permit','tbm-old-open','tbm-permit-open','show-ai-brief');updateHome();window.scrollTo({top:0,behavior:'auto'})}
   function stageMode(n){currentStage=n;body.classList.remove('safe-3step-home','tbm-old-open','tbm-permit-open','safe-stage-permit','safe-stage2-final');body.classList.add('safe-stage-open');body.classList.toggle('safe-stage-one',n===1);body.classList.toggle('safe-stage-two',n===2);stageTitle.textContent=n===1?'1단계 · 작업부서 및 개소 확인':'2단계 · 작업 전 확인';window.scrollTo({top:0,behavior:'auto'})}
   function driveTo(target){let guard=20;while(activeScreen()>target&&guard-->0)originalPrev&&originalPrev();guard=20;while(activeScreen()<target&&guard-->0)originalNext&&originalNext()}
-  function openStage1(){driveTo(0);stageMode(1);setTimeout(()=>$('#tbmSiteSearch')?.focus({preventScroll:true}),120)}
+  function openStage1(){
+    try{window.safeCancelAliveRuntimeForNavigation&&window.safeCancelAliveRuntimeForNavigation()}catch(e){}
+    driveTo(0);stageMode(1);
+    setTimeout(()=>$('#tbmSiteSearch')?.focus({preventScroll:true}),120)
+  }
   function openStage2(){if(!stage1Done){home();return}body.classList.remove('safe-stage2-final');driveTo(3);stageMode(2)}
   function openStage3(){if(!stage2Done){home();return}const s=selected();if(!s){stage1Done=false;stage2Done=false;home();return}try{permitSelectedId=s.id;selectedId=fieldSelectedId=s.id;if(typeof loadPermitForSpace==='function')loadPermitForSpace(s);body.classList.remove('safe-3step-home','safe-stage-open','safe-stage-one','safe-stage-two','safe-stage2-final');body.classList.add('tbm-permit-open','safe-stage-permit');if(typeof showView==='function')showView('permit');setTimeout(()=>window.ensurePermitMobileEnhancements?.(),0);window.scrollTo({top:0,behavior:'auto'})}catch(e){console.error(e);alert('작업허가서를 여는 중 오류가 발생했습니다. 다시 시도해주세요.')}}
   function completeStage1(){const sid=currentSpaceId();if(!sid){alert('작업개소를 먼저 선택해주세요.');return}if(stage1SpaceId!==null&&stage1SpaceId!==sid)stage2Done=false;stage1SpaceId=sid;stage1Done=true;updateHome();openStage2()}
@@ -2830,6 +2912,18 @@ function startAliveCheck(){
   saveAlive();requestAliveWakeLock();ensureAliveAudio();
   renderAliveCard(s);
 }
+window.safeCancelAliveRuntimeForNavigation=function(){
+  aliveRuntimeArmed=false;
+  try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
+  if(aliveState.prompting||aliveState.escalated){
+    aliveState.prompting=false;
+    aliveState.escalated=false;
+    saveAlive();
+  }
+  stopAlarmFx();
+  closeAliveOverlay();
+};
+
 function stopAliveCheck(){
   if(!confirm("작업을 마치고 밀폐공간에서 완전히 퇴장했나요? 생존확인을 종료합니다."))return;
   aliveRuntimeArmed=false;
@@ -2842,24 +2936,23 @@ function stopAliveCheck(){
 
 document.addEventListener("DOMContentLoaded",()=>{
   loadAlive();
-  try{aliveRuntimeArmed=sessionStorage.getItem(ALIVE_RUNTIME_KEY)==="1"}catch(e){aliveRuntimeArmed=false}
 
-  // 새 탭/다시 접속에서는 이전 생존확인 경보를 자동 재생하지 않습니다.
-  // 생존확인은 STEP 2에서 사용자가 '생존확인 시작'을 직접 눌렀을 때만 작동합니다.
-  if(aliveState.active&&!aliveRuntimeArmed){
+  // 안전 원칙: 생존확인 알람은 현재 페이지에서 사용자가 STEP 2의
+  // '생존확인 시작' 버튼을 직접 누른 경우에만 작동합니다.
+  // Kakao 인앱브라우저의 sessionStorage가 남아 과거 경보가 복원되는 문제를 막습니다.
+  aliveRuntimeArmed=false;
+  try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
+  if(aliveState.active||aliveState.prompting||aliveState.escalated){
     aliveState.active=false;
     aliveState.prompting=false;
     aliveState.escalated=false;
     aliveState.nextDueAt=0;
     aliveState.promptDeadlineAt=0;
     saveAlive();
-    stopAlarmFx();
-    closeAliveOverlay();
-    releaseAliveWakeLock();
-  }else if(aliveState.active&&aliveState.prompting&&aliveRuntimeArmed){
-    // 같은 탭에서 새로고침한 경우에만 진행 중 경보를 복원합니다.
-    setTimeout(()=>{openAliveOverlay();startAlarmFx(aliveState.escalated)},300);
   }
+  stopAlarmFx();
+  closeAliveOverlay();
+  releaseAliveWakeLock();
   $$("#aliveIntervalGroup button").forEach(b=>b.addEventListener("click",()=>{
     aliveState.intervalMin=Number(b.dataset.aliveInterval);saveAlive();
     const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
@@ -2949,79 +3042,5 @@ document.addEventListener("DOMContentLoaded",()=>{
 })();
 </script>
 
-
-<style id="stageWhiteScreenFix20260919">
-/* 2026-09-19: 홈 검정 테마는 유지, 1·2단계 진행화면은 흰색 고대비로 강제 */
-body.tbm-one-question.safe-stage-open{background:#f4f7fb!important;color:#172033!important;overflow-x:hidden!important}
-body.tbm-one-question.safe-stage-open > .shell{display:none!important}
-body.tbm-one-question.safe-stage-open #tbmWizard{display:block!important;visibility:visible!important;opacity:1!important;min-height:100dvh!important;background:#f4f7fb!important;color:#172033!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{display:flex!important;visibility:visible!important;opacity:1!important;width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;margin:0 auto!important;background:#fff!important;color:#172033!important;border-left:1px solid #e4eaf1!important;border-right:1px solid #e4eaf1!important;box-shadow:none!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{display:flex!important;flex:1!important;min-height:0!important;background:#fff!important;color:#172033!important;padding-top:18px!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen{display:none!important;background:#fff!important;color:#172033!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{display:block!important;visibility:visible!important;opacity:1!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-top{display:none!important}
-body.safe-stage-open #safeStageBar{display:flex!important;position:sticky!important;top:0!important;z-index:90!important;width:min(100%,520px)!important;margin:0 auto!important;background:#fff!important;color:#172033!important;border-bottom:1px solid #e4eaf1!important;padding:9px 12px!important}
-body.safe-stage-open #safeStageBack{background:#fff!important;color:#172033!important;border-color:#cfd8e3!important}
-body.safe-stage-open #safeStageTitle{color:#172033!important}
-body.safe-stage-open .tbm-kicker{color:#167dcc!important}
-body.safe-stage-open .tbm-question{color:#162033!important}
-body.safe-stage-open .tbm-help{color:#68788d!important}
-body.safe-stage-open .tbm-search{background:#fff!important;color:#172033!important;border-color:#cfd8e3!important}
-body.safe-stage-open .tbm-search::placeholder{color:#8a97a8!important}
-body.safe-stage-open .tbm-choice{background:#fff!important;color:#172033!important;border-color:#d8e1ea!important;box-shadow:0 2px 7px rgba(30,50,80,.04)!important}
-body.safe-stage-open .tbm-choice strong{color:#172033!important}
-body.safe-stage-open .tbm-choice small{color:#738196!important}
-body.safe-stage-open .tbm-empty{background:#f8fafc!important;color:#718096!important;border-color:#cfd8e3!important}
-body.safe-stage-open .tbm-info-card{background:#f8fafc!important;color:#172033!important;border-color:#dbe3eb!important}
-body.safe-stage-open .tbm-info-card.highlight{background:#f1f8fe!important;border-color:#a9cae8!important}
-body.safe-stage-open .tbm-info-card.warn{background:#fff9ed!important;border-color:#efc472!important}
-body.safe-stage-open .tbm-info-card.danger{background:#fff4f3!important;border-color:#e7aaa6!important}
-body.safe-stage-open .tbm-info-row{border-bottom-color:#e8edf2!important}
-body.safe-stage-open .tbm-info-row span{color:#738196!important}
-body.safe-stage-open .tbm-info-row b{color:#1b2636!important}
-body.safe-stage-open #tbmDeptCard .tbm-info-row{background:#fff!important;border-color:#dce3eb!important}
-body.safe-stage-open #tbmDeptCard .tbm-info-row:first-child{background:#f1f8fe!important}
-body.safe-stage-open .tbm-rule{background:#f4f7fa!important;color:#172033!important}
-body.safe-stage-open .tbm-rule b{color:#172033!important}
-body.safe-stage-open .tbm-equip-row{background:#fff!important;color:#172033!important;border-color:#dce4ec!important}
-body.safe-stage-open .tbm-equip-row p{color:#69788d!important}
-body.safe-stage-open .tbm-video-note{color:#7a8798!important}
-body.safe-stage-open .tbm-small-link{color:#5d6f84!important}
-body.safe-stage-open .tbm-actions{background:linear-gradient(to top,#fff 76%,rgba(255,255,255,.94))!important;border-top-color:#e5ebf1!important}
-body.safe-stage-open .tbm-btn{background:#fff!important;color:#25344a!important;border-color:#ccd7e2!important}
-body.safe-stage-open .tbm-btn.primary{background:#167dcc!important;color:#fff!important;border-color:#167dcc!important}
-body.safe-stage-open .tbm-btn.good{background:#148653!important;color:#fff!important;border-color:#148653!important}
-body.safe-stage-open .tbm-btn.bad{background:#bd3d35!important;color:#fff!important;border-color:#bd3d35!important}
-body.safe-stage-open .tbm-stage1-complete{background:#167dcc!important;color:#fff!important}
-@media(max-width:420px){body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{padding:18px 13px 108px!important}body.safe-stage-open #safeStageTitle{font-size:15px!important}}
-</style>
-
-<script id="stageAlarmAndVisibilityFix20260919">
-(function(){
-  'use strict';
-  const q=(s,r=document)=>r.querySelector(s);
-  function stopTransientAlarm(){
-    try{if(typeof stopAlarmFx==='function')stopAlarmFx()}catch(e){}
-    try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}
-    try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}
-    try{const ov=q('#aliveAlarmOverlay');if(ov)ov.classList.remove('open','escalate')}catch(e){}
-  }
-  function forceStageVisible(){
-    if(!document.body.classList.contains('safe-stage-open'))return;
-    const screens=[...document.querySelectorAll('#tbmWizard .tbm-screen')];
-    let active=screens.find(x=>x.classList.contains('active'));
-    if(!active){active=screens[0];if(active)active.classList.add('active')}
-    if(document.body.classList.contains('safe-stage-one')){
-      const idx=active?Number(active.dataset.tbmScreen):-1;
-      if(!(idx>=0&&idx<=2)){screens.forEach(x=>x.classList.remove('active'));if(screens[0])screens[0].classList.add('active')}
-    }
-  }
-  const homeBtn=q('#homeSpaceBtn');
-  if(homeBtn)homeBtn.addEventListener('click',()=>{stopTransientAlarm();setTimeout(forceStageVisible,0);setTimeout(forceStageVisible,80)},true);
-  const observer=new MutationObserver(()=>{if(document.body.classList.contains('safe-stage-open')){stopTransientAlarm();setTimeout(forceStageVisible,0)}});
-  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.body.classList.contains('safe-stage-open'))forceStageVisible()});
-})();
-</script>
 </body>
 </html>
