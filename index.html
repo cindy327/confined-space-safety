@@ -725,12 +725,12 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
     <input type="hidden" name="exitWorkersJson" id="exitWorkersJson">
   </div>
 </div>
-<div class="permit-bottom">
-<div class="permit-sign"><b>작업관리감독자</b><div class="permit-sign-grid"><input name="supervisorTitle" placeholder="직책"><input name="supervisorName" placeholder="성명"></div></div>
-<div class="permit-sign"><b>감시인</b><div class="permit-sign-grid"><input name="watcherTitle" placeholder="직책"><input name="watcherName" placeholder="성명"></div></div>
-<div class="permit-sign"><b>관련부서 협조 (필요시)</b><div class="permit-sign-grid"><input name="coopDept" placeholder="부서"><input name="coopName" placeholder="직책 / 성명"></div></div>
-<div class="permit-sign"><b>최종허가자 · 작업부서(수급업체) 작업승인</b><div class="permit-sign-grid"><input name="workApproveDept" placeholder="부서"><input name="workApproveName" placeholder="직책 / 성명"></div></div>
-<div class="permit-sign span2"><b>최종허가자 · 작업관리부서 밀폐공간 출입승인</b><div class="permit-sign-grid"><input name="manageApproveDept" placeholder="부서"><input name="manageApproveName" placeholder="직책 / 성명"></div></div>
+<div class="permit-bottom" id="permitRoleApprovalFields">
+<div class="permit-sign permit-role-card" data-permit-role-card="supervisor"><b>작업관리감독자</b><div class="permit-role-picker" data-role-picker="supervisorTitle"></div><div class="permit-sign-grid role-name-grid"><input name="supervisorTitle" id="supervisorTitleInput" placeholder="직책" readonly><input name="supervisorName" placeholder="성명"></div></div>
+<div class="permit-sign permit-role-card" data-permit-role-card="watcher"><b>감시인</b><div class="permit-role-picker" data-role-picker="watcherTitle"></div><div class="permit-sign-grid role-name-grid"><input name="watcherTitle" id="watcherTitleInput" placeholder="직책" readonly><input name="watcherName" placeholder="성명"></div></div>
+<div class="permit-sign permit-role-card" data-permit-role-card="coop"><b>관련부서 협조 (필요시)</b><div class="permit-role-picker" data-role-picker="coopTitle"></div><div class="permit-sign-grid role-three-grid"><input name="coopDept" placeholder="부서"><input name="coopTitle" id="coopTitleInput" placeholder="직책" readonly><input name="coopName" placeholder="성명"></div></div>
+<div class="permit-sign permit-role-card" data-permit-role-card="workApprove"><b>최종허가자 · 작업부서(수급업체) 작업승인</b><div class="permit-role-picker" data-role-picker="workApproveTitle"></div><div class="permit-sign-grid role-three-grid"><input name="workApproveDept" placeholder="부서"><input name="workApproveTitle" id="workApproveTitleInput" placeholder="직책" readonly><input name="workApproveName" placeholder="성명"></div></div>
+<div class="permit-sign span2 permit-role-card" data-permit-role-card="manageApprove" id="manageApproveRoleCard"><b>최종허가자 · 작업관리부서 밀폐공간 출입승인</b><div class="permit-no-manage-note" id="manageApproveNoDeptNote" hidden>작업관리부서가 없는 직접작업입니다. 이 항목은 입력하지 않습니다.</div><div class="permit-role-picker" data-role-picker="manageApproveTitle"></div><div class="permit-sign-grid role-three-grid"><input name="manageApproveDept" placeholder="부서"><input name="manageApproveTitle" id="manageApproveTitleInput" placeholder="직책" readonly><input name="manageApproveName" placeholder="성명"></div></div>
 </div>
 <div class="approval-workflow" id="approvalWorkflow">
   <h3>✍️ 작업허가서 순차 승인</h3>
@@ -1463,8 +1463,8 @@ $("#permitOkAll")?.addEventListener("change",e=>setPermitChecklistAll("ok",e.tar
 $("#permitChecksClearAll")?.addEventListener("click",()=>{setPermitChecklistAll("need",false);setPermitChecklistAll("ok",false)});
 $("#permitChecklistBody")?.addEventListener("change",e=>{if(e.target.matches('[data-pneed],[data-pok]'))syncPermitChecklistBulk()});
 function formObject(){syncGasHidden();syncWorkerSignsHidden();const f=$("#permitForm"),o={};new FormData(f).forEach((v,k)=>o[k]=v);o.need=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pneed="${i}"]`)?.checked);o.ok=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pok="${i}"]`)?.checked);o.finalApproved=$("#finalPermitApproved").checked;return o}
-function fillPermit(o={}){const f=$("#permitForm");[...f.elements].forEach(el=>{if(!el.name)return;if(el.type!=="checkbox")el.value=o[el.name]??""});renderPermitChecks(o);$("#finalPermitApproved").checked=!!o.finalApproved;checkPermitDuration();gasMeasure=parseGasMeasure(o.gasMeasureJson||"");renderGasMeasure();loadWorkerSignsFromPermit(o);setTimeout(loadSignPadsFromHidden,0)}
-function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow()},0)}
+function fillPermit(o={}){const f=$("#permitForm");[...f.elements].forEach(el=>{if(!el.name)return;if(el.type!=="checkbox")el.value=o[el.name]??""});renderPermitChecks(o);$("#finalPermitApproved").checked=!!o.finalApproved;checkPermitDuration();gasMeasure=parseGasMeasure(o.gasMeasureJson||"");renderGasMeasure();loadWorkerSignsFromPermit(o);setTimeout(()=>{loadSignPadsFromHidden();window.refreshPermitPage5RolePickers?.()},0)}
+function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow();window.refreshPermitPage5RolePickers?.()},0)}
 function choosePermitFromInput(){const s=findSpaceByInput($("#permitSpaceSearch").value);if(!s){alert("밀폐공간을 찾지 못했습니다.");return}loadPermitForSpace(s)}
 $("#permitLoadBtn").onclick=choosePermitFromInput;$("#permitSpaceSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();choosePermitFromInput()}});
 function savePermit(){const s=spaces.find(x=>x.id===Number(permitSelectedId));const o=formObject();permitForms[permitKey(s)]=o;localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));if(s){const c=getChecks(s);c.permit=o.finalApproved?"yes":"unknown";saveChecks(s,c);if(fieldSelectedId===s.id)renderField()}$("#permitSideStatus").innerHTML=`<span class="good">허가서 저장 완료</span>${s?` · ${esc(s.manageNo)}`:""}`;renderApprovalWorkflow()}
@@ -3674,5 +3674,79 @@ body.safe-stage-permit #permitAiPanel[hidden],body.safe-stage-permit #permitAliv
   body.safe-stage-permit #permitAlivePanel{top:158px!important;max-height:calc(100dvh - 168px)!important}
 }
 </style>
+
+<!-- ===== 2026-09-19 5페이지 역할별 직책 선택 + 작업관리부서 없음 잠금 ===== -->
+<style id="permitPage5RolePickerFix20260919">
+#permitRoleApprovalFields .permit-role-card{position:relative}
+#permitRoleApprovalFields .permit-role-picker{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 7px}
+#permitRoleApprovalFields .permit-role-choice{min-height:38px;padding:7px 10px;border:1px solid #aeb8c3;border-radius:999px;background:#f5f7f9;color:#273444;font-size:11.5px;font-weight:900;line-height:1.2;cursor:pointer}
+#permitRoleApprovalFields .permit-role-choice.selected{border-color:#176ec4;background:#e8f3ff;color:#0b5898;box-shadow:inset 0 0 0 1px #176ec4}
+#permitRoleApprovalFields .permit-role-choice.add{border-style:dashed;border-color:#6e8498;background:#fff;color:#31506a}
+#permitRoleApprovalFields input[readonly]{background:#f5f7f9!important;color:#253849!important;cursor:default}
+#permitRoleApprovalFields .role-three-grid{grid-template-columns:1fr 1fr 1fr}
+#permitRoleApprovalFields .permit-no-manage-note{margin:8px 0;padding:9px 10px;border-radius:8px;background:#e7e9ec;border:1px solid #c4c9cf;color:#626b75;font-size:11px;font-weight:850;line-height:1.5}
+#permitRoleApprovalFields .permit-role-card.no-manage-dept{background:#eceff2!important;border-color:#c4c9cf!important;color:#69727c!important}
+#permitRoleApprovalFields .permit-role-card.no-manage-dept b{color:#69727c!important}
+#permitRoleApprovalFields .permit-role-card.no-manage-dept input{background:#dfe3e7!important;border-color:#c1c7cd!important;color:#7b838b!important;cursor:not-allowed!important}
+#permitRoleApprovalFields .permit-role-card.no-manage-dept .permit-role-choice{background:#dfe3e7!important;border-color:#c4c9cf!important;color:#8b9299!important;cursor:not-allowed!important;box-shadow:none!important}
+#manageApprovalCard.skip .sign-pad{pointer-events:none!important;opacity:.58!important;filter:grayscale(1)}
+#manageApprovalCard.skip .signature-open-btn{background:#e1e4e8!important;border-color:#bfc5cb!important;color:#7a828b!important;cursor:not-allowed!important}
+@media(max-width:760px){
+ #permitRoleApprovalFields{grid-template-columns:1fr!important}
+ #permitRoleApprovalFields .permit-sign.span2{grid-column:1!important}
+ #permitRoleApprovalFields .permit-role-picker{gap:7px}
+ #permitRoleApprovalFields .permit-role-choice{min-height:44px;padding:9px 12px;font-size:13px}
+ #permitRoleApprovalFields .permit-sign-grid.role-name-grid,#permitRoleApprovalFields .permit-sign-grid.role-three-grid{grid-template-columns:1fr!important;gap:7px!important}
+ #permitRoleApprovalFields .permit-sign-grid input{min-height:48px!important;font-size:15px!important}
+}
+@media print{#permitRoleApprovalFields .permit-role-picker,#permitRoleApprovalFields .permit-no-manage-note{display:none!important}}
+</style>
+<script id="permitPage5RolePickerJS20260919">
+(function(){
+ 'use strict';
+ const q=(s,r=document)=>r.querySelector(s);
+ const qa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+ const STORAGE_KEY='permitPage5CustomRoleTitlesV1';
+ const configs={
+   supervisorTitle:{label:'작업관리감독자',base:['선임장','소장','반장','과장']},
+   watcherTitle:{label:'감시인',base:['주임','대리','과장','반장','소장']},
+   coopTitle:{label:'관련부서 협조',base:['역장','부역장','역무팀장']},
+   workApproveTitle:{label:'작업부서 최종허가자',base:['사업소장','부소장','선임장']},
+   manageApproveTitle:{label:'작업관리부서 최종허가자',base:['사업소장','부소장','선임장']}
+ };
+ function readCustom(){try{const o=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}}
+ function writeCustom(o){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(o))}catch(e){}}
+ function titlesFor(name){const c=configs[name];const custom=readCustom()[name]||[];return [...new Set([...c.base,...(Array.isArray(custom)?custom:[])].map(v=>String(v||'').trim()).filter(Boolean))]}
+ function field(name){return q(`[name="${name}"]`)}
+ function setTitle(name,value){const el=field(name);if(!el||el.disabled)return;el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));renderPicker(name);if(window.schedulePermitStatus)window.schedulePermitStatus(40)}
+ function addTitle(name){const c=configs[name];const value=String(prompt(`${c.label}에 추가할 직책명을 입력하세요.`)||'').trim();if(!value)return;const all=readCustom(),arr=Array.isArray(all[name])?all[name]:[];if(!c.base.includes(value)&&!arr.includes(value))arr.push(value);all[name]=arr;writeCustom(all);setTitle(name,value)}
+ function picker(name){return q(`[data-role-picker="${name}"]`)}
+ function renderPicker(name){const box=picker(name),el=field(name),c=configs[name];if(!box||!el||!c)return;const current=String(el.value||'').trim(),disabled=el.disabled;box.innerHTML='';titlesFor(name).forEach(t=>{const b=document.createElement('button');b.type='button';b.className='permit-role-choice'+(current===t?' selected':'');b.textContent=t;b.disabled=disabled;b.addEventListener('click',()=>setTitle(name,t));box.appendChild(b)});const add=document.createElement('button');add.type='button';add.className='permit-role-choice add';add.textContent='＋ 추가';add.disabled=disabled;add.addEventListener('click',()=>addTitle(name));box.appendChild(add)}
+ function permitContext(){try{const id=(typeof permitSelectedId!=='undefined'?permitSelectedId:null);const list=(typeof spaces!=='undefined'?spaces:[]);const s=list.find(x=>x.id===Number(id));if(!s||typeof workContextFor!=='function')return null;return {s,ctx:workContextFor(s)}}catch(e){return null}}
+ function setManageDeptLock(){
+   const pc=permitContext();
+   const card=q('#manageApproveRoleCard'),note=q('#manageApproveNoDeptNote');
+   if(!card)return;
+   const noDept=!!pc&&(pc.ctx.group==='korail'||!String(pc.ctx.manageDept||'').trim());
+   card.classList.toggle('no-manage-dept',noDept);
+   if(note)note.hidden=!noDept;
+   ['manageApproveDept','manageApproveTitle','manageApproveName'].forEach(name=>{const el=field(name);if(!el)return;if(noDept){el.value='';el.disabled=true;el.setAttribute('aria-disabled','true')}else{el.disabled=false;el.removeAttribute('aria-disabled')}});
+   const approvalCard=q('#manageApprovalCard'),sig=approvalCard?.querySelector('.signature-open-btn'),clear=approvalCard?.querySelector('[data-clear-sign="manage"]'),canvas=q('#manageSignCanvas');
+   if(sig){sig.disabled=noDept;if(noDept)sig.textContent='작업관리부서 없음 · 서명 생략'}
+   if(clear)clear.disabled=noDept;
+   if(canvas)canvas.style.pointerEvents=noDept?'none':'';
+   renderPicker('manageApproveTitle');
+ }
+ function refresh(){Object.keys(configs).forEach(renderPicker);setManageDeptLock()}
+ qa('#permitRoleApprovalFields input').forEach(el=>el.addEventListener('change',()=>{if(configs[el.name])renderPicker(el.name)}));
+ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#homePermitBtn,#tbmStage2CompleteBtn,#permitLoadBtn,#permitUltimateLoadBtn,#permitNewBtn,#permitUltimateNewBtn,#view-permit'))setTimeout(refresh,60)},true);
+ new MutationObserver(()=>{if(document.body.classList.contains('safe-stage-permit'))setTimeout(refresh,0)}).observe(document.body,{attributes:true,attributeFilter:['class']});
+ const form=q('#permitForm');if(form)form.addEventListener('input',e=>{if(configs[e.target.name])renderPicker(e.target.name)},true);
+ window.refreshPermitPage5RolePickers=refresh;
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(refresh,0));else setTimeout(refresh,0);
+ window.addEventListener('pageshow',()=>setTimeout(refresh,0));
+})();
+</script>
+
 </body>
 </html>
