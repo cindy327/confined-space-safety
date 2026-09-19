@@ -434,6 +434,7 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
     </button>
   </div>
   <div class="safe-home-tools"><button type="button" id="safeHomeMoreBtn">☰ 기타 기능</button></div>
+</div>
 <div class="mobile-context" id="mobileContext"></div>
 
 
@@ -1762,20 +1763,20 @@ body.safe-3step-home .flow-list .flow-list-item:disabled .flow-chevron{color:#35
 .safe-home-tools button{color:#9fb0c5!important}
 .safe-home-tools button:active{background:#17202b!important;color:#7dc2ff!important}
 
-/* 단계 진행 화면: 밝은 단일 질문 UI */
-body.tbm-one-question.safe-stage-open #tbmWizard{background:#f5f7fa!important;color:#182230!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{background:#fff!important;border-color:#edf0f4!important;box-shadow:none!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{background:#fff!important}
-body.tbm-one-question.safe-stage-open #safeStageBar{background:#fff!important;border-bottom-color:#e5eaf0!important}
-body.tbm-one-question.safe-stage-open #safeStageBack{background:#fff!important;color:#1c2b3f!important;border-color:#d4dce6!important}
-body.tbm-one-question.safe-stage-open #safeStageTitle{color:#172033!important}
-body.tbm-one-question.safe-stage-open .tbm-question{color:#162033!important}
-body.tbm-one-question.safe-stage-open .tbm-help{color:#69788d!important}
-body.tbm-one-question.safe-stage-open .tbm-kicker{color:#1681d9!important}
-body.tbm-one-question.safe-stage-open .tbm-search{background:#fff!important;color:#172033!important;border-color:#cfd8e3!important}
-body.tbm-one-question.safe-stage-open .tbm-search::placeholder{color:#8290a2!important}
-body.tbm-one-question.safe-stage-open .tbm-results .tbm-choice,
-body.tbm-one-question.safe-stage-open .tbm-choice{background:#fff!important;color:#1a2638!important;border-color:#dbe2ea!important;box-shadow:0 2px 7px rgba(30,50,80,.04)!important}
+/* 단계 진행 화면 */
+body.tbm-one-question.safe-stage-open #tbmWizard,
+#tbmWizard{background:#000!important;color:#f4f7fb!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell,
+.tbm-shell{background:#000!important;border-color:#1e2631!important;box-shadow:none!important}
+#safeStageBar{background:#05070a!important;border-bottom-color:#252d39!important}
+#safeStageBack{background:#111722!important;color:#fff!important;border-color:#2c3746!important}
+#safeStageTitle{color:#f4f7fb!important}
+.tbm-question{color:#f4f7fb!important}
+.tbm-help{color:#9ca8b8!important}
+.tbm-kicker{color:#5daeff!important}
+.tbm-search{background:#111722!important;color:#f4f7fb!important;border-color:#344155!important}
+.tbm-search::placeholder{color:#667386!important}
+.tbm-results .tbm-choice,.tbm-choice{background:#111722!important;color:#f4f7fb!important;border-color:#2b3747!important;box-shadow:none!important}
 .tbm-choice strong{color:#f4f7fb!important}
 .tbm-choice small{color:#9ca8b8!important}
 .tbm-empty{border-color:#354154!important;color:#9ca8b8!important;background:#0d1117!important}
@@ -1936,62 +1937,143 @@ body.safe-stage-permit #view-permit .permit-actions{
 </style>
 
 
-<style id="stage1BlackScreenFinalFix20260919">
-/* 1단계 검정화면 방지: 마지막 CSS 우선순위 */
-body.tbm-one-question.safe-stage-open #tbmWizard,
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell,
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{
-  background:#fff!important;color:#182230!important;
-}
-body.tbm-one-question.safe-stage-open #tbmWizard{min-height:100dvh!important}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{
-  display:flex!important;visibility:visible!important;opacity:1!important;
-}
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{
-  display:block!important;visibility:visible!important;opacity:1!important;color:#182230!important;
-}
-body.tbm-one-question.safe-stage-open .tbm-question{color:#162033!important}
-body.tbm-one-question.safe-stage-open .tbm-help{color:#69788d!important}
-body.tbm-one-question.safe-stage-open .tbm-kicker{color:#1681d9!important}
-body.tbm-one-question.safe-stage-open .tbm-search{
-  background:#fff!important;color:#172033!important;border-color:#cfd8e3!important;
-}
-/* 홈/1단계에서는 생존확인 경보 오버레이가 절대 화면을 덮지 않음 */
-body.safe-3step-home #aliveAlarmOverlay,
-body.safe-stage-one #aliveAlarmOverlay{display:none!important}
-</style>
+<style id="stage3BlackScreenFinalFix20260919">
+/* ===== 2단계 → 3단계 검정화면 / 허가서 중복바 최종 수정 ===== */
 
-
-<style id="stage1ShellVisibilityFinalGuard20260919">
-body.tbm-one-question.safe-stage-open > .shell{
+/* 1·2단계: TBM Wizard가 body 직속이므로 부모 shell을 숨겨도 Wizard는 정상 표시 */
+body.tbm-one-question.safe-stage-open > .shell{display:none!important}
+body.tbm-one-question.safe-stage-open > #tbmWizard{
   display:block!important;
-  width:min(100%,520px)!important;
-  max-width:520px!important;
-  min-height:100dvh!important;
-  margin:0 auto!important;
-  padding:0!important;
-  background:#fff!important;
-}
-body.tbm-one-question.safe-stage-open > .shell > *{display:none!important}
-body.tbm-one-question.safe-stage-open > .shell > #safeStageBar{display:flex!important}
-body.tbm-one-question.safe-stage-open > .shell > #tbmWizard{display:block!important}
-body.tbm-one-question.safe-stage-open #tbmWizard,
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell,
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{
   width:100%!important;
-  min-width:0!important;
-  background:#fff!important;
-  color:#182230!important;
+  min-height:100dvh!important;
   visibility:visible!important;
   opacity:1!important;
 }
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{
-  min-height:calc(100dvh - 59px)!important;
+
+/* 3단계: shell은 열고 작업허가서만 표시 */
+body.tbm-one-question.safe-stage-permit > .shell{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:100dvh!important;
+  padding:0!important;
+  margin:0!important;
+  background:#0c1119!important;
 }
-body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{
+body.tbm-one-question.safe-stage-permit > .shell > *{display:none!important}
+body.tbm-one-question.safe-stage-permit > .shell > #view-permit{
   display:block!important;
   visibility:visible!important;
   opacity:1!important;
+}
+body.tbm-one-question.safe-stage-permit > #tbmWizard{display:none!important}
+
+/* 모바일은 최종 상단바 하나만 사용 */
+@media(max-width:760px){
+  body.safe-stage-permit #view-permit{
+    display:block!important;
+    width:100%!important;
+    max-width:620px!important;
+    min-width:0!important;
+    min-height:100dvh!important;
+    margin:0 auto!important;
+    padding:68px 8px calc(24px + env(safe-area-inset-bottom))!important;
+    overflow-x:hidden!important;
+    background:#0c1119!important;
+    box-sizing:border-box!important;
+  }
+
+  /* 최종 모바일바: 목록 / 작업개소 / 저장 */
+  body.safe-stage-permit #permitMobileTopBar{
+    display:grid!important;
+    grid-template-columns:78px minmax(0,1fr) 72px!important;
+    gap:6px!important;
+    position:fixed!important;
+    top:max(6px,env(safe-area-inset-top))!important;
+    left:50%!important;
+    transform:translateX(-50%)!important;
+    width:min(calc(100vw - 12px),608px)!important;
+    min-height:52px!important;
+    padding:6px!important;
+    margin:0!important;
+    border:1px solid #344255!important;
+    border-radius:14px!important;
+    background:rgba(12,17,25,.98)!important;
+    z-index:12000!important;
+    box-shadow:0 6px 20px rgba(0,0,0,.28)!important;
+    box-sizing:border-box!important;
+  }
+
+  /* 과거 패치에서 추가된 중복 상단바는 모두 제거 */
+  body.safe-stage-permit #permitInlineToolbar,
+  body.safe-stage-permit .tbm-permit-back,
+  body.safe-stage-permit #view-permit .permit-actions,
+  body.safe-stage-permit #safeStageBar{
+    display:none!important;
+  }
+
+  /* 허가서 첫 카드가 반드시 보이도록 */
+  body.safe-stage-permit #permitForm,
+  body.safe-stage-permit #permitWizardTrack{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:1px!important;
+    overflow:visible!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+  }
+  body.safe-stage-permit .permit-wizard-slide{
+    display:none!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  body.safe-stage-permit .permit-wizard-slide.mobile-active{
+    display:block!important;
+  }
+
+  /* 하단/이전 패치가 작업허가서를 덮지 않게 함 */
+  body.safe-stage-permit .bottom-nav,
+  body.safe-stage-permit .mobile-bottom-nav,
+  body.safe-stage-permit #bottomNav,
+  body.safe-stage-permit .tbm-actions,
+  body.safe-stage-permit .mobile-primary{
+    display:none!important;
+  }
+}
+
+/* PC/태블릿은 원래 허가서 작업바를 문서 흐름 안에서 사용 */
+@media(min-width:761px){
+  body.safe-stage-permit #permitMobileTopBar,
+  body.safe-stage-permit #permitInlineToolbar,
+  body.safe-stage-permit .tbm-permit-back{display:none!important}
+  body.safe-stage-permit #view-permit{
+    display:block!important;
+    width:100%!important;
+    max-width:1500px!important;
+    margin:0 auto!important;
+    padding:14px 18px 28px!important;
+    box-sizing:border-box!important;
+    background:#0c1119!important;
+  }
+  body.safe-stage-permit #view-permit .permit-actions{
+    display:flex!important;
+    position:static!important;
+    inset:auto!important;
+    transform:none!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0 0 12px!important;
+    padding:8px!important;
+    background:#111923!important;
+    border:1px solid #2d3a4d!important;
+    border-radius:12px!important;
+    z-index:auto!important;
+  }
 }
 </style>
 
@@ -2314,26 +2396,8 @@ body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-copy small,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-copy small{color:#a1aab5!important}
 body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-chevron,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-chevron{color:#c4cbd3!important}
-body.tbm-one-question.safe-stage-open > .shell{
-  display:block!important;
-  width:min(100%,520px)!important;
-  max-width:520px!important;
-  min-height:100dvh!important;
-  margin:0 auto!important;
-  padding:0!important;
-  background:#fff!important;
-  box-shadow:none!important;
-}
-body.tbm-one-question.safe-stage-open > .shell > *{display:none!important}
-body.tbm-one-question.safe-stage-open > .shell > #safeStageBar,
-body.tbm-one-question.safe-stage-open > .shell > #tbmWizard{display:block!important}
-body.tbm-one-question.safe-stage-open > .shell > #safeStageBar{display:flex!important}
-body.tbm-one-question.safe-stage-open #tbmWizard{
-  display:block!important;
-  width:100%!important;
-  min-height:100dvh!important;
-  background:#fff!important;
-}
+body.tbm-one-question.safe-stage-open > .shell{display:none!important}
+body.tbm-one-question.safe-stage-open #tbmWizard{display:block!important;min-height:100dvh!important;background:#fff!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-top{display:none!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;margin:0 auto!important;box-shadow:none!important;border-left:1px solid #edf0f4!important;border-right:1px solid #edf0f4!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{padding-top:18px!important}
@@ -2428,11 +2492,7 @@ body.tbm-one-question.tbm-old-open.show-ai-brief #aiBriefCard{display:block!impo
   function home(){currentStage=0;body.classList.add('safe-3step-home');body.classList.remove('safe-stage-open','safe-stage-one','safe-stage-two','safe-stage2-final','safe-stage-permit','tbm-old-open','tbm-permit-open','show-ai-brief');updateHome();window.scrollTo({top:0,behavior:'auto'})}
   function stageMode(n){currentStage=n;body.classList.remove('safe-3step-home','tbm-old-open','tbm-permit-open','safe-stage-permit','safe-stage2-final');body.classList.add('safe-stage-open');body.classList.toggle('safe-stage-one',n===1);body.classList.toggle('safe-stage-two',n===2);stageTitle.textContent=n===1?'1단계 · 작업부서 및 개소 확인':'2단계 · 작업 전 확인';window.scrollTo({top:0,behavior:'auto'})}
   function driveTo(target){let guard=20;while(activeScreen()>target&&guard-->0)originalPrev&&originalPrev();guard=20;while(activeScreen()<target&&guard-->0)originalNext&&originalNext()}
-  function openStage1(){
-    try{window.safeCancelAliveRuntimeForNavigation&&window.safeCancelAliveRuntimeForNavigation()}catch(e){}
-    driveTo(0);stageMode(1);
-    setTimeout(()=>$('#tbmSiteSearch')?.focus({preventScroll:true}),120)
-  }
+  function openStage1(){driveTo(0);stageMode(1);setTimeout(()=>$('#tbmSiteSearch')?.focus({preventScroll:true}),120)}
   function openStage2(){if(!stage1Done){home();return}body.classList.remove('safe-stage2-final');driveTo(3);stageMode(2)}
   function openStage3(){if(!stage2Done){home();return}const s=selected();if(!s){stage1Done=false;stage2Done=false;home();return}try{permitSelectedId=s.id;selectedId=fieldSelectedId=s.id;if(typeof loadPermitForSpace==='function')loadPermitForSpace(s);body.classList.remove('safe-3step-home','safe-stage-open','safe-stage-one','safe-stage-two','safe-stage2-final');body.classList.add('tbm-permit-open','safe-stage-permit');if(typeof showView==='function')showView('permit');setTimeout(()=>window.ensurePermitMobileEnhancements?.(),0);window.scrollTo({top:0,behavior:'auto'})}catch(e){console.error(e);alert('작업허가서를 여는 중 오류가 발생했습니다. 다시 시도해주세요.')}}
   function completeStage1(){const sid=currentSpaceId();if(!sid){alert('작업개소를 먼저 선택해주세요.');return}if(stage1SpaceId!==null&&stage1SpaceId!==sid)stage2Done=false;stage1SpaceId=sid;stage1Done=true;updateHome();openStage2()}
@@ -2912,18 +2972,6 @@ function startAliveCheck(){
   saveAlive();requestAliveWakeLock();ensureAliveAudio();
   renderAliveCard(s);
 }
-window.safeCancelAliveRuntimeForNavigation=function(){
-  aliveRuntimeArmed=false;
-  try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
-  if(aliveState.prompting||aliveState.escalated){
-    aliveState.prompting=false;
-    aliveState.escalated=false;
-    saveAlive();
-  }
-  stopAlarmFx();
-  closeAliveOverlay();
-};
-
 function stopAliveCheck(){
   if(!confirm("작업을 마치고 밀폐공간에서 완전히 퇴장했나요? 생존확인을 종료합니다."))return;
   aliveRuntimeArmed=false;
@@ -2936,23 +2984,24 @@ function stopAliveCheck(){
 
 document.addEventListener("DOMContentLoaded",()=>{
   loadAlive();
+  try{aliveRuntimeArmed=sessionStorage.getItem(ALIVE_RUNTIME_KEY)==="1"}catch(e){aliveRuntimeArmed=false}
 
-  // 안전 원칙: 생존확인 알람은 현재 페이지에서 사용자가 STEP 2의
-  // '생존확인 시작' 버튼을 직접 누른 경우에만 작동합니다.
-  // Kakao 인앱브라우저의 sessionStorage가 남아 과거 경보가 복원되는 문제를 막습니다.
-  aliveRuntimeArmed=false;
-  try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
-  if(aliveState.active||aliveState.prompting||aliveState.escalated){
+  // 새 탭/다시 접속에서는 이전 생존확인 경보를 자동 재생하지 않습니다.
+  // 생존확인은 STEP 2에서 사용자가 '생존확인 시작'을 직접 눌렀을 때만 작동합니다.
+  if(aliveState.active&&!aliveRuntimeArmed){
     aliveState.active=false;
     aliveState.prompting=false;
     aliveState.escalated=false;
     aliveState.nextDueAt=0;
     aliveState.promptDeadlineAt=0;
     saveAlive();
+    stopAlarmFx();
+    closeAliveOverlay();
+    releaseAliveWakeLock();
+  }else if(aliveState.active&&aliveState.prompting&&aliveRuntimeArmed){
+    // 같은 탭에서 새로고침한 경우에만 진행 중 경보를 복원합니다.
+    setTimeout(()=>{openAliveOverlay();startAlarmFx(aliveState.escalated)},300);
   }
-  stopAlarmFx();
-  closeAliveOverlay();
-  releaseAliveWakeLock();
   $$("#aliveIntervalGroup button").forEach(b=>b.addEventListener("click",()=>{
     aliveState.intervalMin=Number(b.dataset.aliveInterval);saveAlive();
     const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
@@ -3039,6 +3088,118 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();
   setTimeout(init,600);
+})();
+</script>
+
+
+<script id="stage3BlackScreenFinalFixJS20260919">
+(function(){
+  "use strict";
+
+  function q(s,r=document){return r.querySelector(s)}
+  function qa(s,r=document){return Array.from(r.querySelectorAll(s))}
+
+  function ensurePermitVisible(){
+    if(!document.body.classList.contains('safe-stage-permit')) return;
+
+    /* 혹시 남아 있는 검정 오버레이/부트 화면 제거 */
+    const boot=q('#bootSplash');
+    if(boot){boot.classList.add('hide');boot.style.pointerEvents='none'}
+
+    const view=q('#view-permit');
+    if(!view) return;
+
+    /* 허가서 Wizard를 보장 */
+    try{
+      if(typeof window.ensurePermitMobileEnhancements==='function'){
+        window.ensurePermitMobileEnhancements();
+      }
+    }catch(e){ console.warn('permit enhancement init',e); }
+
+    const track=q('#permitWizardTrack');
+    if(track){
+      const slides=qa('.permit-wizard-slide',track);
+      if(slides.length){
+        let active=slides.findIndex(s=>s.classList.contains('mobile-active'));
+        if(active<0){
+          const tabs=qa('.permit-wizard-tab');
+          active=tabs.findIndex(t=>t.classList.contains('active'));
+        }
+        if(active<0) active=0;
+        slides.forEach((s,i)=>{
+          s.classList.toggle('mobile-active',i===active);
+          if(innerWidth<=760) s.style.setProperty('display',i===active?'block':'none','important');
+        });
+      }
+    }
+
+    /* 최종 모바일 상단바 내용 동기화 */
+    const src=q('#permitSpaceSearch');
+    const place=q('#permitMobilePlace');
+    if(place){
+      const val=String(src&&src.value||'').trim();
+      place.textContent=val||'작업개소 확인';
+      place.classList.toggle('empty',!val);
+    }
+
+    /* 혹시 과거 fixed/sticky 요소가 남아도 강제로 비활성 */
+    ['#permitInlineToolbar','.tbm-permit-back','#safeStageBar','#view-permit .permit-actions'].forEach(sel=>{
+      const el=q(sel);
+      if(el && innerWidth<=760) el.style.setProperty('display','none','important');
+    });
+
+    /* 레이아웃이 0폭으로 남아 있으면 다음 프레임에 재시도 */
+    const rect=view.getBoundingClientRect();
+    if(rect.width < 10 || rect.height < 10){
+      requestAnimationFrame(()=>{
+        view.style.setProperty('display','block','important');
+        view.style.setProperty('visibility','visible','important');
+        view.style.setProperty('opacity','1','important');
+      });
+    }
+  }
+
+  function scheduleFix(){
+    guardLegacyPermitActions();
+    requestAnimationFrame(ensurePermitVisible);
+    setTimeout(ensurePermitVisible,60);
+    setTimeout(ensurePermitVisible,220);
+  }
+
+  let actionGuard=null;
+  function guardLegacyPermitActions(){
+    const actions=q('#view-permit .permit-actions');
+    if(!actions || actionGuard) return;
+    actionGuard=new MutationObserver(()=>{
+      if(document.body.classList.contains('safe-stage-permit') && innerWidth<=760){
+        if(actions.style.getPropertyValue('display')!=='none' || actions.style.getPropertyPriority('display')!=='important'){
+          actions.style.setProperty('display','none','important');
+        }
+      }
+    });
+    actionGuard.observe(actions,{attributes:true,attributeFilter:['style','class']});
+  }
+
+  const mo=new MutationObserver(()=>{
+    if(document.body.classList.contains('safe-stage-permit')) scheduleFix();
+  });
+  mo.observe(document.body,{attributes:true,attributeFilter:['class']});
+
+  document.addEventListener('click',e=>{
+    if(e.target.closest && e.target.closest('#tbmStage2CompleteBtn,#homePermitBtn,#openPermitFromField,[data-step2-permit-open]')){
+      setTimeout(scheduleFix,0);
+    }
+  },true);
+
+  window.addEventListener('resize',()=>{
+    if(document.body.classList.contains('safe-stage-permit')) setTimeout(ensurePermitVisible,40);
+  },{passive:true});
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',scheduleFix);
+  }else{
+    scheduleFix();
+  }
 })();
 </script>
 
