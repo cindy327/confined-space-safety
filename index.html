@@ -398,6 +398,18 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
 .alive-call-btn.watcher{background:#ff9f0a;color:#241400}
 .alive-call-btn.sos{background:#ff453a;color:#fff}
 </style>
+
+<style id="bulkGasChecklistFix20260917">
+.gas-meta select{margin-top:4px;width:100%;min-height:40px;background:#fff;color:#111;border:1px solid #aab0b8;border-radius:6px;padding:8px}
+.gas-bulk-box{margin:10px 0 12px;border:1px solid #9ebad1;background:#f4f9fd;border-radius:10px;padding:10px;color:#17212b}
+.gas-bulk-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.gas-bulk-head b{font-size:12px}.gas-bulk-head span{display:block;margin-top:3px;font-size:9.5px;color:#647282}.gas-bulk-select-actions{display:flex;gap:6px;flex-wrap:wrap}.gas-bulk-select-actions button{min-height:36px;border:1px solid #7f9bb3;background:#fff;color:#184d75;border-radius:8px;padding:6px 10px;font-size:10.5px;font-weight:900;cursor:pointer}
+.gas-bulk-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:7px;align-items:end;margin-top:9px}.gas-bulk-fields label{font-size:9.5px;font-weight:900;color:#43515f}.gas-bulk-fields input{margin-top:4px;width:100%;min-height:40px!important;padding:7px!important}.gas-bulk-fields button{min-height:40px;border:0;border-radius:8px;background:#176ec4;color:#fff;font-size:11px;font-weight:1000;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.permit-check-bulk{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 8px;padding:10px 11px;border:1px solid #b6c6d5;background:#eef5fb;color:#1f3346;border-radius:9px}.permit-check-bulk>b{font-size:11.5px;margin-right:auto}.permit-check-bulk label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:900;cursor:pointer}.permit-check-bulk input{width:21px!important;height:21px!important;accent-color:#176ec4}.permit-check-bulk button{min-height:34px;border:1px solid #9aaabb;background:#fff;color:#435160;border-radius:7px;padding:5px 9px;font-size:10.5px;font-weight:900;cursor:pointer}
+@media(max-width:760px){.gas-meta select{min-height:50px;font-size:14px}.gas-bulk-fields{grid-template-columns:1fr 1fr}.gas-bulk-fields button{grid-column:1/-1;min-height:50px;font-size:13px}.gas-bulk-select-actions{width:100%}.gas-bulk-select-actions button{flex:1;min-height:44px;font-size:11.5px}.permit-check-bulk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.permit-check-bulk>b{grid-column:1/-1}.permit-check-bulk label{background:#fff;border:1px solid #c6d2dd;border-radius:8px;padding:8px;font-size:12px}.permit-check-bulk button{grid-column:1/-1;min-height:42px;font-size:12px}}
+@media(max-width:420px){.gas-bulk-fields{grid-template-columns:1fr}.gas-bulk-fields button{grid-column:auto}.permit-check-bulk{grid-template-columns:1fr}.permit-check-bulk>b,.permit-check-bulk button{grid-column:auto}}
+</style>
+
+
 </head>
 <body class="field-active simple-flow-home simple-flow-ui tbm-one-question">
 <div id="bootSplash" role="status" aria-live="polite"><div class="boot-box"><div class="boot-mark"></div><div class="boot-title">KORAIL 밀폐 SAFE PASS</div><div class="boot-sub">현장 안전정보를 준비하고 있습니다.</div><div class="boot-fallback">잠시 후 자동으로 열립니다.</div></div></div>
@@ -561,7 +573,8 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
   <div class="alive-alarm-box" id="aliveAlarmBox">
     <div class="alive-alarm-icon" id="aliveAlarmIcon">🫀</div>
     <div class="alive-alarm-title" id="aliveAlarmTitle">이상 없으신가요?</div>
-    <div class="alive-alarm-sub" id="aliveAlarmSub">확인 버튼을 눌러 응답하세요.</div>
+    <div class="alive-alarm-sub" id="aliveAlarmSub">확인 버튼을 누르거나 “이상없음”이라고 말해 응답하세요.</div>
+    <div class="alive-voice-status" id="aliveVoiceStatus" aria-live="polite">🎙️ 음성 응답 준비 · “이상없음”이라고 말하세요.</div>
     <div class="alive-alarm-countdown" id="aliveAlarmCountdown">30</div>
     <button type="button" class="alive-ack-btn" id="aliveAckBtn">✅ 이상 없습니다 · 확인</button>
     <div class="alive-alarm-escalate" id="aliveEscalateArea" hidden>
@@ -620,11 +633,36 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
 <div class="permit-layout">
 <div>
 <div class="permit-actions"><input id="permitSpaceSearch" list="permitSpaceOptions" type="text" placeholder="밀폐공간 선택" style="max-width:520px"><datalist id="permitSpaceOptions"></datalist><button class="btn primary" id="permitLoadBtn">선택 공간 불러오기</button><button class="btn" id="permitSaveBtn">💾 저장</button><button class="btn" id="permitPrintBtn">🖨 인쇄 / PDF</button><button class="btn" id="permitNewBtn">새 허가서</button></div><div id="shareImportBanner" class="share-import-banner"></div>
+<div class="permit-safety-tools" id="permitSafetyTools">
+  <div class="permit-safety-shortcuts">
+    <button type="button" class="permit-safety-shortcut ai" id="permitAiToggle">🤖 작업허가서 AI 점검</button>
+    <button type="button" class="permit-safety-shortcut alive" id="permitAliveToggle">🫀 생존확인 알람 <span id="permitAliveMiniState">꺼짐</span></button>
+  </div>
+  <section class="permit-safety-panel" id="permitAiPanel" hidden>
+    <div class="permit-safety-panel-head"><div><b>🤖 작업허가서 AI 점검</b><span>작성 누락과 현재 작업 전 위험요인을 함께 확인합니다.</span></div><button type="button" data-close-permit-safety="ai">닫기</button></div>
+    <button type="button" class="permit-ai-run" id="permitAiRunBtn">AI 점검 실행</button>
+    <button type="button" class="permit-ai-speak" id="permitAiSpeakBtn">🔊 결과 읽어주기</button>
+    <div class="permit-ai-result" id="permitAiResult">AI 점검을 실행하면 이곳에 결과가 표시됩니다.</div>
+    <div class="permit-safety-note">※ AI는 작성 누락과 안전정보 확인을 돕는 보조기능입니다. 실제 작업허가와 작업 가능 여부는 현장 측정값·승인·사내 절차를 우선합니다.</div>
+  </section>
+  <section class="permit-safety-panel" id="permitAlivePanel" hidden>
+    <div class="permit-safety-panel-head"><div><b>🫀 생존확인 알람</b><span>밀폐공간 입장 후 일정 간격으로 작업자 반응을 확인합니다.</span></div><button type="button" data-close-permit-safety="alive">닫기</button></div>
+    <div class="permit-alive-intervals" id="permitAliveIntervals">
+      <button type="button" data-permit-alive-interval="5">5분</button><button type="button" data-permit-alive-interval="10">10분</button><button type="button" data-permit-alive-interval="15">15분</button><button type="button" data-permit-alive-interval="30">30분</button>
+    </div>
+    <label class="permit-alive-phone">감시인·비상연락처 (선택)<input type="tel" id="permitAliveWatcherPhone" placeholder="예: 010-0000-0000"></label>
+    <div class="permit-alive-status" id="permitAliveStatus">현재 꺼져 있습니다. 밀폐공간에 들어갈 때 시작하세요.</div>
+    <div class="permit-alive-voice-guide" id="permitAliveVoiceGuide">🎙️ 알람이 울리면 <b>“이상없음”</b> 또는 <b>“이상 없습니다”</b>라고 말하거나 화면의 <b>이상 없습니다</b> 버튼을 누르면 현재 경보가 해제되고 다음 확인 주기로 넘어갑니다. 최초 사용 시 마이크 권한을 허용하세요.</div>
+    <div class="permit-alive-actions"><button type="button" id="permitAliveStartBtn">🫀 시작 (입장)</button><button type="button" id="permitAliveStopBtn">⏹ 종료 (퇴장)</button></div>
+    <div class="permit-alive-log" id="permitAliveLog"></div>
+    <div class="permit-safety-note">⚠ 휴대전화 화면이 꺼지거나 브라우저가 백그라운드로 전환되면 알람이 늦어질 수 있습니다. 감시인 배치와 통신수단을 대신하지 않는 보조기능입니다.</div>
+  </section>
+</div>
 <form id="permitForm" class="permit-form" onsubmit="return false;">
 <h2 class="permit-title">밀폐공간작업 출입 허가서</h2>
 <div class="permit-grid">
 <div class="permit-field span4"><label>허가일자</label><input name="permitDate" type="date"></div>
-<div class="permit-field"><label>신청자 부서명</label><input name="appDept" type="text"></div><div class="permit-field"><label>직책</label><input name="appTitle" type="text"></div><div class="permit-field span2"><label>성명</label><input name="appName" type="text"></div>
+<div class="permit-field"><label>신청자 부서명</label><input name="appDept" type="text"></div><div class="permit-field permit-title-field"><label>직책</label><input name="appTitle" id="appTitleInput" type="text" placeholder="아래에서 직책을 선택하세요" readonly><div id="appTitlePicker" class="permit-title-picker" aria-label="직책 선택"></div></div><div class="permit-field span2"><label>성명</label><input name="appName" type="text"></div>
 <div class="permit-field span2"><label>작업 시작</label><input name="startAt" type="datetime-local"></div><div class="permit-field span2"><label>작업 종료</label><input name="endAt" type="datetime-local"></div>
 <div class="permit-field span4"><label>작업장소</label><input name="place" type="text"></div><div class="permit-field span4"><label>작업내용</label><textarea name="workContent"></textarea></div>
 <div class="permit-field span4"><label>내부 연락방법 (필요시 번호 기재)</label><input name="contact" type="text"></div>
@@ -638,8 +676,18 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
   <div class="gas-meta">
     <label>측정자<input id="gasMeasurer" type="text" placeholder="성명"></label>
     <label>측정일시<input id="gasMeasuredAt" type="datetime-local"></label>
-    <label>측정기<input id="gasDevice" type="text" placeholder="모델 / 관리번호"></label>
-    <label>장비 이상유무<input id="gasDeviceCheck" type="text" placeholder="예: 정상 / 교정확인"></label>
+    <label>측정기<select id="gasDevice" aria-label="측정기 선택"><option value="">기존 장비 데이터에서 선택</option></select></label>
+    <label>장비 이상유무<select id="gasDeviceCheck" aria-label="장비 이상유무"><option value="">선택</option><option value="정상">정상</option><option value="비정상">비정상</option></select></label>
+  </div>
+  <div class="gas-bulk-box" id="gasBulkBox">
+    <div class="gas-bulk-head"><div><b>⚡ 측정지점 · 수치 일괄입력</b><span>실제 측정값이 동일한 지점에만 사용하세요.</span></div><div class="gas-bulk-select-actions"><button type="button" id="gasSelectAllBtn">9개 지점 전체 선택</button><button type="button" id="gasClearSelectionBtn">선택 해제</button></div></div>
+    <div class="gas-bulk-fields">
+      <label>O₂ (%)<input id="gasBulkO2" type="number" step="0.1" inputmode="decimal" placeholder="예: 20.9"></label>
+      <label>H₂S (ppm)<input id="gasBulkH2s" type="number" step="0.1" inputmode="decimal" placeholder="예: 0"></label>
+      <label>CO (ppm)<input id="gasBulkCo" type="number" step="0.1" inputmode="decimal" placeholder="예: 0"></label>
+      <label>CO₂ (%)<input id="gasBulkCo2" type="number" step="0.1" inputmode="decimal" placeholder="예: 0.04"></label>
+      <button type="button" id="gasBulkApplyBtn">선택 지점에 일괄 적용</button>
+    </div>
   </div>
   <div class="gas-grid-wrap">
     <div><div class="gas-point-grid" id="gasPointGrid"></div><div id="gasPointCount" class="gas-point-count"></div><div style="font-size:9.5px;color:#66717d;line-height:1.5;margin-top:6px">※ 9개 후보는 상·중·하 × 좌·중·우 위치를 직관적으로 표시한 사내 입력 UI입니다. 실제 측정지점은 공간의 구조·공기흐름·작업자 호흡위치를 고려해 선정하세요.</div></div>
@@ -647,6 +695,12 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
   </div>
   <input type="hidden" name="gasMeasureJson" id="gasMeasureJson">
   <div id="gasOverallMessage" class="gas-overall wait">측정지점 3개 이상을 선택하고 값을 입력하세요.</div>
+</div>
+<div class="permit-check-bulk" id="permitCheckBulk">
+  <b>☑ 안전보건조치 일괄 선택</b>
+  <label><input type="checkbox" id="permitNeedAll"> 필요 전체 선택</label>
+  <label><input type="checkbox" id="permitOkAll"> 확인 전체 선택</label>
+  <button type="button" id="permitChecksClearAll">전체 해제</button>
 </div>
 <div class="permit-table-wrap"><table class="permit-table"><thead><tr><th>구분</th><th>안전보건조치 요구사항</th><th class="ck">필요</th><th class="ck">확인</th></tr></thead><tbody id="permitChecklistBody"></tbody></table></div>
 <div class="permit-grid" style="margin-top:10px"><div class="permit-field span4"><label>특별조치 필요사항</label><textarea name="specialNotes" placeholder="최대한 상세히 기재"></textarea></div><div class="permit-field span2"><label>작업 일시중지 시간</label><input name="pausePeriod" type="text" placeholder="예: 14:10 ~ 14:30"></div><div class="permit-field span2"><label>후 재개 · 재개 전 안전조치 확인 / 조치상태</label><input name="resumeCheck" type="text"></div><div class="permit-field span4"><label>작업완료 · 일시 / 작업자 상태 / 작업완료 상태 / 복원(조치) 상태</label><textarea name="completion"></textarea></div></div>
@@ -682,9 +736,9 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
   <h3>✍️ 작업허가서 순차 승인</h3>
   <div class="guide">작업부서가 작성·서명한 뒤 <b>작업관리부서</b>에 공유하고, 작업관리부서 승인 후 <b>협조부서(역)</b>에 다시 공유해 최종 확인을 받습니다. 한국철도공사 사업소 직접작업은 작업관리부서 단계가 자동 생략됩니다.</div>
   <div class="approval-flow-grid">
-    <div class="approval-card" id="workApprovalCard"><div class="step">1단계</div><h4>작업부서 작성·서명</h4><div class="dept" id="workApprovalDept"></div><div class="sign-pad"><canvas id="workSignCanvas" width="600" height="180"></canvas><div class="sign-pad-tools"><span id="workSignStatus">손가락으로 서명</span><button type="button" data-clear-sign="work">지우기</button></div></div></div>
-    <div class="approval-card" id="manageApprovalCard"><div class="step">2단계</div><h4>작업관리부서 승인·서명</h4><div class="dept" id="manageApprovalDept"></div><div class="sign-pad"><canvas id="manageSignCanvas" width="600" height="180"></canvas><div class="sign-pad-tools"><span id="manageSignStatus">공유 후 담당자 서명</span><button type="button" data-clear-sign="manage">지우기</button></div></div></div>
-    <div class="approval-card" id="coopApprovalCard"><div class="step">3단계</div><h4>협조부서 확인·서명</h4><div class="dept" id="coopApprovalDept"></div><div class="sign-pad"><canvas id="coopSignCanvas" width="600" height="180"></canvas><div class="sign-pad-tools"><span id="coopSignStatus">최종 공유 후 역 담당자 서명</span><button type="button" data-clear-sign="coop">지우기</button></div></div></div>
+    <div class="approval-card" id="workApprovalCard"><div class="step">1단계</div><h4>작업부서 작성·서명</h4><div class="dept" id="workApprovalDept"></div><div class="sign-pad"><canvas id="workSignCanvas" width="600" height="180"></canvas><div class="sign-pad-tools"><span id="workSignStatus">손가락으로 서명</span><button type="button" data-clear-sign="work">지우기</button></div><button type="button" class="signature-open-btn">✍ 크게 서명하기</button></div></div>
+    <div class="approval-card" id="manageApprovalCard"><div class="step">2단계</div><h4>작업관리부서 승인·서명</h4><div class="dept" id="manageApprovalDept"></div><div class="sign-pad"><canvas id="manageSignCanvas" width="600" height="180"></canvas><div class="sign-pad-tools"><span id="manageSignStatus">공유 후 담당자 서명</span><button type="button" data-clear-sign="manage">지우기</button></div><button type="button" class="signature-open-btn">✍ 크게 서명하기</button></div></div>
+    <div class="approval-card" id="coopApprovalCard"><div class="step">3단계</div><h4>협조부서 확인·서명</h4><div class="dept" id="coopApprovalDept"></div><div class="sign-pad"><canvas id="coopSignCanvas" width="600" height="180"></canvas><div class="sign-pad-tools"><span id="coopSignStatus">최종 공유 후 역 담당자 서명</span><button type="button" data-clear-sign="coop">지우기</button></div><button type="button" class="signature-open-btn">✍ 크게 서명하기</button></div></div>
   </div>
   <input type="hidden" name="workSignJson" id="workSignJson"><input type="hidden" name="manageSignJson" id="manageSignJson"><input type="hidden" name="coopSignJson" id="coopSignJson"><input type="hidden" name="workSignAt" id="workSignAt"><input type="hidden" name="manageSignAt" id="manageSignAt"><input type="hidden" name="coopSignAt" id="coopSignAt">
   <div class="approval-share-actions"><button type="button" class="share-btn manage" id="shareToManageBtn">💬 작업관리부서에 카카오톡 공유</button><button type="button" class="share-btn coop" id="shareToCoopBtn">💬 협조부서에 카카오톡 공유</button></div>
@@ -1362,12 +1416,7 @@ function openPermitStep(){const s=selectedSpace();if(!s){alert("작업허가서 
 function openMore(){const o=$("#moreOverlay");if(o)o.classList.add("open")}
 function closeMore(){const o=$("#moreOverlay");if(o)o.classList.remove("open")}
 if($("#homeSpaceBtn"))$("#homeSpaceBtn").onclick=()=>{
-  try{
-    if(typeof aliveRuntimeArmed!=="undefined"&&!aliveRuntimeArmed){
-      const ov=$("#aliveAlarmOverlay");if(ov)ov.classList.remove("open","escalate");
-      navigator.vibrate&&navigator.vibrate(0);
-    }
-  }catch(e){}
+  try{window.resetAliveAlarmUI&&window.resetAliveAlarmUI()}catch(e){}
   focusSpaceStep();
 };
 if($("#homeCheckBtn"))$("#homeCheckBtn").onclick=focusCheckStep;
@@ -1399,7 +1448,20 @@ const PERMIT_CHECKS=[
  ["안전보건교육","작업자와 감시인을 대상으로 안전한 작업방법 숙지여부 확인 및 교육 — ① 밀폐공간의 위험성 ② 산소 및 유해가스농도 측정 ③ 환기설비 가동 등 안전한 작업방법 ④ 보호구 착용·사용방법 ⑤ 사고 시 구조요청 연락수단·비상연락처·응급조치 ⑥ 대피용 기구의 위치·사용방법"]
 ];
 function permitKey(s){return s?.manageNo||"NEW"}
-function renderPermitChecks(saved={}){$("#permitChecklistBody").innerHTML=PERMIT_CHECKS.map((r,i)=>`<tr><td class="cat">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="ck"><input type="checkbox" data-pneed="${i}" ${saved.need?.[i]?"checked":""}></td><td class="ck"><input type="checkbox" data-pok="${i}" ${saved.ok?.[i]?"checked":""}></td></tr>`).join("")}
+function syncPermitChecklistBulk(){
+ const needs=$$('[data-pneed]'),oks=$$('[data-pok]'),needAll=$("#permitNeedAll"),okAll=$("#permitOkAll");
+ if(needAll){const checked=needs.filter(x=>x.checked).length;needAll.checked=!!needs.length&&checked===needs.length;needAll.indeterminate=checked>0&&checked<needs.length}
+ if(okAll){const checked=oks.filter(x=>x.checked).length;okAll.checked=!!oks.length&&checked===oks.length;okAll.indeterminate=checked>0&&checked<oks.length}
+}
+function renderPermitChecks(saved={}){
+ $("#permitChecklistBody").innerHTML=PERMIT_CHECKS.map((r,i)=>`<tr><td class="cat">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="ck"><input type="checkbox" data-pneed="${i}" ${saved.need?.[i]?"checked":""}></td><td class="ck"><input type="checkbox" data-pok="${i}" ${saved.ok?.[i]?"checked":""}></td></tr>`).join("");
+ syncPermitChecklistBulk();
+}
+function setPermitChecklistAll(kind,checked){$$(`[data-p${kind}]`).forEach(x=>x.checked=checked);syncPermitChecklistBulk()}
+$("#permitNeedAll")?.addEventListener("change",e=>setPermitChecklistAll("need",e.target.checked));
+$("#permitOkAll")?.addEventListener("change",e=>setPermitChecklistAll("ok",e.target.checked));
+$("#permitChecksClearAll")?.addEventListener("click",()=>{setPermitChecklistAll("need",false);setPermitChecklistAll("ok",false)});
+$("#permitChecklistBody")?.addEventListener("change",e=>{if(e.target.matches('[data-pneed],[data-pok]'))syncPermitChecklistBulk()});
 function formObject(){syncGasHidden();syncWorkerSignsHidden();const f=$("#permitForm"),o={};new FormData(f).forEach((v,k)=>o[k]=v);o.need=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pneed="${i}"]`)?.checked);o.ok=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pok="${i}"]`)?.checked);o.finalApproved=$("#finalPermitApproved").checked;return o}
 function fillPermit(o={}){const f=$("#permitForm");[...f.elements].forEach(el=>{if(!el.name)return;if(el.type!=="checkbox")el.value=o[el.name]??""});renderPermitChecks(o);$("#finalPermitApproved").checked=!!o.finalApproved;checkPermitDuration();gasMeasure=parseGasMeasure(o.gasMeasureJson||"");renderGasMeasure();loadWorkerSignsFromPermit(o);setTimeout(loadSignPadsFromHidden,0)}
 function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow()},0)}
@@ -1465,7 +1527,7 @@ function renderWorkerSigns(type){
  const list=$("#"+type+"WorkerList"),count=$("#"+type+"WorkerCount");if(!list)return;
  const arr=workerSigns[type]||[];
  if(!arr.length)arr.push(blankWorkerSign());
- list.innerHTML=arr.map((r,i)=>{const linked=type==="exit"&&r.source==="entry";return`<div class="worker-sign-row ${linked?"from-entry":""}" data-worker-row="${type}-${i}"><div class="worker-sign-name"><label>${workerLabel(type)} 작업자 ${i+1} · 성명 ${linked?'<span class="worker-link-badge">입장기록 연동</span>':""}</label><input type="text" inputmode="text" autocomplete="name" data-worker-name="${type}" data-worker-index="${i}" value="${esc(r.name||"")}" placeholder="성명 입력" ${linked?"readonly":""}></div><div class="worker-mini-pad ${linked?"readonly":""}"><canvas id="${type}WorkerCanvas${i}" width="520" height="150"></canvas><div class="worker-mini-tools ${linked?"linked":""}"><span id="${type}WorkerSignStatus${i}">${linked?"✓ 입장 서명 사용":workerSigned(r)?"✓ 서명 완료":"손가락으로 서명"}</span>${linked?"":`<button type="button" data-clear-worker-sign="${type}" data-worker-index="${i}">지우기</button>`}</div></div><button type="button" class="worker-remove" data-remove-worker="${type}" data-worker-index="${i}">삭제</button></div>`}).join("");
+ list.innerHTML=arr.map((r,i)=>{const linked=type==="exit"&&r.source==="entry";return`<div class="worker-sign-row ${linked?"from-entry":""}" data-worker-row="${type}-${i}"><div class="worker-sign-name"><label>${workerLabel(type)} 작업자 ${i+1} · 성명 ${linked?'<span class="worker-link-badge">입장기록 연동</span>':""}</label><input type="text" inputmode="text" autocomplete="name" data-worker-name="${type}" data-worker-index="${i}" value="${esc(r.name||"")}" placeholder="성명 입력" ${linked?"readonly":""}></div><div class="worker-mini-pad ${linked?"readonly":""}"><canvas id="${type}WorkerCanvas${i}" width="520" height="150"></canvas><div class="worker-mini-tools ${linked?"linked":""}"><span id="${type}WorkerSignStatus${i}">${linked?"✓ 입장 서명 사용":workerSigned(r)?"✓ 서명 완료":"손가락으로 서명"}</span>${linked?"":`<button type="button" data-clear-worker-sign="${type}" data-worker-index="${i}">지우기</button>`}</div><button type="button" class="signature-open-btn" ${linked?"disabled":""}>${linked?"✓ 입장 서명 사용":"✍ 크게 서명하기"}</button></div><button type="button" class="worker-remove" data-remove-worker="${type}" data-worker-index="${i}">삭제</button></div>`}).join("");
  if(count){const signed=arr.filter(workerSigned).length;const linked=type==="exit"?arr.filter(r=>r.source==="entry").length:0;count.textContent=type==="exit"?`${arr.filter(r=>String(r.name||"").trim()).length}명 · 입장연동 ${linked}명`:`${arr.length}명 · 서명 ${signed}명`}
  $$(`[data-worker-name="${type}"]`).forEach(inp=>{inp.addEventListener("input",()=>{const i=Number(inp.dataset.workerIndex);if(workerSigns[type]?.[i])workerSigns[type][i].name=inp.value});inp.addEventListener("change",()=>{syncWorkerSignsHidden();if(type==="entry")renderEntryCopyPicker();if(typeof window.schedulePermitStatus==="function")window.schedulePermitStatus(40)})});
  $$(`[data-clear-worker-sign="${type}"]`).forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.workerIndex);workerSigns[type][i].paths=[];workerSigns[type][i].signedAt="";workerSigns[type][i].source="";syncWorkerSignsHidden();renderWorkerSigns(type);if(type==="entry")renderEntryCopyPicker()});
@@ -1495,6 +1557,24 @@ const copyAllEntryBtn=$("#copyAllEntryWorkers");if(copyAllEntryBtn)copyAllEntryB
 
 /* ===== 가스농도 3×3 측정·순차 전자서명·모바일 공유 ===== */
 const GAS_POINT_LABELS=["상부-좌","상부-중앙","상부-우","중부-좌","중부-중앙","중부-우","하부-좌","하부-중앙","하부-우"];
+function gasDeviceOptionText(e){
+ const type=String(e?.gasType||"").trim(),model=String(e?.gasModel||"").trim(),dept=String(e?.dept||"").trim();
+ if(!type||type==="-")return"";
+ return [type,model&&model!=="-"?model:"",dept].filter(Boolean).join(" · ");
+}
+function populateGasDeviceOptions(s,preferred=""){
+ const sel=$("#gasDevice");if(!sel)return;
+ const related=s?equipmentFor(s).flatMap(g=>g.rows).filter(e=>e.gasType&&e.gasType!=="-"):[];
+ const rel=uniq(related.map(gasDeviceOptionText).filter(Boolean));
+ const all=uniq(equipment.map(gasDeviceOptionText).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"ko"));
+ const current=String(preferred||sel.value||"").trim();
+ let html='<option value="">기존 장비 데이터에서 선택</option>';
+ if(rel.length)html+=`<optgroup label="선택 작업 관련 보유장비">${rel.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("")}</optgroup>`;
+ const rest=all.filter(v=>!rel.includes(v));
+ if(rest.length)html+=`<optgroup label="전체 장비 데이터">${rest.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("")}</optgroup>`;
+ if(current&&!all.includes(current))html+=`<option value="${esc(current)}">${esc(current)} (기존 저장값)</option>`;
+ sel.innerHTML=html;sel.value=current;
+}
 let gasMeasure={selected:[],meta:{},readings:{}};
 function blankGasMeasure(){return{selected:[],meta:{measurer:"",measuredAt:"",device:"",deviceCheck:""},readings:{}}}
 function parseGasMeasure(v){try{const o=typeof v==="string"&&v?JSON.parse(v):v;return o&&typeof o==="object"?{...blankGasMeasure(),...o,meta:{...blankGasMeasure().meta,...(o.meta||{})},readings:o.readings||{}}:blankGasMeasure()}catch(e){return blankGasMeasure()}}
@@ -1534,6 +1614,10 @@ async function captureGasPoint(n){
 function confirmGasAiReading(n){const r=gasMeasure.readings[n];if(!r)return;const missing=[['o2','O₂'],['h2s','H₂S'],['co','CO'],['co2','CO₂']].filter(([k])=>gasSafeNumber(r[k])==="").map(x=>x[1]);if(missing.length){alert(`아직 입력되지 않은 값이 있습니다: ${missing.join(', ')}. 실제 측정기에서 확인하여 직접 입력한 뒤 확인하세요.`);return}if(!confirm(`P${n}의 O₂·H₂S·CO·CO₂ 값이 실제 가스측정기 표시와 동일한지 확인했습니까?`))return;r.aiPending=false;r.aiConfirmedAt=new Date().toISOString();r.aiError="";syncGasHidden();renderGasMeasure();syncGasToSignal();renderApprovalWorkflow()}
 function renderGasMeasure(){
  const grid=$("#gasPointGrid"),list=$("#gasReadingList");if(!grid||!list)return;
+ const permitSpace=spaces.find(x=>x.id===Number(permitSelectedId));
+ populateGasDeviceOptions(permitSpace,gasMeasure.meta?.device||"");
+ const savedCheck=String(gasMeasure.meta?.deviceCheck||"").trim();
+ if(savedCheck&&savedCheck!=="정상"&&savedCheck!=="비정상")gasMeasure.meta.deviceCheck=savedCheck.includes("비정상")?"비정상":"정상";
  ["gasMeasurer","gasMeasuredAt","gasDevice","gasDeviceCheck"].forEach((id,idx)=>{const el=$("#"+id);if(el){const k=["measurer","measuredAt","device","deviceCheck"][idx];el.value=gasMeasure.meta?.[k]||el.value||""}});
  grid.innerHTML=GAS_POINT_LABELS.map((lab,i)=>{const n=i+1,sel=gasMeasure.selected.includes(n),ev=sel?gasPointEval(gasMeasure.readings[n]):"",pending=!!gasMeasure.readings[n]?.aiPending;return`<button type="button" class="gas-point-btn ${sel?"selected":""} ${ev==="ok"?"complete":ev==="bad"?"fail":""}" data-gas-point="${n}">P${n}<span>${lab}${pending?" · AI확인대기":""}</span></button>`}).join("");
  const selected=[...(gasMeasure.selected||[])].sort((a,b)=>a-b);const rowCov=new Set(selected.map(n=>Math.floor((n-1)/3))).size,colCov=new Set(selected.map(n=>(n-1)%3)).size;$("#gasPointCount").textContent=`선택 ${selected.length}개 · 상·중·하 ${rowCov}/3 · 좌·중·우 ${colCov}/3`;
@@ -1543,7 +1627,20 @@ function renderGasMeasure(){
  $$('[data-gas-camera]').forEach(b=>b.onclick=()=>captureGasPoint(Number(b.dataset.gasCamera)));$$('[data-gas-confirm]').forEach(b=>b.onclick=()=>confirmGasAiReading(Number(b.dataset.gasConfirm)));
  const st=gasOverallEval(),badge=$("#gasOverall"),msg=$("#gasOverallMessage"),pendingCount=selected.filter(n=>gasMeasure.readings[n]?.aiPending).length;if(badge){badge.className="gas-eval "+st;badge.textContent=st==="ok"?"적정공기":st==="bad"?"부적정 · 작업중지":pendingCount?`AI값 확인 ${pendingCount}건`:"측정 확인 필요"}if(msg){msg.className="gas-overall "+st;msg.textContent=st==="ok"?`✅ ${selected.length}개 지점 측정값이 입력 기준 내 적정입니다. 작업 중에도 현장 기준에 따라 지속 측정·환기하세요.`:st==="bad"?"⛔ 한 곳 이상 적정공기 기준을 벗어났습니다. 작업을 시작하지 말고 환기·원인조치 후 재측정하세요.":pendingCount?`⚠ 카메라로 자동입력한 ${pendingCount}개 지점의 값이 아직 작업자 확인 전입니다. 실제 측정기 표시와 대조 후 ‘측정값 확인’을 누르세요.`:"⚠ 최소 3개 지점을 선택하되 상·중·하와 좌·중·우가 모두 포함되도록 하고, O₂·H₂S·CO·CO₂ 값을 입력하세요."}syncGasHidden()
 }
-["gasMeasurer","gasMeasuredAt","gasDevice","gasDeviceCheck"].forEach(id=>$("#"+id)?.addEventListener("input",syncGasHidden));
+function refreshGasAfterBulk(){syncGasHidden();renderGasMeasure();syncGasToSignal();renderApprovalWorkflow()}
+function selectAllGasPoints(){gasMeasure.selected=[1,2,3,4,5,6,7,8,9];gasMeasure.selected.forEach(n=>gasMeasure.readings[n]=gasMeasure.readings[n]||{o2:"",h2s:"",co:"",co2:""});refreshGasAfterBulk()}
+function clearGasPointSelection(){gasMeasure.selected=[];refreshGasAfterBulk()}
+function applyGasBulkValues(){
+ const selected=gasMeasure.selected||[];if(!selected.length){alert("먼저 수치를 적용할 측정지점을 선택하세요. '9개 지점 전체 선택'도 사용할 수 있습니다.");return}
+ const vals={o2:$("#gasBulkO2")?.value??"",h2s:$("#gasBulkH2s")?.value??"",co:$("#gasBulkCo")?.value??"",co2:$("#gasBulkCo2")?.value??""};
+ const entered=Object.entries(vals).filter(([,v])=>String(v).trim()!=="");if(!entered.length){alert("일괄 입력할 O₂·H₂S·CO·CO₂ 수치 중 하나 이상을 입력하세요.");return}
+ selected.forEach(n=>{const r=gasMeasure.readings[n]=gasMeasure.readings[n]||{o2:"",h2s:"",co:"",co2:""};entered.forEach(([k,v])=>r[k]=v);r.aiPending=false;r.aiConfirmedAt="";r.aiError=""});
+ refreshGasAfterBulk();
+}
+$("#gasSelectAllBtn")?.addEventListener("click",selectAllGasPoints);
+$("#gasClearSelectionBtn")?.addEventListener("click",clearGasPointSelection);
+$("#gasBulkApplyBtn")?.addEventListener("click",applyGasBulkValues);
+["gasMeasurer","gasMeasuredAt","gasDevice","gasDeviceCheck"].forEach(id=>{$("#"+id)?.addEventListener("input",syncGasHidden);$("#"+id)?.addEventListener("change",syncGasHidden)});
 
 const signPads={};
 function signKey(role){return role+"SignJson"}function signAtKey(role){return role+"SignAt"}
@@ -1937,148 +2034,31 @@ body.safe-stage-permit #view-permit .permit-actions{
 </style>
 
 
-<style id="stage3BlackScreenFinalFix20260919">
-/* ===== 2단계 → 3단계 검정화면 / 허가서 중복바 최종 수정 ===== */
-
-/* 1·2단계: TBM Wizard가 body 직속이므로 부모 shell을 숨겨도 Wizard는 정상 표시 */
-body.tbm-one-question.safe-stage-open > .shell{display:none!important}
-body.tbm-one-question.safe-stage-open > #tbmWizard{
-  display:block!important;
-  width:100%!important;
-  min-height:100dvh!important;
-  visibility:visible!important;
-  opacity:1!important;
-}
-
-/* 3단계: shell은 열고 작업허가서만 표시 */
-body.tbm-one-question.safe-stage-permit > .shell{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  min-height:100dvh!important;
-  padding:0!important;
-  margin:0!important;
-  background:#0c1119!important;
-}
+<style id="stage3PermitVisibilityFinalFix20260917">
+body.tbm-one-question.safe-stage-permit > .shell{display:block!important;width:100%!important;max-width:100%!important;padding:0!important;margin:0!important;background:#000!important}
 body.tbm-one-question.safe-stage-permit > .shell > *{display:none!important}
-body.tbm-one-question.safe-stage-permit > .shell > #view-permit{
-  display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
-}
+body.tbm-one-question.safe-stage-permit > .shell > #view-permit{display:block!important}
 body.tbm-one-question.safe-stage-permit > #tbmWizard{display:none!important}
-
-/* 모바일은 최종 상단바 하나만 사용 */
 @media(max-width:760px){
-  body.safe-stage-permit #view-permit{
-    display:block!important;
-    width:100%!important;
-    max-width:620px!important;
-    min-width:0!important;
-    min-height:100dvh!important;
-    margin:0 auto!important;
-    padding:68px 8px calc(24px + env(safe-area-inset-bottom))!important;
-    overflow-x:hidden!important;
-    background:#0c1119!important;
-    box-sizing:border-box!important;
-  }
-
-  /* 최종 모바일바: 목록 / 작업개소 / 저장 */
-  body.safe-stage-permit #permitMobileTopBar{
-    display:grid!important;
-    grid-template-columns:78px minmax(0,1fr) 72px!important;
-    gap:6px!important;
-    position:fixed!important;
-    top:max(6px,env(safe-area-inset-top))!important;
-    left:50%!important;
-    transform:translateX(-50%)!important;
-    width:min(calc(100vw - 12px),608px)!important;
-    min-height:52px!important;
-    padding:6px!important;
-    margin:0!important;
-    border:1px solid #344255!important;
-    border-radius:14px!important;
-    background:rgba(12,17,25,.98)!important;
-    z-index:12000!important;
-    box-shadow:0 6px 20px rgba(0,0,0,.28)!important;
-    box-sizing:border-box!important;
-  }
-
-  /* 과거 패치에서 추가된 중복 상단바는 모두 제거 */
-  body.safe-stage-permit #permitInlineToolbar,
-  body.safe-stage-permit .tbm-permit-back,
-  body.safe-stage-permit #view-permit .permit-actions,
-  body.safe-stage-permit #safeStageBar{
-    display:none!important;
-  }
-
-  /* 허가서 첫 카드가 반드시 보이도록 */
-  body.safe-stage-permit #permitForm,
-  body.safe-stage-permit #permitWizardTrack{
-    display:block!important;
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-    height:auto!important;
-    min-height:1px!important;
-    overflow:visible!important;
-    margin:0!important;
-    box-sizing:border-box!important;
-  }
-  body.safe-stage-permit .permit-wizard-slide{
-    display:none!important;
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-    box-sizing:border-box!important;
-  }
-  body.safe-stage-permit .permit-wizard-slide.mobile-active{
-    display:block!important;
-  }
-
-  /* 하단/이전 패치가 작업허가서를 덮지 않게 함 */
-  body.safe-stage-permit .bottom-nav,
-  body.safe-stage-permit .mobile-bottom-nav,
-  body.safe-stage-permit #bottomNav,
-  body.safe-stage-permit .tbm-actions,
-  body.safe-stage-permit .mobile-primary{
-    display:none!important;
-  }
+ body.safe-stage-permit{background:#000!important;overflow-x:hidden!important}
+ body.safe-stage-permit #view-permit{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;max-width:620px!important;min-width:0!important;margin:0 auto!important;padding:68px 8px calc(24px + env(safe-area-inset-bottom))!important;box-sizing:border-box!important;background:#000!important;overflow-x:hidden!important}
+ body.safe-stage-permit .tbm-permit-back,body.safe-stage-permit #view-permit .permit-actions,body.safe-stage-permit #permitInlineToolbar,body.safe-stage-permit .permit-inline-toolbar{display:none!important}
+ body.safe-stage-permit #permitMobileTopBar{display:grid!important;visibility:visible!important;opacity:1!important;grid-template-columns:72px minmax(0,1fr) 68px!important;position:fixed!important;top:max(7px,env(safe-area-inset-top))!important;left:8px!important;right:8px!important;z-index:20000!important;min-height:50px!important;padding:5px!important;margin:0!important;border:1px solid #293648!important;border-radius:14px!important;background:rgba(10,15,22,.98)!important;box-shadow:0 8px 24px rgba(0,0,0,.34)!important;box-sizing:border-box!important}
+ body.safe-stage-permit #permitMobileTopBar button{height:40px!important;min-height:40px!important}
+ body.safe-stage-permit #permitMobilePlace{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+ body.safe-stage-permit #view-permit .permit-form,body.safe-stage-permit #view-permit .permit-wizard-track{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;transform:none!important}
+ body.safe-stage-permit #view-permit .permit-wizard-slide{display:none!important}
+ body.safe-stage-permit #view-permit .permit-wizard-slide.mobile-active{display:block!important;visibility:visible!important;opacity:1!important}
+ body.safe-stage-permit #view-permit .permit-wizard-controls{position:static!important;inset:auto!important;transform:none!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important;margin:14px 0 0!important;padding:0!important;background:transparent!important}
 }
-
-/* PC/태블릿은 원래 허가서 작업바를 문서 흐름 안에서 사용 */
-@media(min-width:761px){
-  body.safe-stage-permit #permitMobileTopBar,
-  body.safe-stage-permit #permitInlineToolbar,
-  body.safe-stage-permit .tbm-permit-back{display:none!important}
-  body.safe-stage-permit #view-permit{
-    display:block!important;
-    width:100%!important;
-    max-width:1500px!important;
-    margin:0 auto!important;
-    padding:14px 18px 28px!important;
-    box-sizing:border-box!important;
-    background:#0c1119!important;
-  }
-  body.safe-stage-permit #view-permit .permit-actions{
-    display:flex!important;
-    position:static!important;
-    inset:auto!important;
-    transform:none!important;
-    width:100%!important;
-    max-width:none!important;
-    margin:0 0 12px!important;
-    padding:8px!important;
-    background:#111923!important;
-    border:1px solid #2d3a4d!important;
-    border-radius:12px!important;
-    z-index:auto!important;
-  }
-}
+@media print{#permitMobileTopBar{display:none!important}}
 </style>
-
 </head><body>
-${area.innerHTML}</body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},250)}
+${area.innerHTML}
+
+
+
+</body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},250)}
 if($("#drillLoadBtn"))$("#drillLoadBtn").onclick=chooseDrillFromInput;
 if($("#drillSpaceSearch"))$("#drillSpaceSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();chooseDrillFromInput()}});
 if($("#drillUseField"))$("#drillUseField").onclick=()=>{const id=fieldSelectedId||selectedId;if(!id){alert("현재 선택된 작업개소가 없습니다. 훈련 장소를 검색해주세요.");return}const s=spaces.find(x=>x.id===Number(id));if(s)setDrillSpace(s)};
@@ -2092,6 +2072,14 @@ refreshCritical();
 requestAnimationFrame(()=>{hideBootSplash();setTimeout(()=>{loadSafetyLocal();loadLocal();refreshCritical();refreshDeferred()},40)});
 if(location.hash&&location.hash.length>2){setTimeout(()=>{fillPermit({permitDate:new Date().toISOString().slice(0,10)});importPermitFromHash()},140)};
 </script>
+
+<div class="signature-modal" id="signatureModal" aria-hidden="true">
+  <div class="signature-dialog" role="dialog" aria-modal="true">
+    <h3 id="signatureModalTitle">서명</h3><p>아래 큰 공간에 손가락으로 서명하세요.</p>
+    <canvas id="signatureLargeCanvas" class="signature-large-canvas" width="1000" height="420"></canvas>
+    <div class="signature-modal-tools"><button type="button" class="signature-modal-clear" id="signatureModalClear">지우기</button><button type="button" class="signature-modal-save" id="signatureModalSave">✓ 이 서명 사용</button></div>
+  </div>
+</div>
 
 <script>
 /* ===== 모바일 카드형 허가서 / 팝업 서명 UI + 단계별 필수확인 ===== */
@@ -2171,9 +2159,9 @@ if(location.hash&&location.hash.length>2){setTimeout(()=>{fillPermit({permitDate
  let permitStatusTimer=0;
  function schedulePermitStatus(delay=120){clearTimeout(permitStatusTimer);permitStatusTimer=setTimeout(()=>{try{updatePermitWizardStatus()}catch(e){}},delay)}
  window.schedulePermitStatus=schedulePermitStatus;
- function initPermitWizard(){const form=$q('#permitForm');if(!form||$q('#permitWizardTrack'))return;const title=$q('.permit-title',form),grids=$$q(':scope > .permit-grid',form),basicGrid=grids[0],extraGrid=grids[1],note=$q(':scope > .permit-note',form),duration=$q('#permitDuration',form),gas=$q('#gasPermitBox',form),table=$q(':scope > .permit-table-wrap',form),workers=$q(':scope > .worker-lines',form),bottom=$q(':scope > .permit-bottom',form),approval=$q('#approvalWorkflow',form),finalCheck=$q(':scope > .final-check',form);if(!basicGrid||!gas||!table||!workers||!approval)return;
+ function initPermitWizard(){const form=$q('#permitForm');if(!form||$q('#permitWizardTrack'))return;const title=$q('.permit-title',form),grids=$$q(':scope > .permit-grid',form),basicGrid=grids[0],extraGrid=grids[1],note=$q(':scope > .permit-note',form),duration=$q('#permitDuration',form),gas=$q('#gasPermitBox',form),bulkChecks=$q('#permitCheckBulk',form),table=$q(':scope > .permit-table-wrap',form),workers=$q(':scope > .worker-lines',form),bottom=$q(':scope > .permit-bottom',form),approval=$q('#approvalWorkflow',form),finalCheck=$q(':scope > .final-check',form);if(!basicGrid||!gas||!table||!workers||!approval)return;
    const nav=document.createElement('div');nav.className='permit-wizard-nav';nav.innerHTML=['① 기본정보','② 가스측정','③ 안전조치','④ 입·퇴장','⑤ 승인·공유'].map((x,i)=>`<button type="button" class="permit-wizard-tab ${i===0?'active':''}" data-permit-step="${i}">${x}</button>`).join('');
-   const track=document.createElement('div');track.id='permitWizardTrack';track.className='permit-wizard-track';const defs=[['기본정보','작업장·시간·신청자',[basicGrid,note,duration]],['가스농도 측정','사진/카메라 또는 직접입력',[gas]],['안전조치','필요·확인 체크',[table,extraGrid]],['입장·퇴장','작업자별 기록',[workers]],['승인·공유','부서 서명·카카오톡',[bottom,approval,finalCheck]]];defs.forEach(([h,sub,nodes],i)=>{const slide=document.createElement('section');slide.className='permit-wizard-slide';slide.dataset.step=i;slide.innerHTML=`<div class="permit-step-head"><b>${h}</b><span>${sub}</span></div>`;nodes.filter(Boolean).forEach(n=>slide.appendChild(n));track.appendChild(slide)});
+   const track=document.createElement('div');track.id='permitWizardTrack';track.className='permit-wizard-track';const defs=[['기본정보','작업장·시간·신청자',[basicGrid,note,duration]],['가스농도 측정','사진/카메라 또는 직접입력',[gas]],['안전조치','필요·확인 체크',[bulkChecks,table,extraGrid]],['입장·퇴장','작업자별 기록',[workers]],['승인·공유','부서 서명·카카오톡',[bottom,approval,finalCheck]]];defs.forEach(([h,sub,nodes],i)=>{const slide=document.createElement('section');slide.className='permit-wizard-slide';slide.dataset.step=i;slide.innerHTML=`<div class="permit-step-head"><b>${h}</b><span>${sub}</span></div>`;nodes.filter(Boolean).forEach(n=>slide.appendChild(n));track.appendChild(slide)});
    const controls=document.createElement('div');controls.className='permit-wizard-controls';controls.innerHTML='<button type="button" class="permit-prev" id="permitWizardPrev">← 이전</button><button type="button" class="permit-next" id="permitWizardNext">다음 →</button>';title.after(nav,track,controls);
    $$q('[data-permit-step]',nav).forEach(b=>b.onclick=()=>goPermitWizardStep(Number(b.dataset.permitStep)));
    $q('#permitWizardPrev').onclick=()=>goPermitWizardStep(wizardIndex-1);
@@ -2212,13 +2200,6 @@ if(location.hash&&location.hash.length>2){setTimeout(()=>{fillPermit({permitDate
 })();
 </script>
 
-<div class="signature-modal" id="signatureModal" aria-hidden="true">
-  <div class="signature-dialog" role="dialog" aria-modal="true">
-    <h3 id="signatureModalTitle">서명</h3><p>아래 큰 공간에 손가락으로 서명하세요.</p>
-    <canvas id="signatureLargeCanvas" class="signature-large-canvas" width="1000" height="420"></canvas>
-    <div class="signature-modal-tools"><button type="button" class="signature-modal-clear" id="signatureModalClear">지우기</button><button type="button" class="signature-modal-save" id="signatureModalSave">✓ 이 서명 사용</button></div>
-  </div>
-</div>
 <script>setTimeout(()=>{const b=document.getElementById('bootSplash');if(b)b.classList.add('hide')},650);
 // TBM 단일뷰: 과거 리스트뷰 초기화는 실행하지 않음
 </script>
@@ -2396,7 +2377,11 @@ body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-copy small,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-copy small{color:#a1aab5!important}
 body.safe-3step-home .flow-list .flow-list-item.stage-disabled .flow-chevron,
 body.safe-3step-home .flow-list .flow-list-item:disabled .flow-chevron{color:#c4cbd3!important}
-body.tbm-one-question.safe-stage-open > .shell{display:none!important}
+/* FIX 2026-09-17: #tbmWizard/#safeStageBar are direct children of <body>, not .shell.
+   Hiding only .shell children left an empty 100dvh white page before the wizard. */
+body.tbm-one-question.safe-stage-open > .shell{display:none!important;width:0!important;max-width:0!important;min-height:0!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+body.tbm-one-question.safe-stage-open > #safeStageBar{display:flex!important}
+body.tbm-one-question.safe-stage-open > #tbmWizard{display:block!important;width:100%!important;min-height:100dvh!important;margin:0!important;background:#fff!important}
 body.tbm-one-question.safe-stage-open #tbmWizard{display:block!important;min-height:100dvh!important;background:#fff!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-top{display:none!important}
 body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;margin:0 auto!important;box-shadow:none!important;border-left:1px solid #edf0f4!important;border-right:1px solid #edf0f4!important}
@@ -2490,7 +2475,7 @@ body.tbm-one-question.tbm-old-open.show-ai-brief #aiBriefCard{display:block!impo
     btn2.setAttribute('aria-disabled',String(btn2.disabled));btn3.setAttribute('aria-disabled',String(btn3.disabled));
   }
   function home(){currentStage=0;body.classList.add('safe-3step-home');body.classList.remove('safe-stage-open','safe-stage-one','safe-stage-two','safe-stage2-final','safe-stage-permit','tbm-old-open','tbm-permit-open','show-ai-brief');updateHome();window.scrollTo({top:0,behavior:'auto'})}
-  function stageMode(n){currentStage=n;body.classList.remove('safe-3step-home','tbm-old-open','tbm-permit-open','safe-stage-permit','safe-stage2-final');body.classList.add('safe-stage-open');body.classList.toggle('safe-stage-one',n===1);body.classList.toggle('safe-stage-two',n===2);stageTitle.textContent=n===1?'1단계 · 작업부서 및 개소 확인':'2단계 · 작업 전 확인';window.scrollTo({top:0,behavior:'auto'})}
+  function stageMode(n){currentStage=n;try{window.resetAliveAlarmUI&&window.resetAliveAlarmUI()}catch(e){}body.classList.remove('safe-3step-home','tbm-old-open','tbm-permit-open','safe-stage-permit','safe-stage2-final');body.classList.add('safe-stage-open');body.classList.toggle('safe-stage-one',n===1);body.classList.toggle('safe-stage-two',n===2);stageTitle.textContent=n===1?'1단계 · 작업부서 및 개소 확인':'2단계 · 작업 전 확인';window.scrollTo({top:0,behavior:'auto'})}
   function driveTo(target){let guard=20;while(activeScreen()>target&&guard-->0)originalPrev&&originalPrev();guard=20;while(activeScreen()<target&&guard-->0)originalNext&&originalNext()}
   function openStage1(){driveTo(0);stageMode(1);setTimeout(()=>$('#tbmSiteSearch')?.focus({preventScroll:true}),120)}
   function openStage2(){if(!stage1Done){home();return}body.classList.remove('safe-stage2-final');driveTo(3);stageMode(2)}
@@ -2934,7 +2919,7 @@ function openAliveOverlay(){
   const ov=$("#aliveAlarmOverlay");if(!ov)return;ov.classList.add("open");ov.classList.toggle("escalate",aliveState.escalated);
   $("#aliveAlarmIcon").textContent=aliveState.escalated?"🚨":"🫀";
   $("#aliveAlarmTitle").textContent=aliveState.escalated?"⛔ 응답이 없습니다":"이상 없으신가요?";
-  $("#aliveAlarmSub").textContent=aliveState.escalated?"주변에 알리거나 아래 버튼으로 즉시 연락하세요.":"확인 버튼을 눌러 응답하세요.";
+  $("#aliveAlarmSub").textContent=aliveState.escalated?"응답이 없었습니다. 이상 없으면 화면 버튼을 누르거나 ‘이상없음’이라고 말하고, 필요하면 즉시 연락하세요.":"화면의 확인 버튼을 누르거나 ‘이상없음’이라고 말해 응답하세요.";
   $("#aliveEscalateArea").hidden=!aliveState.escalated;
   const wbtn=$("#aliveCallWatcher");if(wbtn)wbtn.href=aliveState.watcherPhone?("tel:"+aliveState.watcherPhone.replace(/[^0-9+]/g,"")):"tel:119";
 }
@@ -2984,24 +2969,26 @@ function stopAliveCheck(){
 
 document.addEventListener("DOMContentLoaded",()=>{
   loadAlive();
-  try{aliveRuntimeArmed=sessionStorage.getItem(ALIVE_RUNTIME_KEY)==="1"}catch(e){aliveRuntimeArmed=false}
-
-  // 새 탭/다시 접속에서는 이전 생존확인 경보를 자동 재생하지 않습니다.
-  // 생존확인은 STEP 2에서 사용자가 '생존확인 시작'을 직접 눌렀을 때만 작동합니다.
-  if(aliveState.active&&!aliveRuntimeArmed){
-    aliveState.active=false;
-    aliveState.prompting=false;
-    aliveState.escalated=false;
-    aliveState.nextDueAt=0;
-    aliveState.promptDeadlineAt=0;
-    saveAlive();
-    stopAlarmFx();
-    closeAliveOverlay();
-    releaseAliveWakeLock();
-  }else if(aliveState.active&&aliveState.prompting&&aliveRuntimeArmed){
-    // 같은 탭에서 새로고침한 경우에만 진행 중 경보를 복원합니다.
-    setTimeout(()=>{openAliveOverlay();startAlarmFx(aliveState.escalated)},300);
-  }
+  // 안전상 페이지를 열거나 단계 이동만으로 경보가 복원되지 않게 항상 초기화합니다.
+  // 생존확인은 STEP 2에서 사용자가 '생존확인 시작'을 직접 눌렀을 때만 현재 실행 중에 활성화됩니다.
+  aliveRuntimeArmed=false;
+  try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
+  aliveState.active=false;
+  aliveState.prompting=false;
+  aliveState.escalated=false;
+  aliveState.nextDueAt=0;
+  aliveState.promptDeadlineAt=0;
+  saveAlive();
+  stopAlarmFx();
+  closeAliveOverlay();
+  releaseAliveWakeLock();
+  window.resetAliveAlarmUI=function(){
+    aliveRuntimeArmed=false;
+    try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
+    aliveState.active=false;aliveState.prompting=false;aliveState.escalated=false;
+    aliveState.nextDueAt=0;aliveState.promptDeadlineAt=0;
+    stopAlarmFx();closeAliveOverlay();releaseAliveWakeLock();saveAlive();
+  };
   $$("#aliveIntervalGroup button").forEach(b=>b.addEventListener("click",()=>{
     aliveState.intervalMin=Number(b.dataset.aliveInterval);saveAlive();
     const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
@@ -3092,116 +3079,600 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 
 
-<script id="stage3BlackScreenFinalFixJS20260919">
+<script id="stage3PermitVisibilityFinalJS20260917">
+(function(){'use strict';function ensureStage3(){if(!document.body.classList.contains('safe-stage-permit'))return;const view=document.getElementById('view-permit');if(!view)return;view.classList.add('active');const slides=[...view.querySelectorAll('.permit-wizard-slide')];if(slides.length&&!slides.some(s=>s.classList.contains('mobile-active')))slides[0].classList.add('mobile-active');const src=document.getElementById('permitSpaceSearch'),place=document.getElementById('permitMobilePlace');if(place&&src&&src.value)place.textContent=src.value;}new MutationObserver(()=>setTimeout(ensureStage3,0)).observe(document.body,{attributes:true,attributeFilter:['class']});document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#homePermitBtn,#tbmStage2CompleteBtn,#view-permit'))setTimeout(ensureStage3,30)},true);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureStage3);else ensureStage3();})();
+</script>
+
+<style id="stage3PermitTopbarLastOverride20260917">
+@media(max-width:760px){
+ body.safe-stage-permit #permitInlineToolbar,
+ body.safe-stage-permit .permit-inline-toolbar,
+ body.safe-stage-permit #view-permit .permit-actions,
+ body.safe-stage-permit .tbm-permit-back{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important}
+ body.safe-stage-permit #permitMobileTopBar{display:grid!important;visibility:visible!important;opacity:1!important;height:auto!important;min-height:50px!important;max-height:none!important}
+ body.safe-stage-permit #view-permit{padding-top:68px!important}
+}
+</style>
+
+<style id="stageFlowWhiteScreenFinalFix20260917">
+/* Final visibility guard: prevent an empty legacy .shell from occupying the first viewport. */
+body.tbm-one-question.safe-stage-open > .shell{
+  display:none!important;
+  width:0!important;max-width:0!important;height:0!important;min-height:0!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;
+}
+body.tbm-one-question.safe-stage-open > #safeStageBar{
+  display:flex!important;
+  visibility:visible!important;opacity:1!important;
+}
+body.tbm-one-question.safe-stage-open > #tbmWizard{
+  display:block!important;
+  visibility:visible!important;opacity:1!important;
+  width:100%!important;min-height:100dvh!important;
+  margin:0!important;background:#fff!important;
+}
+body.tbm-one-question.safe-stage-open > #tbmWizard > .tbm-shell{
+  display:flex!important;width:min(100%,520px)!important;max-width:520px!important;
+  min-height:100dvh!important;margin:0 auto!important;background:#fff!important;
+}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{display:flex!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{display:block!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen:not(.active){display:none!important}
+</style>
+<script id="stageFlowWhiteScreenFinalFixJS20260917">
 (function(){
-  "use strict";
-
-  function q(s,r=document){return r.querySelector(s)}
-  function qa(s,r=document){return Array.from(r.querySelectorAll(s))}
-
-  function ensurePermitVisible(){
-    if(!document.body.classList.contains('safe-stage-permit')) return;
-
-    /* 혹시 남아 있는 검정 오버레이/부트 화면 제거 */
-    const boot=q('#bootSplash');
-    if(boot){boot.classList.add('hide');boot.style.pointerEvents='none'}
-
-    const view=q('#view-permit');
-    if(!view) return;
-
-    /* 허가서 Wizard를 보장 */
-    try{
-      if(typeof window.ensurePermitMobileEnhancements==='function'){
-        window.ensurePermitMobileEnhancements();
-      }
-    }catch(e){ console.warn('permit enhancement init',e); }
-
-    const track=q('#permitWizardTrack');
-    if(track){
-      const slides=qa('.permit-wizard-slide',track);
-      if(slides.length){
-        let active=slides.findIndex(s=>s.classList.contains('mobile-active'));
-        if(active<0){
-          const tabs=qa('.permit-wizard-tab');
-          active=tabs.findIndex(t=>t.classList.contains('active'));
-        }
-        if(active<0) active=0;
-        slides.forEach((s,i)=>{
-          s.classList.toggle('mobile-active',i===active);
-          if(innerWidth<=760) s.style.setProperty('display',i===active?'block':'none','important');
-        });
+  'use strict';
+  const body=document.body;
+  function repairStageView(){
+    if(!body.classList.contains('safe-stage-open'))return;
+    const wiz=document.getElementById('tbmWizard');
+    if(!wiz)return;
+    let active=wiz.querySelector('.tbm-screen.active');
+    if(!active){
+      const screens=wiz.querySelectorAll('.tbm-screen');
+      if(screens.length){
+        screens.forEach((el,i)=>el.classList.toggle('active',i===0));
+        active=screens[0];
       }
     }
-
-    /* 최종 모바일 상단바 내용 동기화 */
-    const src=q('#permitSpaceSearch');
-    const place=q('#permitMobilePlace');
-    if(place){
-      const val=String(src&&src.value||'').trim();
-      place.textContent=val||'작업개소 확인';
-      place.classList.toggle('empty',!val);
-    }
-
-    /* 혹시 과거 fixed/sticky 요소가 남아도 강제로 비활성 */
-    ['#permitInlineToolbar','.tbm-permit-back','#safeStageBar','#view-permit .permit-actions'].forEach(sel=>{
-      const el=q(sel);
-      if(el && innerWidth<=760) el.style.setProperty('display','none','important');
-    });
-
-    /* 레이아웃이 0폭으로 남아 있으면 다음 프레임에 재시도 */
-    const rect=view.getBoundingClientRect();
-    if(rect.width < 10 || rect.height < 10){
-      requestAnimationFrame(()=>{
-        view.style.setProperty('display','block','important');
-        view.style.setProperty('visibility','visible','important');
-        view.style.setProperty('opacity','1','important');
-      });
-    }
+    const bar=document.getElementById('safeStageBar');
+    if(bar)bar.setAttribute('aria-hidden','false');
   }
-
-  function scheduleFix(){
-    guardLegacyPermitActions();
-    requestAnimationFrame(ensurePermitVisible);
-    setTimeout(ensurePermitVisible,60);
-    setTimeout(ensurePermitVisible,220);
-  }
-
-  let actionGuard=null;
-  function guardLegacyPermitActions(){
-    const actions=q('#view-permit .permit-actions');
-    if(!actions || actionGuard) return;
-    actionGuard=new MutationObserver(()=>{
-      if(document.body.classList.contains('safe-stage-permit') && innerWidth<=760){
-        if(actions.style.getPropertyValue('display')!=='none' || actions.style.getPropertyPriority('display')!=='important'){
-          actions.style.setProperty('display','none','important');
-        }
-      }
-    });
-    actionGuard.observe(actions,{attributes:true,attributeFilter:['style','class']});
-  }
-
-  const mo=new MutationObserver(()=>{
-    if(document.body.classList.contains('safe-stage-permit')) scheduleFix();
-  });
-  mo.observe(document.body,{attributes:true,attributeFilter:['class']});
-
-  document.addEventListener('click',e=>{
-    if(e.target.closest && e.target.closest('#tbmStage2CompleteBtn,#homePermitBtn,#openPermitFromField,[data-step2-permit-open]')){
-      setTimeout(scheduleFix,0);
+  document.addEventListener('click',function(e){
+    if(e.target.closest&&e.target.closest('#homeSpaceBtn,#homeCheckBtn')){
+      requestAnimationFrame(()=>requestAnimationFrame(repairStageView));
     }
   },true);
-
-  window.addEventListener('resize',()=>{
-    if(document.body.classList.contains('safe-stage-permit')) setTimeout(ensurePermitVisible,40);
-  },{passive:true});
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',scheduleFix);
-  }else{
-    scheduleFix();
-  }
+  new MutationObserver(repairStageView).observe(body,{attributes:true,attributeFilter:['class']});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repairStageView);
+  else repairStageView();
 })();
 </script>
 
+
+<!-- ===== 2026-09-17 작업허가서 최상단 고정바 + 직책 빠른선택 ===== -->
+<style id="permitUltimateTopBarAndTitlePicker20260917">
+#permitUltimateTopBar{display:none}
+.permit-title-picker{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.permit-title-choice{min-height:38px;padding:7px 11px;border:1px solid #aeb8c3;border-radius:999px;background:#f5f7f9;color:#273444;font-size:12px;font-weight:900;cursor:pointer;line-height:1.2}
+.permit-title-choice.selected{border-color:#176ec4;background:#e8f3ff;color:#0b5898;box-shadow:inset 0 0 0 1px #176ec4}
+.permit-title-choice.add{border-style:dashed;border-color:#6e8498;background:#fff;color:#31506a}
+#appTitleInput[readonly]{cursor:default;background:#f8fafc!important}
+body.safe-stage-permit #permitMobileTopBar,
+body.safe-stage-permit #permitInlineToolbar,
+body.safe-stage-permit .permit-inline-toolbar,
+body.safe-stage-permit #view-permit .permit-actions,
+body.safe-stage-permit .tbm-permit-back{display:none!important;visibility:hidden!important;pointer-events:none!important}
+body.safe-stage-permit #permitUltimateTopBar{
+  display:grid!important;
+  grid-template-columns:auto minmax(280px,1fr) auto auto auto auto;
+  align-items:center;
+  gap:8px;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:40000;
+  min-height:64px;
+  padding:8px max(10px,calc((100vw - 1480px)/2));
+  box-sizing:border-box;
+  background:rgba(10,15,22,.985);
+  border-bottom:1px solid #2a3545;
+  box-shadow:0 8px 22px rgba(0,0,0,.30);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+}
+#permitUltimateTopBar .put-btn{height:46px;border:1px solid #334257;border-radius:11px;background:#172130;color:#f4f7fb;padding:0 13px;font-size:13px;font-weight:900;white-space:nowrap;cursor:pointer}
+#permitUltimateTopBar .put-btn.primary{background:#ffb02e;border-color:#ffb02e;color:#211703}
+#permitUltimateTopBar .put-back{background:#f7f8fa;color:#172033;border-color:#d7dee6}
+#permitUltimateTopBar .put-site{min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;height:46px;padding:0 10px;border:1px solid #334257;border-radius:11px;background:#121b28;box-sizing:border-box}
+#permitUltimateTopBar .put-site label{font-size:11px;font-weight:950;color:#9fb0c5;white-space:nowrap}
+#permitUltimateSpaceInput{min-width:0;width:100%;height:36px!important;min-height:36px!important;margin:0!important;padding:0 9px!important;border:0!important;border-radius:8px!important;outline:none!important;background:#1b2737!important;color:#fff!important;font-size:14px!important;font-weight:850!important;box-sizing:border-box!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.safe-stage-permit #view-permit{padding-top:78px!important}
+@media(max-width:900px){
+ body.safe-stage-permit #permitUltimateTopBar{grid-template-columns:78px minmax(0,1fr) repeat(4,minmax(0,1fr));grid-template-rows:46px 44px;gap:6px;padding:7px 8px}
+ #permitUltimateTopBar .put-back{grid-column:1;grid-row:1}
+ #permitUltimateTopBar .put-site{grid-column:2/-1;grid-row:1;height:46px}
+ #permitUltimateLoadBtn{grid-column:1;grid-row:2}
+ #permitUltimateSaveBtn{grid-column:2;grid-row:2}
+ #permitUltimatePrintBtn{grid-column:3/5;grid-row:2}
+ #permitUltimateNewBtn{grid-column:5/7;grid-row:2}
+ #permitUltimateTopBar .put-btn{height:44px;padding:0 7px;font-size:12px}
+ body.safe-stage-permit #view-permit{padding-top:112px!important}
+}
+@media(max-width:560px){
+ body.safe-stage-permit #permitUltimateTopBar{grid-template-columns:72px minmax(0,1fr) repeat(4,minmax(0,1fr));grid-template-rows:44px 42px;gap:5px;padding:6px}
+ #permitUltimateTopBar .put-site{height:44px;padding:0 7px;gap:5px}
+ #permitUltimateTopBar .put-site label{font-size:10px}
+ #permitUltimateSpaceInput{font-size:12px!important;padding:0 6px!important}
+ #permitUltimateTopBar .put-btn{height:42px;font-size:11px;padding:0 4px;border-radius:9px}
+ #permitUltimatePrintBtn{font-size:10.5px}
+ body.safe-stage-permit #view-permit{padding-top:104px!important}
+ .permit-title-choice{min-height:42px;font-size:13px;padding:8px 12px}
+}
+@media print{
+ #permitUltimateTopBar{display:none!important}
+ body.safe-stage-permit #view-permit{padding-top:0!important}
+}
+</style>
+<div id="permitUltimateTopBar" aria-label="작업허가서 고정 메뉴">
+  <button type="button" class="put-btn put-back" id="permitUltimateBackBtn">← 단계 목록</button>
+  <div class="put-site"><label for="permitUltimateSpaceInput">작업개소</label><input id="permitUltimateSpaceInput" list="permitSpaceOptions" type="text" autocomplete="off" placeholder="작업개소 선택"></div>
+  <button type="button" class="put-btn primary" id="permitUltimateLoadBtn">선택 공간</button>
+  <button type="button" class="put-btn" id="permitUltimateSaveBtn">💾 저장</button>
+  <button type="button" class="put-btn" id="permitUltimatePrintBtn">🖨 인쇄 / PDF</button>
+  <button type="button" class="put-btn" id="permitUltimateNewBtn">새 허가서</button>
+  <button type="button" class="put-btn put-ai" id="permitUltimateAiBtn">🤖 작업허가서 AI 점검</button>
+  <button type="button" class="put-btn put-alive" id="permitUltimateAliveBtn">🫀 생존확인 알람 <span id="permitUltimateAliveState">꺼짐</span></button>
+</div>
+<script id="permitUltimateTopBarAndTitlePickerJS20260917">
+(function(){
+  'use strict';
+  const q=(s,r=document)=>r.querySelector(s);
+  const qa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  const originalSpace=q('#permitSpaceSearch');
+  const topSpace=q('#permitUltimateSpaceInput');
+  const CUSTOM_KEY='permitCustomTitlesV1';
+  const baseTitles=['주임','대리','과장','선임장','소장','반장'];
+
+  function syncTopFromOriginal(){
+    if(!topSpace||!originalSpace)return;
+    if(document.activeElement!==topSpace)topSpace.value=originalSpace.value||'';
+  }
+  function syncOriginalFromTop(){
+    if(!topSpace||!originalSpace)return;
+    originalSpace.value=topSpace.value||'';
+    originalSpace.dispatchEvent(new Event('input',{bubbles:true}));
+    originalSpace.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  function clickOriginal(id){const b=q(id);if(b)b.click()}
+
+  q('#permitUltimateBackBtn')?.addEventListener('click',()=>clickOriginal('#tbmPermitBack'));
+  q('#permitUltimateLoadBtn')?.addEventListener('click',()=>{syncOriginalFromTop();clickOriginal('#permitLoadBtn');setTimeout(syncTopFromOriginal,50)});
+  q('#permitUltimateSaveBtn')?.addEventListener('click',()=>clickOriginal('#permitSaveBtn'));
+  q('#permitUltimatePrintBtn')?.addEventListener('click',()=>clickOriginal('#permitPrintBtn'));
+  q('#permitUltimateNewBtn')?.addEventListener('click',()=>{clickOriginal('#permitNewBtn');setTimeout(syncTopFromOriginal,30)});
+  topSpace?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();q('#permitUltimateLoadBtn')?.click()}});
+  topSpace?.addEventListener('change',syncOriginalFromTop);
+  originalSpace?.addEventListener('input',syncTopFromOriginal,{passive:true});
+  originalSpace?.addEventListener('change',syncTopFromOriginal,{passive:true});
+
+  function readCustomTitles(){
+    try{const v=JSON.parse(localStorage.getItem(CUSTOM_KEY)||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string'&&x.trim()).map(x=>x.trim()):[]}catch(e){return []}
+  }
+  function saveCustomTitles(arr){try{localStorage.setItem(CUSTOM_KEY,JSON.stringify(arr))}catch(e){}}
+  function allTitles(){return [...new Set([...baseTitles,...readCustomTitles()])]}
+  function renderTitlePicker(){
+    const input=q('#appTitleInput');
+    const box=q('#appTitlePicker');
+    if(!input||!box)return;
+    const current=String(input.value||'').trim();
+    box.innerHTML='';
+    allTitles().forEach(title=>{
+      const b=document.createElement('button');
+      b.type='button';b.className='permit-title-choice'+(current===title?' selected':'');b.textContent=title;
+      b.addEventListener('click',()=>{
+        input.value=title;
+        input.dispatchEvent(new Event('input',{bubbles:true}));
+        input.dispatchEvent(new Event('change',{bubbles:true}));
+        renderTitlePicker();
+      });
+      box.appendChild(b);
+    });
+    const add=document.createElement('button');
+    add.type='button';add.className='permit-title-choice add';add.textContent='＋ 직책 추가';
+    add.addEventListener('click',()=>{
+      const value=prompt('추가할 직책명을 입력하세요.\n예: 팀장, 책임자');
+      const title=String(value||'').trim();
+      if(!title)return;
+      const custom=readCustomTitles();
+      if(!baseTitles.includes(title)&&!custom.includes(title)){custom.push(title);saveCustomTitles(custom)}
+      input.value=title;
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      input.dispatchEvent(new Event('change',{bubbles:true}));
+      renderTitlePicker();
+    });
+    box.appendChild(add);
+  }
+  q('#appTitleInput')?.addEventListener('change',renderTitlePicker,{passive:true});
+
+  function init(){syncTopFromOriginal();renderTitlePicker()}
+  new MutationObserver(()=>{if(document.body.classList.contains('safe-stage-permit'))setTimeout(init,0)}).observe(document.body,{attributes:true,attributeFilter:['class']});
+  document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#homePermitBtn,#tbmStage2CompleteBtn,#permitLoadBtn,#permitNewBtn'))setTimeout(init,60)},true);
+  window.addEventListener('pageshow',()=>setTimeout(init,0));
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<style id="galaxyS25SignaturePermitToolsFix20260918">
+.permit-safety-tools{margin:0 0 12px}.permit-safety-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.permit-safety-shortcut{min-height:52px;border-radius:13px;border:1px solid #34465d;background:#142031;color:#fff;font-size:14px;font-weight:950;cursor:pointer;padding:9px 12px}.permit-safety-shortcut.ai{border-color:#2b7a86;background:#12333a;color:#d9fbff}.permit-safety-shortcut.alive{border-color:#6750b5;background:#201936;color:#e5dcff}.permit-safety-shortcut span{display:inline-flex;margin-left:5px;border-radius:999px;background:rgba(255,255,255,.1);padding:2px 7px;font-size:10px}.permit-safety-panel{margin-top:8px;border:1px solid #35455a;border-radius:14px;background:#111923;color:#f4f7fb;padding:13px}.permit-safety-panel[hidden]{display:none!important}.permit-safety-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.permit-safety-panel-head b{display:block;font-size:16px}.permit-safety-panel-head span{display:block;color:#9ca8b8;font-size:11px;line-height:1.5;margin-top:3px}.permit-safety-panel-head>button{border:1px solid #415069;background:#1c2837;color:#fff;border-radius:9px;min-height:38px;padding:0 10px;font-size:11px;font-weight:900}.permit-ai-run,.permit-ai-speak{min-height:50px;border-radius:11px;font-weight:950;font-size:14px;margin-top:10px;cursor:pointer}.permit-ai-run{width:100%;border:0;background:#1681d9;color:#fff}.permit-ai-speak{width:100%;border:1px solid #425269;background:#1b2736;color:#fff}.permit-ai-result{margin-top:10px;border:1px solid #2d5261;background:#0d1822;border-radius:11px;padding:11px 12px;font-size:12.5px;line-height:1.65}.permit-ai-result .permit-ai-overview{font-weight:900;margin-bottom:7px}.permit-ai-result ul{margin:5px 0 0;padding-left:18px}.permit-ai-result .ok{color:#8ee6b5}.permit-ai-result .warn{color:#ffd484}.permit-safety-note{margin-top:9px;font-size:10.5px;line-height:1.55;color:#9aa8ba}.permit-alive-intervals{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.permit-alive-intervals button{min-height:44px;border:1px solid #46546b;background:#172231;color:#dfe7f2;border-radius:10px;font-weight:900}.permit-alive-intervals button.on{border-color:#8a70ff;background:#2a2142;color:#e5dcff}.permit-alive-phone{display:block;margin-top:10px;font-size:11px;color:#cbd5e2;font-weight:800}.permit-alive-phone input{display:block;width:100%;min-height:48px;margin-top:5px;border:1px solid #425269!important;background:#172231!important;color:#fff!important;border-radius:10px!important;padding:0 11px!important;font-size:15px!important}.permit-alive-status{margin-top:10px;border:1px solid #3d4c61;background:#172231;border-radius:10px;padding:10px 11px;font-size:12.5px;line-height:1.55;font-weight:800}.permit-alive-status.on{border-color:#6750b5;color:#d9ceff}.permit-alive-status.overdue{border-color:#b64c48;background:#341c1d;color:#ffb0ad}.permit-alive-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.permit-alive-actions button{min-height:52px;border-radius:11px;border:0;font-weight:950;font-size:14px}.permit-alive-actions #permitAliveStartBtn{background:#148653;color:#fff}.permit-alive-actions #permitAliveStopBtn{background:#bd3d35;color:#fff}.permit-alive-actions button:disabled{opacity:.42}.permit-alive-log{margin-top:9px;max-height:120px;overflow:auto;color:#aab7c8;font-size:11px;line-height:1.55}.permit-alive-log .miss{color:#ffaaa8}
+@media(max-width:760px){body.safe-stage-permit .permit-safety-tools{margin:0 0 10px}.permit-safety-shortcut{min-height:56px;font-size:13px;padding:8px}.permit-safety-panel{padding:12px}.permit-safety-panel-head b{font-size:15px}}
+@media(max-width:430px){
+ body.safe-stage-permit #view-permit .permit-wizard-slide.mobile-active{display:block!important;visibility:visible!important;opacity:1!important}
+ body.safe-stage-permit #view-permit .worker-sign-row{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;width:100%!important;max-width:100%!important;min-width:0!important;padding:9px!important;overflow:visible!important}
+ body.safe-stage-permit #view-permit .worker-sign-name,body.safe-stage-permit #view-permit .worker-mini-pad,body.safe-stage-permit #view-permit .worker-remove{grid-column:1!important;width:100%!important;max-width:100%!important;min-width:0!important}
+ body.safe-stage-permit #view-permit .worker-mini-pad{display:block!important;visibility:visible!important;min-height:58px!important;border:0!important;background:transparent!important;overflow:visible!important}
+ body.safe-stage-permit #view-permit .worker-mini-pad canvas,body.safe-stage-permit #view-permit .worker-mini-tools{display:none!important}
+ body.safe-stage-permit #view-permit .worker-mini-pad .signature-open-btn,body.safe-stage-permit #view-permit .approval-card .signature-open-btn{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;min-height:56px!important;margin:0!important;padding:10px 12px!important;border:2px solid #176ec4!important;border-radius:11px!important;background:#eaf4ff!important;color:#0b5898!important;font-size:15px!important;font-weight:950!important;box-sizing:border-box!important}
+ body.safe-stage-permit #view-permit .worker-mini-pad .signature-open-btn:disabled{border-color:#78ad8b!important;background:#e8f6ed!important;color:#17683a!important}
+ body.safe-stage-permit #view-permit .worker-remove{justify-self:stretch!important;min-height:46px!important}
+ body.safe-stage-permit #view-permit .approval-card .sign-pad{display:block!important;visibility:visible!important;overflow:visible!important;border:0!important;background:transparent!important;margin-top:8px!important}
+ body.safe-stage-permit #view-permit .approval-card .sign-pad canvas,body.safe-stage-permit #view-permit .approval-card .sign-pad-tools{display:none!important}
+ .signature-modal{padding:8px!important;align-items:center!important}.signature-dialog{width:100%!important;max-height:calc(100dvh - 16px)!important;overflow:auto!important;border-radius:16px!important;padding:12px!important}.signature-large-canvas{height:300px!important;max-height:45dvh!important}.signature-modal-tools button{min-height:56px!important;font-size:16px!important}
+ .permit-safety-shortcuts{grid-template-columns:1fr!important}.permit-alive-intervals{grid-template-columns:1fr 1fr!important}.permit-alive-actions{grid-template-columns:1fr!important}
+}
+@media print{.permit-safety-tools{display:none!important}}
+</style>
+<script id="permitAiAliveBridge20260918">
+(function(){
+ 'use strict';
+ const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+ function togglePanel(kind,force){
+   const ai=$('#permitAiPanel'),alive=$('#permitAlivePanel'); if(!ai||!alive)return;
+   const target=kind==='ai'?ai:alive, other=kind==='ai'?alive:ai;
+   const willOpen=typeof force==='boolean'?force:target.hidden;
+   other.hidden=true; target.hidden=!willOpen;
+   if(willOpen&&kind==='alive')syncPermitAlive();
+ }
+ function esc2(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+ function permitAiLocalAudit(){
+   const form=$('#permitForm'); if(!form)return {missing:['허가서 화면을 찾지 못했습니다.'],done:[]};
+   const val=n=>String(form.elements[n]?.value||'').trim();
+   const missing=[],done=[];
+   [['permitDate','허가일자'],['appDept','신청자 부서명'],['appTitle','직책'],['appName','성명'],['startAt','작업 시작'],['endAt','작업 종료'],['place','작업장소'],['workContent','작업내용']].forEach(([n,l])=>(val(n)?done:missing).push(l));
+   const gasMeta=[$('#gasMeasurer')?.value,$('#gasMeasuredAt')?.value,$('#gasDevice')?.value,$('#gasDeviceCheck')?.value].every(v=>String(v||'').trim());
+   const gasText=String($('#gasOverallMessage')?.textContent||$('#gasOverall')?.textContent||'').trim();
+   if(gasMeta&&/적정|완료|정상|통과/.test(gasText))done.push('가스농도 측정·평가'); else missing.push('가스농도 측정·평가');
+   const needs=$$('[data-pneed]',form), oks=$$('[data-pok]',form); const required=needs.filter(x=>x.checked), pending=required.filter((x,i)=>!oks[needs.indexOf(x)]?.checked);
+   if(required.length&&pending.length===0)done.push('안전보건조치 확인'); else missing.push(required.length?`안전보건조치 미확인 ${pending.length}건`:'안전보건조치 필요 항목 선택');
+   const parseWorkers=id=>{try{return JSON.parse($(id)?.value||'[]')}catch(e){return[]}};
+   const entry=parseWorkers('#entryWorkersJson'); const entryOk=entry.length>0&&entry.every(r=>String(r?.name||'').trim()&&Array.isArray(r?.paths)&&r.paths.some(p=>Array.isArray(p)&&p.length>1));
+   if(entryOk)done.push('입장 작업자 성명·서명'); else missing.push('입장 작업자 성명·서명');
+   const signOk=role=>{try{return JSON.parse($('#'+role+'SignJson')?.value||'[]').some(p=>Array.isArray(p)&&p.length>1)}catch(e){return false}};
+   if(signOk('work'))done.push('작업부서 승인 서명'); else missing.push('작업부서 승인 서명');
+   if($('#finalPermitApproved')?.checked)done.push('최종 확인'); else missing.push('최종 확인');
+   return {missing,done};
+ }
+ async function runPermitAi(){
+   const btn=$('#permitAiRunBtn'),box=$('#permitAiResult'); if(!box)return;
+   const audit=permitAiLocalAudit();
+   if(btn){btn.disabled=true;btn.textContent='AI 점검 중...'}
+   let briefing='';
+   try{
+     if(typeof window.runAiBriefing==='function')await window.runAiBriefing(true);
+     const src=$('#aiBriefResult'); if(src&&src.classList.contains('show'))briefing=src.innerHTML;
+   }catch(e){}
+   const total=audit.done.length+audit.missing.length, pct=total?Math.round(audit.done.length/total*100):0;
+   box.innerHTML=`<div class="permit-ai-overview ${audit.missing.length?'warn':'ok'}">${audit.missing.length?'⚠ 작성·확인 필요':'✅ 주요 확인 완료'} · ${audit.done.length}/${total}개 (${pct}%)</div>`+
+     (audit.missing.length?`<div class="warn"><b>지금 확인할 항목</b><ul>${audit.missing.map(x=>`<li>${esc2(x)}</li>`).join('')}</ul></div>`:'<div class="ok">현재 확인된 주요 항목에는 누락이 없습니다.</div>')+
+     (briefing?`<div style="margin-top:10px;border-top:1px solid #2b3d50;padding-top:9px"><b>작업 전 AI 브리핑</b>${briefing}</div>`:'');
+   if(btn){btn.disabled=false;btn.textContent='AI 점검 다시 실행'}
+ }
+ function syncPermitAlive(){
+   /* 허가서 화면만 직접 연 경우에도 숨겨진 STEP 2 생존확인 상태를 현재 작업개소 기준으로 먼저 갱신 */
+   try{if(typeof window.renderAliveCard==='function'){const current=typeof selectedSpace==='function'?selectedSpace():null;window.renderAliveCard(current)}}catch(e){}
+   const hiddenStatus=$('#aliveStatusBox'),hiddenTag=$('#step2AliveState'),status=$('#permitAliveStatus'),mini=$('#permitAliveMiniState');
+   if(status&&hiddenStatus){status.textContent=hiddenStatus.textContent;status.className='permit-alive-status'+(hiddenStatus.classList.contains('overdue')?' overdue':hiddenStatus.classList.contains('on')?' on':'')}
+   if(mini)mini.textContent=hiddenTag?.textContent||'꺼짐';
+   const hs=$('#aliveStartBtn'),he=$('#aliveStopBtn'),ps=$('#permitAliveStartBtn'),pe=$('#permitAliveStopBtn'); if(ps&&hs)ps.disabled=hs.disabled;if(pe&&he)pe.disabled=he.disabled;
+   const hp=$('#aliveWatcherPhone'),pp=$('#permitAliveWatcherPhone'); if(pp&&hp&&document.activeElement!==pp)pp.value=hp.value||'';
+   $$('#permitAliveIntervals [data-permit-alive-interval]').forEach(b=>{const hb=$(`#aliveIntervalGroup [data-alive-interval="${b.dataset.permitAliveInterval}"]`);b.classList.toggle('on',!!hb?.classList.contains('on'))});
+   const log=$('#permitAliveLog'),srcLog=$('#aliveLog');if(log&&srcLog)log.innerHTML=srcLog.innerHTML;
+ }
+ $('#permitAiToggle')?.addEventListener('click',()=>togglePanel('ai'));
+ $('#permitAliveToggle')?.addEventListener('click',()=>togglePanel('alive'));
+ $$('[data-close-permit-safety]').forEach(b=>b.addEventListener('click',()=>togglePanel(b.dataset.closePermitSafety,false)));
+ $('#permitAiRunBtn')?.addEventListener('click',runPermitAi);
+ $('#permitAiSpeakBtn')?.addEventListener('click',()=>{if(typeof window.speakAiBriefing==='function')window.speakAiBriefing();else alert('먼저 AI 점검을 실행해주세요.')});
+ $$('#permitAliveIntervals [data-permit-alive-interval]').forEach(b=>b.addEventListener('click',()=>{const hb=$(`#aliveIntervalGroup [data-alive-interval="${b.dataset.permitAliveInterval}"]`);hb?.click();setTimeout(syncPermitAlive,30)}));
+ $('#permitAliveWatcherPhone')?.addEventListener('change',e=>{const hp=$('#aliveWatcherPhone');if(hp){hp.value=e.target.value;hp.dispatchEvent(new Event('change',{bubbles:true}))}setTimeout(syncPermitAlive,30)});
+ $('#permitAliveStartBtn')?.addEventListener('click',()=>{$('#aliveStartBtn')?.click();setTimeout(syncPermitAlive,80)});
+ $('#permitAliveStopBtn')?.addEventListener('click',()=>{$('#aliveStopBtn')?.click();setTimeout(syncPermitAlive,80)});
+ const bindSignatureFallback=()=>{
+   try{window.ensurePermitMobileEnhancements?.()}catch(e){}
+   // If worker rows were rerendered after enhancement, bind popup buttons again through the public setup hook.
+   ['entry','exit'].forEach(type=>$$(`[data-worker-row^="${type}-"]`).forEach((row,i)=>{try{window.setupWorkerSignPad?.(type,i)}catch(e){}}));
+ }
+ document.addEventListener('click',e=>{if(e.target.closest?.('#homePermitBtn,#tbmStage2CompleteBtn,#view-permit'))setTimeout(()=>{bindSignatureFallback();syncPermitAlive()},80)},true);
+ window.addEventListener('resize',()=>{if(innerWidth<=430)setTimeout(bindSignatureFallback,50)});
+ document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{bindSignatureFallback();syncPermitAlive()},180)});
+ setInterval(()=>{if(document.body.classList.contains('safe-stage-permit'))syncPermitAlive()},1000);
+})();
+</script>
+
+
+<!-- ===== 2026-09-18 허가서 AI/생존확인 최상단 고정 + 작업시작 심장 팝업 ===== -->
+<style id="permitFixedAiAliveTopbar20260918">
+body.safe-stage-permit #permitSafetyTools{margin:0!important;padding:0!important}
+body.safe-stage-permit #permitSafetyTools>.permit-safety-shortcuts{display:none!important}
+#permitUltimateTopBar .put-ai{border-color:#2b7a86!important;background:#12343c!important;color:#dffcff!important}
+#permitUltimateTopBar .put-alive{border-color:#6f5bc0!important;background:#241b3d!important;color:#e9e2ff!important}
+#permitUltimateTopBar .put-alive span{display:inline-flex;align-items:center;margin-left:4px;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.10);font-size:9px;font-weight:950}
+#permitUltimateTopBar .put-alive.active{border-color:#35b675!important;background:#143626!important;color:#a7efc6!important;box-shadow:0 0 0 1px rgba(53,182,117,.25) inset}
+#permitUltimateTopBar .put-alive.overdue{border-color:#dd625e!important;background:#401c1d!important;color:#ffb4b1!important;animation:permitAliveTopPulse 1.1s ease-in-out infinite}
+@keyframes permitAliveTopPulse{50%{filter:brightness(1.28)}}
+body.safe-stage-permit #permitAiPanel,
+body.safe-stage-permit #permitAlivePanel{
+ position:fixed!important;z-index:39990!important;top:72px!important;left:50%!important;transform:translateX(-50%)!important;
+ width:min(calc(100vw - 20px),760px)!important;max-height:calc(100dvh - 86px)!important;overflow:auto!important;
+ margin:0!important;padding:14px!important;border:1px solid #40516a!important;border-radius:15px!important;
+ box-shadow:0 18px 55px rgba(0,0,0,.48)!important;background:#111923!important;
+ -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)
+}
+body.safe-stage-permit #permitAiPanel[hidden],body.safe-stage-permit #permitAlivePanel[hidden]{display:none!important}
+#permitStartHeartPopup{display:none;position:fixed;z-index:50020;width:238px;box-sizing:border-box;padding:11px;border:2px solid #8a70ff;border-radius:15px;background:#211a36;color:#fff;box-shadow:0 16px 45px rgba(0,0,0,.42)}
+#permitStartHeartPopup.show{display:block;animation:permitHeartPop .16s ease-out}
+@keyframes permitHeartPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+#permitStartHeartPopup .heart-head{display:flex;align-items:center;gap:9px;font-weight:950;font-size:14px}
+#permitStartHeartPopup .heart-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#e53e62;color:#fff;font-size:22px;box-shadow:0 0 0 5px rgba(229,62,98,.13);animation:permitHeartBeat 1.05s ease-in-out infinite}
+@keyframes permitHeartBeat{0%,100%{transform:scale(1)}40%{transform:scale(1.12)}}
+#permitStartHeartPopup p{margin:8px 0 9px;color:#cbc3e8;font-size:11px;line-height:1.5}
+#permitStartHeartPopup .heart-actions{display:grid;grid-template-columns:1fr auto;gap:6px}
+#permitStartHeartPopup button{min-height:42px;border-radius:10px;font-weight:950;font-size:12px;cursor:pointer}
+#permitStartHeartStart{border:0;background:#7a5cff;color:#fff;padding:0 10px}
+#permitStartHeartLater{border:1px solid #514668;background:#2b2440;color:#d8d0eb;padding:0 9px}
+@media(min-width:901px){
+ body.safe-stage-permit #permitUltimateTopBar{grid-template-columns:auto minmax(230px,1fr) auto auto auto auto auto auto!important}
+ body.safe-stage-permit #view-permit{padding-top:78px!important}
+}
+@media(max-width:900px){
+ body.safe-stage-permit #permitUltimateTopBar{
+  grid-template-columns:78px minmax(0,1fr) repeat(4,minmax(0,1fr))!important;
+  grid-template-rows:46px 44px 44px!important;gap:6px!important;padding:7px 8px!important
+ }
+ #permitUltimateBackBtn{grid-column:1;grid-row:1}
+ #permitUltimateTopBar .put-site{grid-column:2/-1;grid-row:1}
+ #permitUltimateLoadBtn{grid-column:1;grid-row:2}
+ #permitUltimateSaveBtn{grid-column:2;grid-row:2}
+ #permitUltimatePrintBtn{grid-column:3/5;grid-row:2}
+ #permitUltimateNewBtn{grid-column:5/7;grid-row:2}
+ #permitUltimateAiBtn{grid-column:1/4;grid-row:3}
+ #permitUltimateAliveBtn{grid-column:4/7;grid-row:3}
+ body.safe-stage-permit #view-permit{padding-top:162px!important}
+ body.safe-stage-permit #permitAiPanel,body.safe-stage-permit #permitAlivePanel{top:157px!important;max-height:calc(100dvh - 170px)!important}
+}
+@media(max-width:560px){
+ body.safe-stage-permit #permitUltimateTopBar{
+  grid-template-columns:72px minmax(0,1fr) repeat(4,minmax(0,1fr))!important;
+  grid-template-rows:44px 42px 44px!important;gap:5px!important;padding:6px!important
+ }
+ #permitUltimateAiBtn,#permitUltimateAliveBtn{font-size:11.5px!important}
+ body.safe-stage-permit #view-permit{padding-top:153px!important}
+ body.safe-stage-permit #permitAiPanel,body.safe-stage-permit #permitAlivePanel{top:148px!important;width:calc(100vw - 12px)!important;max-height:calc(100dvh - 158px)!important;padding:12px!important}
+ #permitStartHeartPopup{width:min(238px,calc(100vw - 20px))}
+}
+@media print{#permitStartHeartPopup{display:none!important}}
+</style>
+<div id="permitStartHeartPopup" role="dialog" aria-label="생존확인 알람 시작 안내" aria-hidden="true">
+ <div class="heart-head"><span class="heart-icon">♥</span><span>작업 시작 전 생존확인</span></div>
+ <p>밀폐공간에 실제 입장한다면 생존확인 알람을 함께 시작하세요.</p>
+ <div class="heart-actions"><button type="button" id="permitStartHeartStart">🫀 알람 설정·시작</button><button type="button" id="permitStartHeartLater">나중에</button></div>
+</div>
+<script id="permitFixedAiAliveTopbarJS20260918">
+(function(){
+ 'use strict';
+ const $=(s,r=document)=>r.querySelector(s);
+ const aiTop=$('#permitUltimateAiBtn'), aliveTop=$('#permitUltimateAliveBtn');
+ const aiToggle=$('#permitAiToggle'), aliveToggle=$('#permitAliveToggle');
+ const aiPanel=$('#permitAiPanel'), alivePanel=$('#permitAlivePanel');
+ const aliveStateTop=$('#permitUltimateAliveState');
+ const startInput=$('#permitForm [name="startAt"]');
+ const heart=$('#permitStartHeartPopup'), heartStart=$('#permitStartHeartStart'), heartLater=$('#permitStartHeartLater');
+ function closePanels(except){
+   if(aiPanel&&except!=='ai')aiPanel.hidden=true;
+   if(alivePanel&&except!=='alive')alivePanel.hidden=true;
+ }
+ aiTop?.addEventListener('click',()=>{closePanels('ai');aiToggle?.click()});
+ aliveTop?.addEventListener('click',()=>{closePanels('alive');aliveToggle?.click()});
+ function syncTopAlive(){
+   const src=$('#permitAliveMiniState')||$('#step2AliveState');
+   const txt=String(src?.textContent||'꺼짐').trim();
+   if(aliveStateTop&&aliveStateTop.textContent!==txt)aliveStateTop.textContent=txt;
+   if(aliveTop){aliveTop.classList.toggle('active',txt!=='꺼짐'&&!/응답없음/.test(txt));aliveTop.classList.toggle('overdue',/응답없음/.test(txt))}
+ }
+ function hideHeart(){if(!heart)return;heart.classList.remove('show');heart.setAttribute('aria-hidden','true')}
+ function placeHeart(){
+   if(!heart||!startInput||!document.body.classList.contains('safe-stage-permit'))return;
+   const r=startInput.getBoundingClientRect();
+   const w=Math.min(238,window.innerWidth-20), h=150, gap=8;
+   let left=r.right+gap, top=Math.max(8,r.top-10);
+   if(left+w>window.innerWidth-8){left=Math.max(10,Math.min(window.innerWidth-w-10,r.left));top=r.bottom+gap}
+   if(top+h>window.innerHeight-8)top=Math.max(8,r.top-h-gap);
+   heart.style.left=Math.round(left)+'px';heart.style.top=Math.round(top)+'px';
+ }
+ function showHeart(){
+   if(!heart||!startInput||!document.body.classList.contains('safe-stage-permit'))return;
+   heart.classList.add('show');heart.setAttribute('aria-hidden','false');requestAnimationFrame(placeHeart);
+ }
+ startInput?.addEventListener('click',()=>setTimeout(showHeart,40));
+ startInput?.closest('.permit-field')?.addEventListener('click',e=>{if(e.target!==heart&&!(heart&&heart.contains(e.target)))setTimeout(showHeart,40)});
+ startInput?.addEventListener('focus',()=>setTimeout(showHeart,80));
+ startInput?.addEventListener('change',()=>setTimeout(showHeart,50));
+ heartLater?.addEventListener('click',hideHeart);
+ heartStart?.addEventListener('click',()=>{
+   hideHeart();
+   if(alivePanel?.hidden)aliveTop?.click();
+   setTimeout(()=>{const b=$('#permitAliveStartBtn');if(b&&!b.disabled)b.click()},120);
+ });
+ document.addEventListener('pointerdown',e=>{
+   if(!heart?.classList.contains('show'))return;
+   if(e.target===startInput||heart.contains(e.target))return;
+   hideHeart();
+ },true);
+ window.addEventListener('resize',()=>{if(heart?.classList.contains('show'))placeHeart()});
+ window.addEventListener('scroll',()=>{if(heart?.classList.contains('show'))placeHeart()},{passive:true});
+ new MutationObserver(syncTopAlive).observe(document.body,{subtree:true,characterData:true,childList:true});
+ new MutationObserver(()=>{if(!document.body.classList.contains('safe-stage-permit')){hideHeart();closePanels()}else syncTopAlive()}).observe(document.body,{attributes:true,attributeFilter:['class']});
+ syncTopAlive();
+})();
+</script>
+
+
+<!-- ===== 2026-09-19 생존확인 음성 응답: “이상없음” ===== -->
+<style id="aliveVoiceAckStyle20260919">
+.alive-voice-status{margin:0 auto 12px;max-width:360px;border:1px solid #53647a;background:#111a28;color:#dce8f6;border-radius:11px;padding:9px 11px;font-size:12px;font-weight:850;line-height:1.5}
+.alive-voice-status.listening{border-color:#4f9cf5;background:#102844;color:#a9d2ff;box-shadow:0 0 0 3px rgba(79,156,245,.10)}
+.alive-voice-status.heard{border-color:#35ad72;background:#123323;color:#a7eac6}
+.alive-voice-status.error{border-color:#a84b47;background:#351a1b;color:#ffb5b1}
+.permit-alive-voice-guide{margin-top:9px;border:1px solid #43536a;background:#151f2d;border-radius:10px;padding:9px 10px;color:#c6d2e1;font-size:11px;line-height:1.6}
+.permit-alive-voice-guide b{color:#e8ddff}
+@media(max-width:430px){.alive-voice-status{font-size:12.5px;padding:10px 11px}.permit-alive-voice-guide{font-size:11.5px}}
+</style>
+<script id="aliveVoiceAckJS20260919">
+(function(){
+ 'use strict';
+ const $=(s,r=document)=>r.querySelector(s);
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ let recognition=null;
+ let voiceWanted=false;
+ let restartTimer=null;
+ let priming=false;
+ let micDenied=false;
+
+ function status(text,cls){
+   const el=$('#aliveVoiceStatus');
+   if(!el)return;
+   el.textContent=text;
+   el.className='alive-voice-status'+(cls?' '+cls:'');
+ }
+ function normalize(text){
+   return String(text||'').toLowerCase().replace(/[\s.,!?·~_-]/g,'');
+ }
+ function isAckPhrase(text){
+   const t=normalize(text);
+   return t.includes('이상없음')||t.includes('이상없습니다')||t.includes('이상무');
+ }
+ function overlayOpen(){return !!$('#aliveAlarmOverlay')?.classList.contains('open')}
+ function stopRecognition(){
+   voiceWanted=false;
+   if(restartTimer){clearTimeout(restartTimer);restartTimer=null}
+   if(recognition){try{recognition.onend=null;recognition.stop()}catch(e){} recognition=null}
+ }
+ function acknowledgeByVoice(transcript){
+   voiceWanted=false;
+   if(restartTimer){clearTimeout(restartTimer);restartTimer=null}
+   status('✅ 음성 확인: “'+String(transcript||'이상없음').trim()+'” · 경보를 해제합니다.','heard');
+   try{recognition?.stop()}catch(e){}
+   setTimeout(()=>{
+     const btn=$('#aliveAckBtn');
+     if(btn&&overlayOpen())btn.click();
+   },120);
+ }
+ function startRecognition(){
+   if(!voiceWanted||!overlayOpen())return;
+   if(!SpeechRecognition){
+     status('🎙️ 이 브라우저는 자동 음성인식을 지원하지 않습니다. 아래 “이상 없습니다” 버튼을 눌러주세요.','error');
+     voiceWanted=false;
+     return;
+   }
+   if(micDenied){
+     status('🎙️ 마이크 권한이 꺼져 있습니다. 브라우저 사이트 권한에서 마이크를 허용하거나 아래 버튼을 눌러주세요.','error');
+     voiceWanted=false;
+     return;
+   }
+   try{
+     recognition=new SpeechRecognition();
+     recognition.lang='ko-KR';
+     recognition.continuous=false;
+     recognition.interimResults=true;
+     recognition.maxAlternatives=5;
+     recognition.onstart=()=>status('🎙️ 듣고 있습니다 · “이상없음”이라고 말하세요.','listening');
+     recognition.onresult=(ev)=>{
+       for(let i=ev.resultIndex;i<ev.results.length;i++){
+         const r=ev.results[i];
+         for(let j=0;j<r.length;j++){
+           const text=r[j]?.transcript||'';
+           if(isAckPhrase(text)){acknowledgeByVoice(text);return}
+         }
+       }
+     };
+     recognition.onerror=(ev)=>{
+       const code=String(ev?.error||'');
+       if(code==='not-allowed'||code==='service-not-allowed'){
+         micDenied=true;voiceWanted=false;
+         status('🎙️ 마이크 권한이 거부되었습니다. 마이크를 허용하거나 아래 “이상 없습니다” 버튼을 눌러주세요.','error');
+       }else if(code==='audio-capture'){
+         voiceWanted=false;status('🎙️ 마이크를 사용할 수 없습니다. 아래 “이상 없습니다” 버튼을 눌러주세요.','error');
+       }
+     };
+     recognition.onend=()=>{
+       recognition=null;
+       if(voiceWanted&&overlayOpen()&&!micDenied){restartTimer=setTimeout(startRecognition,450)}
+     };
+     recognition.start();
+   }catch(e){
+     recognition=null;
+     if(voiceWanted&&overlayOpen())restartTimer=setTimeout(startRecognition,700);
+   }
+ }
+ function beginVoiceAck(){
+   if(!overlayOpen())return;
+   voiceWanted=true;
+   status('🎙️ 음성 응답 준비 · “이상없음”이라고 말하세요.');
+   startRecognition();
+ }
+ async function primeMicrophone(){
+   if(priming||micDenied||!navigator.mediaDevices?.getUserMedia)return;
+   priming=true;
+   try{
+     const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+     stream.getTracks().forEach(t=>t.stop());
+     micDenied=false;
+   }catch(e){
+     if(e?.name==='NotAllowedError'||e?.name==='SecurityError')micDenied=true;
+   }finally{priming=false}
+ }
+ function handleOverlayState(){if(overlayOpen())beginVoiceAck();else stopRecognition()}
+ const overlay=$('#aliveAlarmOverlay');
+ if(overlay)new MutationObserver(handleOverlayState).observe(overlay,{attributes:true,attributeFilter:['class']});
+
+ // 생존확인 시작 버튼은 사용자의 직접 탭이므로 이때 마이크 권한을 미리 받아 실제 경보 때 바로 듣도록 합니다.
+ ['#aliveStartBtn','#permitAliveStartBtn','#permitStartHeartStart'].forEach(sel=>{
+   $(sel)?.addEventListener('click',()=>{primeMicrophone()},true);
+ });
+ $('#aliveAckBtn')?.addEventListener('click',stopRecognition,true);
+ $('#aliveStopBtn')?.addEventListener('click',stopRecognition,true);
+ $('#permitAliveStopBtn')?.addEventListener('click',stopRecognition,true);
+ document.addEventListener('visibilitychange',()=>{
+   if(document.visibilityState==='visible'&&overlayOpen())beginVoiceAck();
+   else if(document.visibilityState!=='visible')stopRecognition();
+ });
+ window.addEventListener('pagehide',stopRecognition);
+ window.aliveVoiceAck={supported:!!SpeechRecognition,phraseMatch:isAckPhrase,start:beginVoiceAck,stop:stopRecognition};
+})();
+</script>
+
+
+<style id="finalQaMobileFix20260919">
+/* 최종 검수: S25 세로 화면에서 고정바와 AI/생존확인 팝업이 겹치지 않도록 보정 */
+@media (min-width:561px) and (max-width:900px){
+  body.safe-stage-permit #permitAiPanel,
+  body.safe-stage-permit #permitAlivePanel{top:165px!important;max-height:calc(100dvh - 175px)!important}
+}
+@media (max-width:560px){
+  body.safe-stage-permit #permitAiPanel,
+  body.safe-stage-permit #permitAlivePanel{top:158px!important;max-height:calc(100dvh - 168px)!important}
+}
+</style>
 </body>
 </html>
