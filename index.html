@@ -1462,13 +1462,39 @@ $("#permitNeedAll")?.addEventListener("change",e=>setPermitChecklistAll("need",e
 $("#permitOkAll")?.addEventListener("change",e=>setPermitChecklistAll("ok",e.target.checked));
 $("#permitChecksClearAll")?.addEventListener("click",()=>{setPermitChecklistAll("need",false);setPermitChecklistAll("ok",false)});
 $("#permitChecklistBody")?.addEventListener("change",e=>{if(e.target.matches('[data-pneed],[data-pok]'))syncPermitChecklistBulk()});
-function formObject(){syncGasHidden();syncWorkerSignsHidden();const f=$("#permitForm"),o={};new FormData(f).forEach((v,k)=>o[k]=v);o.need=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pneed="${i}"]`)?.checked);o.ok=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pok="${i}"]`)?.checked);o.finalApproved=$("#finalPermitApproved").checked;return o}
+function formObject(){
+ syncGasHidden();syncWorkerSignsHidden();
+ const f=$("#permitForm"),o={};
+ /* FormData는 disabled 필드를 제외하므로 작업허가서 전체 저장을 위해 모든 name 필드를 직접 수집합니다. */
+ [...f.elements].forEach(el=>{
+  if(!el.name)return;
+  if(el.type==="checkbox"){o[el.name]=!!el.checked;return}
+  if(el.type==="radio"){if(el.checked)o[el.name]=el.value;return}
+  o[el.name]=el.value??"";
+ });
+ o.need=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pneed="${i}"]`)?.checked);
+ o.ok=PERMIT_CHECKS.map((_,i)=>!!$(`[data-pok="${i}"]`)?.checked);
+ o.finalApproved=!!$("#finalPermitApproved")?.checked;
+ const s=spaces.find(x=>x.id===Number(permitSelectedId));
+ o.__permitSnapshot={version:2,savedAt:new Date().toISOString(),spaceId:s?.id??null,manageNo:s?.manageNo||"",spaceLabel:$("#permitSpaceSearch")?.value||""};
+ return o
+}
 function fillPermit(o={}){const f=$("#permitForm");[...f.elements].forEach(el=>{if(!el.name)return;if(el.type!=="checkbox")el.value=o[el.name]??""});renderPermitChecks(o);$("#finalPermitApproved").checked=!!o.finalApproved;checkPermitDuration();gasMeasure=parseGasMeasure(o.gasMeasureJson||"");renderGasMeasure();loadWorkerSignsFromPermit(o);setTimeout(()=>{loadSignPadsFromHidden();window.refreshPermitPage5RolePickers?.()},0)}
 function loadPermitForSpace(s){permitSelectedId=s.id;const ctx=workContextFor(s);$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;const saved=permitForms[permitKey(s)]||{};fillPermit({...saved,permitDate:saved.permitDate||new Date().toISOString().slice(0,10),appDept:saved.appDept||ctx.workDept,place:saved.place||`${s.site} · ${s.detailLocation||s.detailName}`,workContent:saved.workContent||s.internalWork,coopDept:saved.coopDept||ctx.coopDept,workApproveDept:saved.workApproveDept||ctx.workDept,manageApproveDept:saved.manageApproveDept||(ctx.group==="korail"?"":ctx.manageDept)});$("#permitSideStatus").innerHTML=`선택: <b>${esc(s.site)} · ${esc(s.manageNo)}</b><br>작업부서 <b>${esc(ctx.workDept)}</b> / 작업관리부서 <b>${esc(ctx.group==="korail"?"없음":ctx.manageDept||(ctx.group==="subsidiary"?"공사 관리사업소 확인 필요":"발주처 확인 필요"))}</b> / 협조부서 <b>${esc(ctx.coopDept)}</b>`;setTimeout(()=>{loadSignPadsFromHidden();renderApprovalWorkflow();window.refreshPermitPage5RolePickers?.()},0)}
 function choosePermitFromInput(){const s=findSpaceByInput($("#permitSpaceSearch").value);if(!s){alert("밀폐공간을 찾지 못했습니다.");return}loadPermitForSpace(s)}
 $("#permitLoadBtn").onclick=choosePermitFromInput;$("#permitSpaceSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();choosePermitFromInput()}});
-function savePermit(){const s=spaces.find(x=>x.id===Number(permitSelectedId));const o=formObject();permitForms[permitKey(s)]=o;localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));if(s){const c=getChecks(s);c.permit=o.finalApproved?"yes":"unknown";saveChecks(s,c);if(fieldSelectedId===s.id)renderField()}$("#permitSideStatus").innerHTML=`<span class="good">허가서 저장 완료</span>${s?` · ${esc(s.manageNo)}`:""}`;renderApprovalWorkflow()}
-$("#permitSaveBtn").onclick=savePermit;$("#permitPrintBtn").onclick=()=>{savePermit();window.print()};$("#permitNewBtn").onclick=()=>{permitSelectedId=null;$("#permitSpaceSearch").value="";fillPermit({permitDate:new Date().toISOString().slice(0,10)});gasMeasure=blankGasMeasure();renderGasMeasure();["work","manage","coop"].forEach(r=>signPads[r]?.clear());$("#permitSideStatus").textContent="새 허가서를 작성합니다."};
+function savePermit(){
+ const s=spaces.find(x=>x.id===Number(permitSelectedId));
+ const o=formObject();
+ permitForms[permitKey(s)]=o;
+ try{localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms))}
+ catch(e){alert("작업허가서 전체 저장에 실패했습니다. 브라우저 저장공간을 확인해주세요.");throw e}
+ if(s){const c=getChecks(s);c.permit=o.finalApproved?"yes":"unknown";saveChecks(s,c);if(fieldSelectedId===s.id)renderField()}
+ $("#permitSideStatus").innerHTML=`<span class="good">허가서 1~5페이지 전체 저장 완료</span>${s?` · ${esc(s.manageNo)}`:""}`;
+ renderApprovalWorkflow();
+ return o
+}
+$("#permitSaveBtn").onclick=savePermit;$("#permitPrintBtn").onclick=()=>{if(typeof window.printFullPermit==="function")window.printFullPermit();else{savePermit();window.print()}};$("#permitNewBtn").onclick=()=>{permitSelectedId=null;$("#permitSpaceSearch").value="";fillPermit({permitDate:new Date().toISOString().slice(0,10)});gasMeasure=blankGasMeasure();renderGasMeasure();["work","manage","coop"].forEach(r=>signPads[r]?.clear());$("#permitSideStatus").textContent="새 허가서를 작성합니다."};
 $("#finalPermitApproved").onchange=()=>{const s=spaces.find(x=>x.id===Number(permitSelectedId));if(s){const c=getChecks(s);c.permit=$("#finalPermitApproved").checked?"yes":"unknown";saveChecks(s,c);if(fieldSelectedId===s.id)renderField()}renderApprovalWorkflow()};
 function checkPermitDuration(){const f=$("#permitForm"),a=f.elements.startAt?.value,b=f.elements.endAt?.value,el=$("#permitDuration");if(!el)return;if(!a||!b){el.textContent="";return}const h=(new Date(b)-new Date(a))/3600000;if(!Number.isFinite(h)){el.textContent="";return}el.className="permit-dur "+(h>0&&h<=8?"ok":"bad");el.textContent=h<=0?"⚠ 종료시간을 시작시간 이후로 입력하세요.":h>8?`⚠ 허가시간 ${h.toFixed(1)}시간 · 서식 기준 최대 8시간을 초과합니다.`:`✓ 허가시간 ${h.toFixed(1)}시간`}
 $("#permitForm").addEventListener("input",e=>{if(e.target.name==="startAt"||e.target.name==="endAt")checkPermitDuration()});
@@ -1675,8 +1701,38 @@ ${shared.url}`);alert("카카오톡 공유를 열지 못해 링크를 복사했�
 $("#shareToManageBtn")?.addEventListener("click",()=>sharePermitTo("manage"));$("#shareToCoopBtn")?.addEventListener("click",()=>sharePermitTo("coop"));
 function loadSignPadsFromHidden(){["work","manage","coop"].forEach(r=>signPads[r]?.load());renderApprovalWorkflow()}
 function loadGasFromPermitObject(o={}){gasMeasure=parseGasMeasure(o.gasMeasureJson||$("#gasMeasureJson")?.value||"");renderGasMeasure();syncGasToSignal()}
+function enterPermitRecipientMode(payload){
+ const target=payload?.target==="coop"?"coop":"manage";
+ document.body.classList.remove("safe-3step-home","safe-stage-open","safe-stage-one","safe-stage-two","safe-stage2-final","tbm-old-open");
+ document.body.classList.add("tbm-permit-open","safe-stage-permit","permit-recipient-mode",`permit-recipient-${target}`);
+ document.body.classList.remove(target==="manage"?"permit-recipient-coop":"permit-recipient-manage");
+ document.body.dataset.permitShareTarget=target;
+}
+function focusPermitRecipientSignature(payload){
+ const target=payload?.target==="coop"?"coop":"manage";
+ try{window.ensurePermitMobileEnhancements?.()}catch(e){}
+ try{window.goPermitWizardStep?.(4,{force:true,instant:true})}catch(e){}
+ const slides=[...document.querySelectorAll('#permitWizardTrack .permit-wizard-slide')];
+ slides.forEach((slide,i)=>slide.classList.toggle('mobile-active',i===4));
+ const slide=slides[4]||document.querySelector('.permit-wizard-slide[data-step="4"]');
+ if(slide){
+   let head=document.getElementById('permitRecipientSignatureHead');
+   if(!head){head=document.createElement('div');head.id='permitRecipientSignatureHead';head.className='permit-recipient-head';const anchor=slide.querySelector('.permit-step-head');anchor?.insertAdjacentElement('afterend',head)}
+   const pc=currentPermitContext();const ctx=pc?.ctx||{};const roleLabel=target==='manage'?'작업관리부서 승인·서명':'협조부서 확인·서명';
+   const dept=target==='manage'?(ctx.manageDept||'작업관리부서'):(ctx.coopDept||'협조부서');
+   head.innerHTML=`<span>공유받은 작업허가서</span><strong>${roleLabel}</strong><small>${esc(pc?.s?.site||'')} · ${esc(pc?.s?.detailName||'')}<br>${esc(dept)} 담당자는 아래에서 직책·성명을 확인한 뒤 서명만 완료하세요.</small>`;
+ }
+ const targetCard=document.getElementById(target==='manage'?'manageApprovalCard':'coopApprovalCard');
+ setTimeout(()=>targetCard?.scrollIntoView({behavior:'auto',block:'start'}),60);
+}
 async function applySharedPermitPayload(payload){
- const s=spaces.find(x=>x.id===Number(payload.spaceId))||spaces.find(x=>x.manageNo===payload.manageNo);if(!s)throw new Error("해당 작업개소를 찾을 수 없습니다.");setWorkerContextForSpace(s,payload.workerGroup,payload.workDept);fieldSelectedId=selectedId=permitSelectedId=s.id;permitForms[permitKey(s)]=payload.form||{};localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));$("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;fillPermit(payload.form||{});loadGasFromPermitObject(payload.form||{});loadSignPadsFromHidden();showView("permit");const ctx=workContextFor(s),b=$("#shareImportBanner");if(b){b.classList.add("show");b.innerHTML=payload.target==="manage"?`💬 <b>작업관리부서 서명 요청</b> · ${esc(ctx.workDept)}에서 공유한 허가서입니다. 내용·가스측정 결과를 확인한 뒤 승인·서명 단계로 이동하세요.`:`💬 <b>협조부서 서명 요청</b> · 앞선 승인내용을 확인한 뒤 최종 승인·서명 단계로 이동하세요.`}$("#permitSideStatus").innerHTML=`공유 허가서 불러옴 · <b>${esc(s.site)} · ${esc(s.manageNo)}</b>`;setTimeout(()=>{if(window.goPermitWizardStep)window.goPermitWizardStep(4);$("#approvalWorkflow")?.scrollIntoView({behavior:"smooth",block:"start"})},280)
+ enterPermitRecipientMode(payload);
+ const s=spaces.find(x=>x.id===Number(payload.spaceId))||spaces.find(x=>x.manageNo===payload.manageNo);if(!s)throw new Error("해당 작업개소를 찾을 수 없습니다.");
+ setWorkerContextForSpace(s,payload.workerGroup,payload.workDept);fieldSelectedId=selectedId=permitSelectedId=s.id;permitForms[permitKey(s)]=payload.form||{};localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));
+ $("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;fillPermit(payload.form||{});loadGasFromPermitObject(payload.form||{});loadSignPadsFromHidden();showView("permit");
+ const ctx=workContextFor(s),b=$("#shareImportBanner");if(b){b.classList.add("show");b.innerHTML=payload.target==="manage"?`💬 <b>작업관리부서 서명 요청</b> · ${esc(ctx.workDept)}에서 공유한 허가서입니다. 아래 작업관리부서 서명만 완료하면 됩니다.`:`💬 <b>협조부서 서명 요청</b> · 앞선 승인내용이 반영된 허가서입니다. 아래 협조부서 서명만 완료하면 됩니다.`}
+ $("#permitSideStatus").innerHTML=`공유 허가서 불러옴 · <b>${esc(s.site)} · ${esc(s.manageNo)}</b>`;
+ [40,220,520,900].forEach(ms=>setTimeout(()=>focusPermitRecipientSignature(payload),ms));
 }
 async function importPermitFromHash(){
  try{const params=new URLSearchParams(location.search);const shareId=params.get("permitShare");if(shareId){if(!SAFE_AI_ENDPOINT)throw new Error("Cloudflare Worker 주소가 없습니다.");const res=await fetch(`${SAFE_AI_ENDPOINT.replace(/\/$/,"")}/permit-share?id=${encodeURIComponent(shareId)}`);const d=await res.json().catch(()=>({}));if(!res.ok||!d?.payload)throw new Error(d?.error||"공유 허가서를 찾을 수 없습니다.");await applySharedPermitPayload(d.payload);return}if(location.hash.startsWith("#permit=")){const payload=JSON.parse(b64urlDecode(location.hash.slice(8)));await applySharedPermitPayload(payload)}}catch(e){console.error(e);alert("공유된 작업허가서를 불러오지 못했습니다: "+e.message)}
@@ -2070,7 +2126,7 @@ function hideBootSplash(){const b=document.getElementById("bootSplash");if(!b)re
 /* 첫 화면은 내장 데이터로 즉시 그린 뒤, 저장 데이터/부가기능을 뒤에서 복원합니다. */
 refreshCritical();
 requestAnimationFrame(()=>{hideBootSplash();setTimeout(()=>{loadSafetyLocal();loadLocal();refreshCritical();refreshDeferred()},40)});
-if(location.hash&&location.hash.length>2){setTimeout(()=>{fillPermit({permitDate:new Date().toISOString().slice(0,10)});importPermitFromHash()},140)};
+if((new URLSearchParams(location.search).has('permitShare'))||(location.hash&&location.hash.length>2)){setTimeout(()=>{fillPermit({permitDate:new Date().toISOString().slice(0,10)});importPermitFromHash()},140)};
 </script>
 
 <div class="signature-modal" id="signatureModal" aria-hidden="true">
@@ -3748,5 +3804,236 @@ body.safe-stage-permit #permitAiPanel[hidden],body.safe-stage-permit #permitAliv
 })();
 </script>
 
+
+<!-- ===== 2026-09-19 공유 수신자 서명 전용 화면 ===== -->
+<style id="permitRecipientSignatureOnly20260919">
+body.permit-recipient-mode{background:#0c1119!important}
+body.permit-recipient-mode #tbmWizard,
+body.permit-recipient-mode #flowHomeCard,
+body.permit-recipient-mode #permitUltimateTopBar,
+body.permit-recipient-mode #permitMobileTopBar,
+body.permit-recipient-mode .tbm-permit-back,
+body.permit-recipient-mode #view-permit .permit-actions,
+body.permit-recipient-mode #view-permit .permit-wizard-controls,
+body.permit-recipient-mode #view-permit .permit-wizard-nav,
+body.permit-recipient-mode #view-permit .permit-side,
+body.permit-recipient-mode #view-permit .final-check{display:none!important}
+body.permit-recipient-mode #view-permit{display:block!important;visibility:visible!important;width:min(100%,680px)!important;max-width:680px!important;margin:0 auto!important;padding:14px 10px 40px!important;overflow:visible!important}
+body.permit-recipient-mode #view-permit .permit-layout{display:block!important}
+body.permit-recipient-mode #view-permit .permit-form{display:block!important;background:transparent!important;border:0!important;padding:0!important}
+body.permit-recipient-mode #view-permit .permit-wizard-track{display:block!important;overflow:visible!important;height:auto!important}
+body.permit-recipient-mode #view-permit .permit-wizard-slide{display:none!important}
+body.permit-recipient-mode #view-permit .permit-wizard-slide[data-step="4"]{display:block!important;visibility:visible!important;opacity:1!important;background:#f7f9fb!important;color:#111!important;border-radius:16px!important;padding:13px!important}
+body.permit-recipient-mode #view-permit .permit-step-head{display:none!important}
+body.permit-recipient-mode #shareImportBanner{display:block!important;margin:0 0 10px!important}
+body.permit-recipient-mode #permitRoleApprovalFields{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+body.permit-recipient-mode #permitRoleApprovalFields .permit-role-card{display:none!important}
+body.permit-recipient-manage #permitRoleApprovalFields [data-permit-role-card="manageApprove"]{display:block!important}
+body.permit-recipient-coop #permitRoleApprovalFields [data-permit-role-card="coop"]{display:block!important}
+body.permit-recipient-mode #approvalWorkflow{margin-top:10px!important;padding:11px!important}
+body.permit-recipient-mode #approvalWorkflow>h3{font-size:17px!important;margin-bottom:8px!important}
+body.permit-recipient-mode #approvalWorkflow .guide{display:none!important}
+body.permit-recipient-mode #approvalWorkflow .approval-flow-grid{display:block!important}
+body.permit-recipient-mode #approvalWorkflow .approval-card{display:none!important}
+body.permit-recipient-manage #manageApprovalCard{display:block!important}
+body.permit-recipient-coop #coopApprovalCard{display:block!important}
+body.permit-recipient-mode #approvalWorkflow .approval-card{border:2px solid #176ec4!important;border-radius:13px!important;padding:12px!important;background:#fff!important}
+body.permit-recipient-mode #approvalWorkflow .approval-card h4{font-size:16px!important;margin:5px 0 8px!important}
+body.permit-recipient-mode #approvalWorkflow .approval-card .dept{font-size:13px!important;min-height:0!important;margin-bottom:7px!important}
+body.permit-recipient-mode #approvalWorkflow .signature-open-btn{display:block!important;visibility:visible!important;width:100%!important;min-height:58px!important;font-size:16px!important;border-radius:11px!important}
+body.permit-recipient-mode #approvalWorkflow .sign-pad canvas,
+body.permit-recipient-mode #approvalWorkflow .sign-pad-tools{display:none!important}
+body.permit-recipient-mode .approval-share-actions{margin-top:10px!important}
+body.permit-recipient-mode #shareToManageBtn{display:none!important}
+body.permit-recipient-manage #shareToCoopBtn{display:block!important;width:100%!important;min-height:54px!important}
+body.permit-recipient-coop .approval-share-actions{display:none!important}
+body.permit-recipient-mode #approvalStatus{font-size:12px!important;line-height:1.6!important;margin-top:9px!important}
+.permit-recipient-head{margin:0 0 10px;padding:13px 14px;border:2px solid #176ec4;border-radius:13px;background:#eaf4ff;color:#173f5b}
+.permit-recipient-head span{display:block;font-size:10px;font-weight:950;color:#176ec4;margin-bottom:3px}
+.permit-recipient-head strong{display:block;font-size:20px;line-height:1.3;color:#102f49}
+.permit-recipient-head small{display:block;margin-top:6px;font-size:12px;line-height:1.55;color:#52687a}
+body.permit-recipient-mode #permitRoleApprovalFields .permit-role-card{border:1px solid #c7d2dc!important;background:#fff!important;border-radius:12px!important;padding:11px!important}
+body.permit-recipient-mode #permitRoleApprovalFields .permit-role-choice{min-height:44px!important;font-size:13px!important}
+body.permit-recipient-mode #permitRoleApprovalFields input{min-height:48px!important;font-size:15px!important}
+@media(max-width:420px){
+ body.permit-recipient-mode #view-permit{padding:8px 8px 28px!important}
+ .permit-recipient-head strong{font-size:18px}
+ body.permit-recipient-mode #view-permit .permit-wizard-slide[data-step="4"]{padding:10px!important;border-radius:13px!important}
+}
+</style>
+<script id="permitRecipientSignatureOnlyJS20260919">
+(function(){
+ 'use strict';
+ function target(){return document.body.dataset.permitShareTarget||''}
+ function signed(role){try{return JSON.parse(document.getElementById(role+'SignJson')?.value||'[]').some(p=>Array.isArray(p)&&p.length>1)}catch(e){return false}}
+ function update(){
+   if(!document.body.classList.contains('permit-recipient-mode'))return;
+   const t=target(),role=t==='coop'?'coop':'manage',ok=signed(role),st=document.getElementById('approvalStatus');
+   if(!st)return;
+   if(!ok){st.innerHTML=t==='coop'?'<b>서명 대기</b> · 협조부서 담당자가 위의 <b>크게 서명하기</b>를 눌러 서명하세요.':'<b>서명 대기</b> · 작업관리부서 담당자가 위의 <b>크게 서명하기</b>를 눌러 서명하세요.';return}
+   st.innerHTML=t==='coop'?'<b style="color:#11743f">✅ 협조부서 서명 완료</b> · 이 허가서의 최종 협조서명이 완료되었습니다.':'<b style="color:#11743f">✅ 작업관리부서 서명 완료</b> · 아래 <b>협조부서에 카카오톡 공유</b>를 누르면 다음 서명자에게 바로 전달됩니다.';
+ }
+ document.addEventListener('click',e=>{if(e.target.closest?.('#signatureModalSave,#shareToCoopBtn'))setTimeout(update,80)},true);
+ document.addEventListener('change',()=>setTimeout(update,20),true);
+ const mo=new MutationObserver(()=>setTimeout(update,20));
+ mo.observe(document.body,{attributes:true,attributeFilter:['class','data-permit-share-target']});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(update,500));else setTimeout(update,500);
+ window.updatePermitRecipientSignatureStatus=update;
+})();
+</script>
+
+
+<!-- ===== 2026-09-19 작업허가서 1~5페이지 전체 저장/PDF 출력 보정 ===== -->
+<style id="permitFullSavePrintFix20260919">
+#permitFullPrintSummary{display:none}
+@media print{
+  html,body{height:auto!important;min-height:0!important;overflow:visible!important;background:#fff!important;color:#111!important}
+  body.permit-print-all{padding:0!important;margin:0!important;background:#fff!important}
+  body.permit-print-all.tbm-one-question>.shell{display:block!important;width:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important}
+  body.permit-print-all.tbm-one-question>.shell>*{display:none!important}
+  body.permit-print-all.tbm-one-question>.shell>#view-permit{display:block!important;visibility:visible!important;opacity:1!important}
+  body.permit-print-all>#tbmWizard,
+  body.permit-print-all #permitUltimateTopBar,
+  body.permit-print-all #permitMobileTopBar,
+  body.permit-print-all .tbm-permit-back,
+  body.permit-print-all #view-permit .permit-actions,
+  body.permit-print-all #view-permit .permit-side,
+  body.permit-print-all #view-permit .permit-wizard-nav,
+  body.permit-print-all #view-permit .permit-wizard-controls,
+  body.permit-print-all .permit-safety-tools,
+  body.permit-print-all #permitAiPanel,
+  body.permit-print-all #permitAlivePanel,
+  body.permit-print-all #permitStartHeartPopup,
+  body.permit-print-all .signature-modal,
+  body.permit-print-all .share-import-banner{display:none!important}
+
+  body.permit-print-all #view-permit{display:block!important;position:static!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;color:#111!important}
+  body.permit-print-all #view-permit .permit-layout{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+  body.permit-print-all #view-permit .permit-form{display:block!important;visibility:visible!important;position:static!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#fff!important;color:#111!important;overflow:visible!important}
+  body.permit-print-all #view-permit .permit-title{display:block!important;font-size:20px!important;margin:0 0 8mm!important;color:#111!important}
+  body.permit-print-all #permitFullPrintSummary{display:block!important;margin:-5mm 0 6mm!important;padding:7px 9px!important;border:1px solid #777!important;border-radius:4px!important;background:#fff!important;color:#111!important;font-size:9.5px!important;line-height:1.5!important}
+  body.permit-print-all #view-permit .permit-wizard-track{display:block!important;visibility:visible!important;position:static!important;width:100%!important;max-width:none!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;transform:none!important;scroll-snap-type:none!important}
+  body.permit-print-all #view-permit .permit-wizard-slide,
+  body.permit-print-all #view-permit .permit-wizard-slide.mobile-active,
+  body.permit-print-all #view-permit .permit-wizard-slide[data-step]{display:block!important;visibility:visible!important;opacity:1!important;position:static!important;inset:auto!important;float:none!important;width:100%!important;max-width:none!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0 0 7mm!important;border:0!important;border-radius:0!important;background:#fff!important;color:#111!important;box-shadow:none!important;overflow:visible!important;transform:none!important;page-break-after:always!important;break-after:page!important}
+  body.permit-print-all #view-permit .permit-wizard-slide:last-child{page-break-after:auto!important;break-after:auto!important}
+  body.permit-print-all #view-permit .permit-step-head{display:flex!important;align-items:center!important;justify-content:space-between!important;margin:0 0 5mm!important;padding:0 0 3mm!important;border-bottom:2px solid #222!important;color:#111!important}
+  body.permit-print-all #view-permit .permit-step-head b{font-size:17px!important;color:#111!important}
+  body.permit-print-all #view-permit .permit-step-head span{font-size:10px!important;color:#555!important;background:none!important;padding:0!important}
+  body.permit-print-all #view-permit .permit-step-progress,
+  body.permit-print-all #view-permit .permit-step-alert{display:none!important}
+
+  body.permit-print-all #view-permit .permit-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:5px!important}
+  body.permit-print-all #view-permit .permit-field{display:block!important;padding:0!important;margin:0!important;break-inside:avoid!important}
+  body.permit-print-all #view-permit .span2{grid-column:span 2!important}
+  body.permit-print-all #view-permit .span4{grid-column:1/-1!important}
+  body.permit-print-all #view-permit .permit-field label{display:block!important;font-size:9.5px!important;color:#333!important;margin:0 0 2px!important}
+  body.permit-print-all #view-permit input,
+  body.permit-print-all #view-permit select,
+  body.permit-print-all #view-permit textarea{display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important;box-sizing:border-box!important;border:1px solid #777!important;border-radius:3px!important;background:#fff!important;color:#111!important;-webkit-text-fill-color:#111!important;opacity:1!important;padding:4px 5px!important;font-size:10px!important;line-height:1.35!important;box-shadow:none!important}
+  body.permit-print-all #view-permit textarea{min-height:36px!important;white-space:pre-wrap!important;overflow:visible!important;resize:none!important}
+  body.permit-print-all #view-permit input[type=checkbox]{display:inline-block!important;width:15px!important;height:15px!important;padding:0!important;border:1px solid #555!important;vertical-align:middle!important}
+  body.permit-print-all #view-permit input[type=hidden]{display:none!important;visibility:hidden!important}
+  body.permit-print-all #view-permit input[disabled],body.permit-print-all #view-permit select[disabled]{background:#e7e9ec!important;color:#666!important;-webkit-text-fill-color:#666!important}
+
+  body.permit-print-all #view-permit .gas-permit-box,
+  body.permit-print-all #view-permit .worker-sign-section,
+  body.permit-print-all #view-permit .approval-workflow,
+  body.permit-print-all #view-permit .permit-sign,
+  body.permit-print-all #view-permit .permit-table-wrap{display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;overflow:visible!important;break-inside:auto!important}
+  body.permit-print-all #view-permit .gas-grid-wrap{display:grid!important;grid-template-columns:190px 1fr!important;gap:8px!important}
+  body.permit-print-all #view-permit .gas-point-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:4px!important}
+  body.permit-print-all #view-permit .gas-reading-list{display:grid!important;gap:5px!important}
+  body.permit-print-all #view-permit .gas-reading-card{display:block!important;break-inside:avoid!important;padding:6px!important}
+  body.permit-print-all #view-permit .gas-reading-fields{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:4px!important}
+  body.permit-print-all #view-permit .gas-bulk-box,
+  body.permit-print-all #view-permit .gas-camera-actions,
+  body.permit-print-all #view-permit .gas-camera-guide,
+  body.permit-print-all #view-permit .permit-check-bulk{display:none!important}
+
+  body.permit-print-all #view-permit .permit-table{display:table!important;width:100%!important;min-width:0!important;border-collapse:collapse!important;table-layout:fixed!important}
+  body.permit-print-all #view-permit .permit-table thead{display:table-header-group!important}
+  body.permit-print-all #view-permit .permit-table tbody{display:table-row-group!important}
+  body.permit-print-all #view-permit .permit-table tr{display:table-row!important;margin:0!important;padding:0!important;border:0!important;background:#fff!important;break-inside:avoid!important}
+  body.permit-print-all #view-permit .permit-table th,
+  body.permit-print-all #view-permit .permit-table td{display:table-cell!important;width:auto!important;border:1px solid #777!important;padding:4px!important;background:#fff!important;color:#111!important;font-size:8.5px!important;line-height:1.35!important;vertical-align:top!important}
+  body.permit-print-all #view-permit .permit-table .cat{width:17%!important;font-weight:900!important}
+  body.permit-print-all #view-permit .permit-table .ck{width:7%!important;text-align:center!important}
+  body.permit-print-all #view-permit .permit-table td.ck:before{display:none!important;content:none!important}
+
+  body.permit-print-all #view-permit .worker-lines{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;width:100%!important}
+  body.permit-print-all #view-permit .worker-sign-row{display:grid!important;grid-template-columns:120px minmax(0,1fr)!important;gap:6px!important;align-items:stretch!important;padding:6px!important;margin:0 0 5px!important;break-inside:avoid!important}
+  body.permit-print-all #view-permit .worker-mini-pad{display:block!important;visibility:visible!important;border:1px solid #888!important;background:#fff!important;min-height:0!important}
+  body.permit-print-all #view-permit .worker-mini-pad canvas,
+  body.permit-print-all #view-permit .sign-pad canvas{display:block!important;visibility:visible!important;width:100%!important;height:62px!important;background:#fff!important;border:0!important}
+  body.permit-print-all #view-permit .worker-mini-tools,
+  body.permit-print-all #view-permit .sign-pad-tools,
+  body.permit-print-all #view-permit .signature-open-btn,
+  body.permit-print-all #view-permit .worker-add,
+  body.permit-print-all #view-permit .worker-remove,
+  body.permit-print-all #view-permit .entry-copy-panel,
+  body.permit-print-all #view-permit .approval-share-actions{display:none!important}
+
+  body.permit-print-all #view-permit #permitRoleApprovalFields{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;width:100%!important}
+  body.permit-print-all #view-permit #permitRoleApprovalFields .permit-role-card{display:block!important;visibility:visible!important;grid-column:auto!important;break-inside:avoid!important;padding:7px!important}
+  body.permit-print-all #view-permit #permitRoleApprovalFields .permit-sign.span2{grid-column:1/-1!important}
+  body.permit-print-all #view-permit #permitRoleApprovalFields .permit-role-picker{display:none!important}
+  body.permit-print-all #view-permit #permitRoleApprovalFields .permit-sign-grid,
+  body.permit-print-all #view-permit #permitRoleApprovalFields .permit-sign-grid.role-three-grid,
+  body.permit-print-all #view-permit #permitRoleApprovalFields .permit-sign-grid.role-name-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:4px!important}
+  body.permit-print-all #view-permit #permitRoleApprovalFields .role-name-grid{grid-template-columns:1fr 1fr!important}
+  body.permit-print-all #view-permit #permitRoleApprovalFields .permit-no-manage-note:not([hidden]){display:block!important;font-size:9px!important;padding:5px!important}
+  body.permit-print-all #view-permit .approval-flow-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px!important}
+  body.permit-print-all #view-permit .approval-card{display:block!important;visibility:visible!important;opacity:1!important;break-inside:avoid!important;padding:7px!important;background:#fff!important;color:#111!important}
+  body.permit-print-all #view-permit .approval-card.skip{opacity:1!important;background:#eee!important;color:#666!important}
+  body.permit-print-all #view-permit .approval-status{display:block!important;background:#fff!important;color:#333!important;border:1px solid #aaa!important;font-size:9px!important}
+  body.permit-print-all #view-permit .final-check{display:flex!important;background:#fff!important;color:#111!important;border:1px solid #777!important;break-inside:avoid!important}
+  body.permit-print-all #view-permit .permit-note,
+  body.permit-print-all #view-permit .gas-standard,
+  body.permit-print-all #view-permit .gas-overall,
+  body.permit-print-all #view-permit .permit-dur{font-size:9px!important;line-height:1.45!important}
+  @page{size:A4 portrait;margin:10mm}
+}
+</style>
+<script id="permitFullSavePrintJS20260919">
+(function(){
+ 'use strict';
+ let cleanupTimer=null;
+ function cleanup(){
+   document.body.classList.remove('permit-print-all');
+   if(cleanupTimer){clearTimeout(cleanupTimer);cleanupTimer=null}
+ }
+ function syncAll(){
+   try{typeof syncGasHidden==='function'&&syncGasHidden()}catch(e){}
+   try{typeof syncWorkerSignsHidden==='function'&&syncWorkerSignsHidden()}catch(e){}
+   try{typeof loadSignPadsFromHidden==='function'&&loadSignPadsFromHidden()}catch(e){}
+   try{window.refreshPermitPage5RolePickers?.()}catch(e){}
+   try{
+     const form=document.getElementById('permitForm'),track=document.getElementById('permitWizardTrack');
+     if(form&&track){
+       let box=document.getElementById('permitFullPrintSummary');
+       if(!box){box=document.createElement('div');box.id='permitFullPrintSummary';track.before(box)}
+       const space=document.getElementById('permitSpaceSearch')?.value||'작업개소 미선택';
+       const app=form.elements.appDept?.value||'-',name=form.elements.appName?.value||'-';
+       box.textContent='작업개소: '+space+'  |  신청자: '+app+' '+name+'  |  출력시각: '+new Date().toLocaleString('ko-KR');
+     }
+   }catch(e){}
+ }
+ window.printFullPermit=function(){
+   try{syncAll();typeof savePermit==='function'&&savePermit()}catch(e){return}
+   document.body.classList.add('permit-print-all');
+   /* 모바일에서는 현재 카드만 display:block인 규칙이 많으므로 print 전 전체 서명 canvas를 다시 그립니다. */
+   try{typeof renderAllWorkerSigns==='function'&&renderAllWorkerSigns()}catch(e){}
+   try{typeof loadSignPadsFromHidden==='function'&&loadSignPadsFromHidden()}catch(e){}
+   const after=()=>{window.removeEventListener('afterprint',after);cleanup()};
+   window.addEventListener('afterprint',after);
+   cleanupTimer=setTimeout(cleanup,15000);
+   setTimeout(()=>window.print(),120);
+ };
+ const b=document.getElementById('permitPrintBtn');if(b)b.onclick=window.printFullPermit;
+ document.getElementById('permitUltimatePrintBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.printFullPermit()},true);
+ window.addEventListener('beforeprint',()=>{if(document.body.classList.contains('safe-stage-permit'))document.body.classList.add('permit-print-all')});
+})();
+</script>
 </body>
 </html>
