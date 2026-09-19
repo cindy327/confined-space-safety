@@ -531,11 +531,7 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
   <article class="step2-card" id="step2AliveCard">
     <div class="step2-card-head"><div class="step2-kicker alive">생존</div><div><h3>🫀 생존확인 알람</h3><p>휴대용 가스측정기로 수시 측정하는 동안, 일정 간격으로 작업자 의식·반응을 확인합니다.</p></div><span class="step2-state" id="step2AliveState">꺼짐</span></div>
     <div class="step2-card-body">
-      <div class="alive-help">알람이 울리면 큰 초록 버튼을 누르거나 <b>“이상없음”</b>이라고 말해 응답할 수 있습니다. <b>정해진 시간 안에 응답이 없으면 경보로 전환</b>되어 주변에 알립니다. 실제 밀폐공간 입장 시점에 켜고, 완전히 퇴장한 뒤 끄세요.</div>
-      <div class="alive-voice-panel" id="aliveVoicePanel">
-        <div><b>🎙 음성응답</b><span id="aliveVoiceStatus">브라우저 지원 여부 확인 중</span></div>
-        <button type="button" id="aliveVoiceEnableBtn">음성응답 사용</button>
-      </div>
+      <div class="alive-help">이상 없으면 알람이 울릴 때 화면을 눌러 응답하세요. <b>정해진 시간 안에 응답이 없으면 경보로 전환</b>되어 주변에 알립니다. 실제 밀폐공간 입장 시점에 켜고, 완전히 퇴장한 뒤 끄세요.</div>
       <div class="alive-row">
         <label>확인 간격</label>
         <div class="alive-interval-group" id="aliveIntervalGroup">
@@ -564,10 +560,9 @@ body.tbm-one-question.tbm-old-open .tbm-permit-back{display:block!important}
   <div class="alive-alarm-box" id="aliveAlarmBox">
     <div class="alive-alarm-icon" id="aliveAlarmIcon">🫀</div>
     <div class="alive-alarm-title" id="aliveAlarmTitle">이상 없으신가요?</div>
-    <div class="alive-alarm-sub" id="aliveAlarmSub">확인 버튼을 누르거나 “이상없음”이라고 말하세요.</div>
-    <div class="alive-voice-listening" id="aliveVoiceListening" hidden>🎙 “이상없음” 음성 대기 중</div>
+    <div class="alive-alarm-sub" id="aliveAlarmSub">확인 버튼을 눌러 응답하세요.</div>
     <div class="alive-alarm-countdown" id="aliveAlarmCountdown">30</div>
-    <button type="button" class="alive-ack-btn" id="aliveAckBtn">✅ 이상없음 · 터치 확인</button>
+    <button type="button" class="alive-ack-btn" id="aliveAckBtn">✅ 이상 없습니다 · 확인</button>
     <div class="alive-alarm-escalate" id="aliveEscalateArea" hidden>
       <a class="alive-call-btn watcher" id="aliveCallWatcher" href="#">🚨 감시인에게 전화</a>
       <a class="alive-call-btn sos" href="tel:119">📞 119 신고</a>
@@ -1940,24 +1935,6 @@ body.safe-stage-permit #view-permit .permit-actions{
 @media print{.permit-inline-toolbar{display:none!important}}
 </style>
 
-
-<style id="aliveVoiceResponse20260919">
-.alive-voice-panel{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:10px;border:1px solid #34455b;border-radius:11px;background:#101925}
-.alive-voice-panel>div{min-width:0}.alive-voice-panel b{display:block;font-size:13px;color:#d9e7f7}.alive-voice-panel span{display:block;margin-top:3px;font-size:10.5px;line-height:1.45;color:#96a5b8}
-.alive-voice-panel button{flex:0 0 auto;min-height:42px;border:1px solid #4a6590;border-radius:10px;background:#172a43;color:#cfe2ff;padding:7px 10px;font-size:11px;font-weight:950}
-.alive-voice-panel.ready{border-color:#2d7d5a;background:#10281f}.alive-voice-panel.ready span{color:#8fe4b5}.alive-voice-panel.ready button{border-color:#2d7d5a;background:#16452f;color:#a9f1c8}
-.alive-voice-panel.denied{border-color:#82504d;background:#2d1919}.alive-voice-panel.denied span{color:#ffaaa7}
-.alive-voice-listening{display:inline-flex;align-items:center;justify-content:center;min-height:38px;margin:-4px auto 12px;padding:7px 12px;border:1px solid #4c69a1;border-radius:999px;background:#15233a;color:#bcd2ff;font-size:12px;font-weight:950}
-.alive-voice-listening[hidden]{display:none!important}
-.alive-voice-listening.listening:before{content:"";width:9px;height:9px;margin-right:7px;border-radius:50%;background:#ff453a;box-shadow:0 0 0 0 rgba(255,69,58,.5);animation:aliveVoicePulse 1.15s infinite}
-@keyframes aliveVoicePulse{70%{box-shadow:0 0 0 9px rgba(255,69,58,0)}100%{box-shadow:0 0 0 0 rgba(255,69,58,0)}}
-@media(max-width:430px){
-  .alive-voice-panel{align-items:stretch;flex-direction:column}
-  .alive-voice-panel button{width:100%;min-height:48px;font-size:13px}
-  .alive-voice-listening{font-size:13px}
-}
-</style>
-
 </head><body>
 ${area.innerHTML}</body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},250)}
 if($("#drillLoadBtn"))$("#drillLoadBtn").onclick=chooseDrillFromInput;
@@ -2755,10 +2732,8 @@ body.safe-stage-permit .tbm-permit-back{
 <script>
 (function(){
 "use strict";
-let aliveState={active:false,intervalMin:10,spaceKey:"",spaceLabel:"",nextDueAt:0,prompting:false,promptDeadlineAt:0,escalated:false,watcherPhone:"",voiceEnabled:true,log:[]};
+let aliveState={active:false,intervalMin:10,spaceKey:"",spaceLabel:"",nextDueAt:0,prompting:false,promptDeadlineAt:0,escalated:false,watcherPhone:"",log:[]};
 let aliveWakeLock=null, aliveAudioCtx=null, aliveBeepTimer=null, aliveVibeTimer=null;
-let aliveRecognition=null, aliveVoiceListening=false, aliveVoiceRestartTimer=null, aliveVoicePermission="unknown";
-const AliveSpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition||null;
 let aliveRuntimeArmed=false;
 const ALIVE_RUNTIME_KEY="confinedSpaceAliveRuntimeArmedV1";
 const PROMPT_WINDOW_MS=30000;
@@ -2787,127 +2762,6 @@ function startAlarmFx(escalated){
 }
 function stopAlarmFx(){if(aliveBeepTimer){clearInterval(aliveBeepTimer);aliveBeepTimer=null}if(aliveVibeTimer){clearInterval(aliveVibeTimer);aliveVibeTimer=null}navigator.vibrate&&navigator.vibrate(0)}
 
-function normalizeAliveVoiceText(v){
-  return String(v||"").toLowerCase().replace(/[\s.,!?~\-_/]/g,"");
-}
-function isAliveOkPhrase(v){
-  const t=normalizeAliveVoiceText(v);
-  return t.includes("이상없음")||t.includes("이상없습니다")||t.includes("이상없어")||t.includes("이상없어요");
-}
-function renderAliveVoiceStatus(){
-  const panel=$("#aliveVoicePanel"),txt=$("#aliveVoiceStatus"),btn=$("#aliveVoiceEnableBtn");
-  if(!panel||!txt||!btn)return;
-  panel.classList.remove("ready","denied");
-  if(!AliveSpeechRecognition){
-    txt.textContent="이 브라우저는 음성인식을 지원하지 않습니다. 초록 버튼으로 응답하세요.";
-    btn.textContent="음성 미지원";
-    btn.disabled=true;
-    panel.classList.add("denied");
-    return;
-  }
-  btn.disabled=false;
-  if(aliveVoicePermission==="denied"||aliveState.voiceEnabled===false){
-    txt.textContent=aliveVoicePermission==="denied"?"마이크 권한이 꺼져 있습니다. 버튼 응답은 정상 사용 가능합니다.":"음성응답이 꺼져 있습니다.";
-    btn.textContent="🎙 음성응답 켜기";
-    panel.classList.add("denied");
-  }else if(aliveVoicePermission==="granted"){
-    txt.textContent='알람 중 “이상없음”이라고 말하면 진동·삐 소리가 즉시 멈춥니다.';
-    btn.textContent="✓ 음성응답 사용중";
-    panel.classList.add("ready");
-  }else{
-    txt.textContent="생존확인 시작 시 마이크 권한을 한 번 확인합니다.";
-    btn.textContent="🎙 음성응답 사용";
-  }
-}
-async function requestAliveVoicePermission(){
-  if(!AliveSpeechRecognition){
-    aliveState.voiceEnabled=false;saveAlive();renderAliveVoiceStatus();return false;
-  }
-  aliveState.voiceEnabled=true;saveAlive();
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    aliveVoicePermission="unknown";renderAliveVoiceStatus();return true;
-  }
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    stream.getTracks().forEach(t=>t.stop());
-    aliveVoicePermission="granted";
-    renderAliveVoiceStatus();
-    return true;
-  }catch(e){
-    aliveVoicePermission="denied";
-    aliveState.voiceEnabled=false;saveAlive();
-    renderAliveVoiceStatus();
-    return false;
-  }
-}
-function stopAliveVoiceRecognition(){
-  if(aliveVoiceRestartTimer){clearTimeout(aliveVoiceRestartTimer);aliveVoiceRestartTimer=null}
-  aliveVoiceListening=false;
-  const badge=$("#aliveVoiceListening");if(badge){badge.hidden=true;badge.classList.remove("listening")}
-  if(aliveRecognition){
-    try{aliveRecognition.onend=null;aliveRecognition.abort()}catch(e){}
-    aliveRecognition=null;
-  }
-}
-function scheduleAliveVoiceRestart(){
-  if(aliveVoiceRestartTimer)clearTimeout(aliveVoiceRestartTimer);
-  if(!aliveState.active||!aliveState.prompting||aliveState.voiceEnabled===false)return;
-  aliveVoiceRestartTimer=setTimeout(()=>startAliveVoiceRecognition(),650);
-}
-function startAliveVoiceRecognition(){
-  if(!AliveSpeechRecognition||aliveState.voiceEnabled===false||!aliveState.active||!aliveState.prompting)return;
-  if(aliveVoiceListening)return;
-  try{
-    const rec=new AliveSpeechRecognition();
-    aliveRecognition=rec;
-    rec.lang="ko-KR";
-    rec.continuous=false;
-    rec.interimResults=true;
-    rec.maxAlternatives=3;
-    rec.onstart=()=>{
-      aliveVoiceListening=true;
-      const badge=$("#aliveVoiceListening");if(badge){badge.hidden=false;badge.classList.add("listening");badge.textContent='🎙 “이상없음” 음성 대기 중'}
-    };
-    rec.onresult=(ev)=>{
-      let heard="";
-      for(let i=ev.resultIndex;i<ev.results.length;i++){
-        for(let j=0;j<ev.results[i].length;j++){
-          heard+=" "+(ev.results[i][j].transcript||"");
-        }
-      }
-      const badge=$("#aliveVoiceListening");
-      if(badge&&heard.trim())badge.textContent='🎙 인식: '+heard.trim();
-      if(isAliveOkPhrase(heard)){
-        stopAliveVoiceRecognition();
-        acknowledgeAlive("voice");
-      }
-    };
-    rec.onerror=(ev)=>{
-      aliveVoiceListening=false;
-      const err=ev&&ev.error||"";
-      if(err==="not-allowed"||err==="service-not-allowed"){
-        aliveVoicePermission="denied";aliveState.voiceEnabled=false;saveAlive();renderAliveVoiceStatus();
-        const badge=$("#aliveVoiceListening");if(badge){badge.hidden=false;badge.classList.remove("listening");badge.textContent="🎙 마이크 권한 없음 · 버튼으로 응답하세요"}
-        return;
-      }
-      scheduleAliveVoiceRestart();
-    };
-    rec.onend=()=>{
-      aliveVoiceListening=false;
-      aliveRecognition=null;
-      if(aliveState.active&&aliveState.prompting&&aliveState.voiceEnabled!==false)scheduleAliveVoiceRestart();
-      else{
-        const badge=$("#aliveVoiceListening");if(badge){badge.hidden=true;badge.classList.remove("listening")}
-      }
-    };
-    rec.start();
-  }catch(e){
-    aliveVoiceListening=false;
-    scheduleAliveVoiceRestart();
-  }
-}
-
-
 function renderAliveCard(s){
   const card=$("#step2AliveCard");if(!card)return;
   $$("#aliveIntervalGroup button").forEach(b=>b.classList.toggle("on",Number(b.dataset.aliveInterval)===aliveState.intervalMin));
@@ -2927,7 +2781,7 @@ function renderAliveCard(s){
   if(log)log.innerHTML=aliveState.log.slice(-8).reverse().map(e=>{
     if(e.type==="start")return `<div>▶ ${fmtTime(e.t)} 생존확인 시작 (${e.min}분 간격)</div>`;
     if(e.type==="stop")return `<div>⏹ ${fmtTime(e.t)} 생존확인 종료</div>`;
-    if(e.type==="ok")return `<div>✅ ${fmtTime(e.t)} 응답 확인${e.via==="voice"?" · 음성":" · 터치"}${e.late?" (지연 응답)":""}</div>`;
+    if(e.type==="ok")return `<div>✅ ${fmtTime(e.t)} 응답 확인${e.late?" (지연 응답)":""}</div>`;
     if(e.type==="miss")return `<div class="miss">⛔ ${fmtTime(e.t)} 응답 없음 — 경보 전환</div>`;
     return "";
   }).join("");
@@ -2941,9 +2795,8 @@ function openAliveOverlay(){
   $("#aliveAlarmSub").textContent=aliveState.escalated?"주변에 알리거나 아래 버튼으로 즉시 연락하세요.":"확인 버튼을 눌러 응답하세요.";
   $("#aliveEscalateArea").hidden=!aliveState.escalated;
   const wbtn=$("#aliveCallWatcher");if(wbtn)wbtn.href=aliveState.watcherPhone?("tel:"+aliveState.watcherPhone.replace(/[^0-9+]/g,"")):"tel:119";
-  if(aliveState.voiceEnabled!==false)setTimeout(startAliveVoiceRecognition,180);
 }
-function closeAliveOverlay(){stopAliveVoiceRecognition();const ov=$("#aliveAlarmOverlay");if(ov){ov.classList.remove("open","escalate")}}
+function closeAliveOverlay(){const ov=$("#aliveAlarmOverlay");if(ov){ov.classList.remove("open","escalate")}}
 
 function triggerAlivePrompt(){
   if(!aliveRuntimeArmed||!aliveState.active)return;
@@ -2957,12 +2810,11 @@ function escalateAlivePrompt(){
   openAliveOverlay();startAlarmFx(true);
   const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
 }
-function acknowledgeAlive(method){
+function acknowledgeAlive(){
   const late=aliveState.escalated;
-  const via=method==="voice"?"voice":"touch";
   aliveState.prompting=false;aliveState.escalated=false;
   aliveState.nextDueAt=Date.now()+aliveState.intervalMin*60000;
-  aliveState.log.push({type:"ok",t:Date.now(),late,via});
+  aliveState.log.push({type:"ok",t:Date.now(),late});
   saveAlive();stopAlarmFx();closeAliveOverlay();
   const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
 }
@@ -2976,7 +2828,6 @@ function startAliveCheck(){
   aliveState.nextDueAt=Date.now()+aliveState.intervalMin*60000;aliveState.prompting=false;aliveState.escalated=false;
   aliveState.log.push({type:"start",t:Date.now(),min:aliveState.intervalMin});
   saveAlive();requestAliveWakeLock();ensureAliveAudio();
-  if(aliveState.voiceEnabled!==false)requestAliveVoicePermission();
   renderAliveCard(s);
 }
 function stopAliveCheck(){
@@ -2985,7 +2836,7 @@ function stopAliveCheck(){
   try{sessionStorage.removeItem(ALIVE_RUNTIME_KEY)}catch(e){}
   aliveState.active=false;aliveState.prompting=false;aliveState.escalated=false;
   aliveState.log.push({type:"stop",t:Date.now()});
-  saveAlive();stopAlarmFx();stopAliveVoiceRecognition();closeAliveOverlay();releaseAliveWakeLock();
+  saveAlive();stopAlarmFx();closeAliveOverlay();releaseAliveWakeLock();
   const s=typeof selectedSpace==="function"?selectedSpace():null;renderAliveCard(s);
 }
 
@@ -3015,14 +2866,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   }));
   const startBtn=$("#aliveStartBtn");if(startBtn)startBtn.addEventListener("click",startAliveCheck);
   const stopBtn=$("#aliveStopBtn");if(stopBtn)stopBtn.addEventListener("click",stopAliveCheck);
-  const ackBtn=$("#aliveAckBtn");if(ackBtn)ackBtn.addEventListener("click",()=>acknowledgeAlive("touch"));
-  const voiceBtn=$("#aliveVoiceEnableBtn");if(voiceBtn)voiceBtn.addEventListener("click",async()=>{
-    if(aliveState.voiceEnabled!==false&&aliveVoicePermission==="granted"){
-      aliveState.voiceEnabled=false;saveAlive();stopAliveVoiceRecognition();renderAliveVoiceStatus();return;
-    }
-    aliveState.voiceEnabled=true;saveAlive();await requestAliveVoicePermission();
-  });
-  renderAliveVoiceStatus();
+  const ackBtn=$("#aliveAckBtn");if(ackBtn)ackBtn.addEventListener("click",acknowledgeAlive);
   const phoneInp=$("#aliveWatcherPhone");if(phoneInp)phoneInp.addEventListener("change",()=>{aliveState.watcherPhone=phoneInp.value.trim();saveAlive()});
   setInterval(()=>{
     if(!aliveState.active||!aliveRuntimeArmed)return;
@@ -3105,5 +2949,79 @@ document.addEventListener("DOMContentLoaded",()=>{
 })();
 </script>
 
+
+<style id="stageWhiteScreenFix20260919">
+/* 2026-09-19: 홈 검정 테마는 유지, 1·2단계 진행화면은 흰색 고대비로 강제 */
+body.tbm-one-question.safe-stage-open{background:#f4f7fb!important;color:#172033!important;overflow-x:hidden!important}
+body.tbm-one-question.safe-stage-open > .shell{display:none!important}
+body.tbm-one-question.safe-stage-open #tbmWizard{display:block!important;visibility:visible!important;opacity:1!important;min-height:100dvh!important;background:#f4f7fb!important;color:#172033!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-shell{display:flex!important;visibility:visible!important;opacity:1!important;width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;margin:0 auto!important;background:#fff!important;color:#172033!important;border-left:1px solid #e4eaf1!important;border-right:1px solid #e4eaf1!important;box-shadow:none!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{display:flex!important;flex:1!important;min-height:0!important;background:#fff!important;color:#172033!important;padding-top:18px!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen{display:none!important;background:#fff!important;color:#172033!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-screen.active{display:block!important;visibility:visible!important;opacity:1!important}
+body.tbm-one-question.safe-stage-open #tbmWizard .tbm-top{display:none!important}
+body.safe-stage-open #safeStageBar{display:flex!important;position:sticky!important;top:0!important;z-index:90!important;width:min(100%,520px)!important;margin:0 auto!important;background:#fff!important;color:#172033!important;border-bottom:1px solid #e4eaf1!important;padding:9px 12px!important}
+body.safe-stage-open #safeStageBack{background:#fff!important;color:#172033!important;border-color:#cfd8e3!important}
+body.safe-stage-open #safeStageTitle{color:#172033!important}
+body.safe-stage-open .tbm-kicker{color:#167dcc!important}
+body.safe-stage-open .tbm-question{color:#162033!important}
+body.safe-stage-open .tbm-help{color:#68788d!important}
+body.safe-stage-open .tbm-search{background:#fff!important;color:#172033!important;border-color:#cfd8e3!important}
+body.safe-stage-open .tbm-search::placeholder{color:#8a97a8!important}
+body.safe-stage-open .tbm-choice{background:#fff!important;color:#172033!important;border-color:#d8e1ea!important;box-shadow:0 2px 7px rgba(30,50,80,.04)!important}
+body.safe-stage-open .tbm-choice strong{color:#172033!important}
+body.safe-stage-open .tbm-choice small{color:#738196!important}
+body.safe-stage-open .tbm-empty{background:#f8fafc!important;color:#718096!important;border-color:#cfd8e3!important}
+body.safe-stage-open .tbm-info-card{background:#f8fafc!important;color:#172033!important;border-color:#dbe3eb!important}
+body.safe-stage-open .tbm-info-card.highlight{background:#f1f8fe!important;border-color:#a9cae8!important}
+body.safe-stage-open .tbm-info-card.warn{background:#fff9ed!important;border-color:#efc472!important}
+body.safe-stage-open .tbm-info-card.danger{background:#fff4f3!important;border-color:#e7aaa6!important}
+body.safe-stage-open .tbm-info-row{border-bottom-color:#e8edf2!important}
+body.safe-stage-open .tbm-info-row span{color:#738196!important}
+body.safe-stage-open .tbm-info-row b{color:#1b2636!important}
+body.safe-stage-open #tbmDeptCard .tbm-info-row{background:#fff!important;border-color:#dce3eb!important}
+body.safe-stage-open #tbmDeptCard .tbm-info-row:first-child{background:#f1f8fe!important}
+body.safe-stage-open .tbm-rule{background:#f4f7fa!important;color:#172033!important}
+body.safe-stage-open .tbm-rule b{color:#172033!important}
+body.safe-stage-open .tbm-equip-row{background:#fff!important;color:#172033!important;border-color:#dce4ec!important}
+body.safe-stage-open .tbm-equip-row p{color:#69788d!important}
+body.safe-stage-open .tbm-video-note{color:#7a8798!important}
+body.safe-stage-open .tbm-small-link{color:#5d6f84!important}
+body.safe-stage-open .tbm-actions{background:linear-gradient(to top,#fff 76%,rgba(255,255,255,.94))!important;border-top-color:#e5ebf1!important}
+body.safe-stage-open .tbm-btn{background:#fff!important;color:#25344a!important;border-color:#ccd7e2!important}
+body.safe-stage-open .tbm-btn.primary{background:#167dcc!important;color:#fff!important;border-color:#167dcc!important}
+body.safe-stage-open .tbm-btn.good{background:#148653!important;color:#fff!important;border-color:#148653!important}
+body.safe-stage-open .tbm-btn.bad{background:#bd3d35!important;color:#fff!important;border-color:#bd3d35!important}
+body.safe-stage-open .tbm-stage1-complete{background:#167dcc!important;color:#fff!important}
+@media(max-width:420px){body.tbm-one-question.safe-stage-open #tbmWizard .tbm-stage{padding:18px 13px 108px!important}body.safe-stage-open #safeStageTitle{font-size:15px!important}}
+</style>
+
+<script id="stageAlarmAndVisibilityFix20260919">
+(function(){
+  'use strict';
+  const q=(s,r=document)=>r.querySelector(s);
+  function stopTransientAlarm(){
+    try{if(typeof stopAlarmFx==='function')stopAlarmFx()}catch(e){}
+    try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}
+    try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}
+    try{const ov=q('#aliveAlarmOverlay');if(ov)ov.classList.remove('open','escalate')}catch(e){}
+  }
+  function forceStageVisible(){
+    if(!document.body.classList.contains('safe-stage-open'))return;
+    const screens=[...document.querySelectorAll('#tbmWizard .tbm-screen')];
+    let active=screens.find(x=>x.classList.contains('active'));
+    if(!active){active=screens[0];if(active)active.classList.add('active')}
+    if(document.body.classList.contains('safe-stage-one')){
+      const idx=active?Number(active.dataset.tbmScreen):-1;
+      if(!(idx>=0&&idx<=2)){screens.forEach(x=>x.classList.remove('active'));if(screens[0])screens[0].classList.add('active')}
+    }
+  }
+  const homeBtn=q('#homeSpaceBtn');
+  if(homeBtn)homeBtn.addEventListener('click',()=>{stopTransientAlarm();setTimeout(forceStageVisible,0);setTimeout(forceStageVisible,80)},true);
+  const observer=new MutationObserver(()=>{if(document.body.classList.contains('safe-stage-open')){stopTransientAlarm();setTimeout(forceStageVisible,0)}});
+  observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.body.classList.contains('safe-stage-open'))forceStageVisible()});
+})();
+</script>
 </body>
 </html>
