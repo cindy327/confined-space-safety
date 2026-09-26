@@ -2185,55 +2185,6 @@ ${area.innerHTML}
 
 
 
-<!-- ===== 2026-09-26 작업관리부서 공유 서명 화면 최종 보정 ===== -->
-<style id="manageRecipientFinalFix20260926">
-body.permit-recipient-manage #manageApproveRoleCard{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;border:1px solid #c7d2dc!important}
-body.permit-recipient-manage #manageApproveRoleCard.no-manage-dept{background:#fff!important;border-color:#c7d2dc!important;color:#111!important}
-body.permit-recipient-manage #manageApproveRoleCard .permit-no-manage-note{display:none!important}
-body.permit-recipient-manage #manageApproveRoleCard input{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;color:#111!important;cursor:text!important}
-body.permit-recipient-manage #manageApproveRoleCard .permit-role-picker{display:flex!important;visibility:visible!important}
-body.permit-recipient-manage #manageApproveRoleCard .permit-role-choice{display:inline-flex!important;visibility:visible!important;align-items:center!important;justify-content:center!important}
-body.permit-recipient-manage #manageApprovalCard{display:block!important;visibility:visible!important;opacity:1!important}
-body.permit-recipient-manage #manageApprovalCard .sign-pad{display:block!important;visibility:visible!important;min-height:300px!important;background:#fff!important;border:2px solid #176ec4!important;border-radius:12px!important;overflow:visible!important;opacity:1!important;pointer-events:auto!important}
-body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{display:block!important;visibility:visible!important;width:100%!important;height:240px!important;min-height:240px!important;background:#fff!important;touch-action:none!important;pointer-events:auto!important;opacity:1!important}
-body.permit-recipient-manage #manageApprovalCard .sign-pad-tools{display:flex!important;visibility:visible!important;opacity:1!important}
-body.permit-recipient-manage #manageApprovalCard .signature-open-btn{display:block!important;visibility:visible!important;width:100%!important;min-height:58px!important;opacity:1!important;pointer-events:auto!important}
-.permit-recipient-manage-card{margin:0 0 10px;padding:12px 13px;border:2px solid #176ec4;border-radius:12px;background:#eef6ff;color:#173f5b}
-.permit-recipient-manage-card b{display:block;font-size:11px;color:#176ec4;margin-bottom:4px}.permit-recipient-manage-card strong{display:block;font-size:20px;line-height:1.25}.permit-recipient-manage-card span{display:block;margin-top:5px;font-size:12px;color:#52687a;line-height:1.55}
-@media(max-width:420px){body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{height:260px!important;min-height:260px!important}.permit-recipient-manage-card strong{font-size:18px}}
-</style>
-<script id="manageRecipientFinalFixJS20260926">
-(function(){
- 'use strict';
- function esc3(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
- function dept(){return String(document.body.dataset.permitSharedManageDept||document.querySelector('#permitForm [name="manageApproveDept"]')?.value||document.getElementById('manageApprovalDept')?.textContent||'').trim()}
- function reinforce(){
-  if(!document.body.classList.contains('permit-recipient-manage'))return;
-  const slide=document.querySelector('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
-  const card=document.getElementById('manageApprovalCard'),roleCard=document.getElementById('manageApproveRoleCard');if(!slide||!card)return;
-  slide.classList.add('mobile-active');
-  card.style.setProperty('display','block','important');card.style.setProperty('visibility','visible','important');
-  const md=dept();if(md)document.body.dataset.permitSharedManageDept=md;
-  const deptLabel=document.getElementById('manageApprovalDept');if(deptLabel&&md)deptLabel.textContent=md;
-  const deptInput=document.querySelector('#permitForm [name="manageApproveDept"]');if(deptInput){deptInput.disabled=false;deptInput.removeAttribute('aria-disabled');if(md&&!String(deptInput.value||'').trim())deptInput.value=md}
-  ['manageApproveTitle','manageApproveName'].forEach(name=>{const el=document.querySelector('#permitForm [name="'+name+'"]');if(el){el.disabled=false;el.removeAttribute('aria-disabled')}});
-  if(roleCard){roleCard.classList.remove('no-manage-dept');roleCard.style.setProperty('display','block','important');roleCard.querySelectorAll('button,input').forEach(el=>{el.disabled=false;el.removeAttribute('aria-disabled')})}
-  const noNote=document.getElementById('manageApproveNoDeptNote');if(noNote)noNote.hidden=true;
-  let info=document.getElementById('permitRecipientManageCard');
-  if(!info){info=document.createElement('div');info.id='permitRecipientManageCard';info.className='permit-recipient-manage-card';card.insertAdjacentElement('beforebegin',info)}
-  info.innerHTML='<b>🏢 서명할 작업관리부서</b><strong>'+esc3(md||'작업관리부서 확인 필요')+'</strong><span>직책·성명을 확인한 뒤 아래 흰색 서명칸에 직접 서명하거나 「✍ 크게 서명하기」를 누르세요.</span>';
-  const canvas=document.getElementById('manageSignCanvas');if(canvas){canvas.style.setProperty('display','block','important');canvas.style.setProperty('visibility','visible','important');canvas.style.setProperty('pointer-events','auto','important')}
-  const signPad=card.querySelector('.sign-pad');if(signPad){signPad.style.setProperty('display','block','important');signPad.style.setProperty('visibility','visible','important')}
-  const big=card.querySelector('.signature-open-btn');if(big){big.disabled=false;big.style.setProperty('display','block','important');big.style.setProperty('visibility','visible','important');if(!/서명 완료/.test(big.textContent||''))big.textContent='✍ 크게 서명하기'}
-  try{window.ensurePermitMobileEnhancements?.()}catch(e){}
-  try{window.ensureRecipientSignatureDbUi?.()}catch(e){}
- }
- const mo=new MutationObserver(()=>setTimeout(reinforce,20));mo.observe(document.body,{attributes:true,attributeFilter:['class','data-permit-share-target','data-permit-shared-manage-dept']});
- document.addEventListener('DOMContentLoaded',()=>[50,180,450,900,1600].forEach(ms=>setTimeout(reinforce,ms)));
- window.addEventListener('pageshow',()=>setTimeout(reinforce,80));
- window.reinforceManageRecipientSignature=reinforce;
-})();
-</script>
 
 </body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},250)}
 if($("#drillLoadBtn"))$("#drillLoadBtn").onclick=chooseDrillFromInput;
