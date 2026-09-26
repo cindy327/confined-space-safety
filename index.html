@@ -1684,7 +1684,15 @@ async function kakaoReady(){
 function appBaseUrl(){return location.origin+location.pathname}
 async function createPermitShareRecord(target){
  if(!SAFE_AI_ENDPOINT)throw new Error("Cloudflare Worker 주소가 설정되지 않았습니다.");
- const payload=permitSharePayload(target);const res=await fetch(SAFE_AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"permit_share_create",payload})});const d=await res.json().catch(()=>({}));if(!res.ok||!d?.id)throw new Error(d?.error||`공유문서 저장 실패(${res.status})`);return{id:d.id,url:`${appBaseUrl()}?permitShare=${encodeURIComponent(d.id)}`}
+ const payload=permitSharePayload(target);
+ await window.awaitPermitDbReady?.();
+ const meta=window.getCurrentPermitDbMeta?.()||{};
+ const parentShareId=new URLSearchParams(location.search).get("permitShare")||"";
+ const res=await fetch(SAFE_AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"permit_share_create",payload,permitId:meta.permitId||"",parentShareId})});
+ const d=await res.json().catch(()=>({}));
+ if(!res.ok||!d?.id)throw new Error(d?.error||`공유문서 저장 실패(${res.status})`);
+ if(d?.permitId)window.rememberPermitDbMeta?.(d.permitId,d.revision||0);
+ return{id:d.id,permitId:d.permitId||meta.permitId||"",revision:d.revision||0,url:`${appBaseUrl()}?permitShare=${encodeURIComponent(d.id)}`}
 }
 async function sharePermitTo(target){
  const pc=currentPermitContext();if(!pc){alert("작업개소를 먼저 선택하세요.");return}const{ctx}=pc,skipManage=ctx.group==="korail"||!ctx.manageDept;if(!hasSign("work")){alert("먼저 작업부서 담당자가 서명하세요.");return}if(target==="manage"&&skipManage){alert("한국철도공사 사업소 직접작업은 작업관리부서 승인단계가 없습니다. 협조부서로 공유하세요.");return}if(target==="coop"&&!skipManage&&!hasSign("manage")){alert("작업관리부서 서명을 먼저 받아야 협조부서로 공유할 수 있습니다.");return}
@@ -1735,7 +1743,20 @@ async function applySharedPermitPayload(payload){
  [40,220,520,900].forEach(ms=>setTimeout(()=>focusPermitRecipientSignature(payload),ms));
 }
 async function importPermitFromHash(){
- try{const params=new URLSearchParams(location.search);const shareId=params.get("permitShare");if(shareId){if(!SAFE_AI_ENDPOINT)throw new Error("Cloudflare Worker 주소가 없습니다.");const res=await fetch(`${SAFE_AI_ENDPOINT.replace(/\/$/,"")}/permit-share?id=${encodeURIComponent(shareId)}`);const d=await res.json().catch(()=>({}));if(!res.ok||!d?.payload)throw new Error(d?.error||"공유 허가서를 찾을 수 없습니다.");await applySharedPermitPayload(d.payload);return}if(location.hash.startsWith("#permit=")){const payload=JSON.parse(b64urlDecode(location.hash.slice(8)));await applySharedPermitPayload(payload)}}catch(e){console.error(e);alert("공유된 작업허가서를 불러오지 못했습니다: "+e.message)}
+ try{
+  const params=new URLSearchParams(location.search),shareId=params.get("permitShare");
+  if(shareId){
+   if(!SAFE_AI_ENDPOINT)throw new Error("Cloudflare Worker 주소가 없습니다.");
+   const res=await fetch(`${SAFE_AI_ENDPOINT.replace(/\/$/,"")}/permit-share?id=${encodeURIComponent(shareId)}`);
+   const d=await res.json().catch(()=>({}));
+   if(!res.ok||!d?.payload)throw new Error(d?.error||"공유 허가서를 찾을 수 없습니다.");
+   window.setActivePermitShareMeta?.({shareId,permitId:d.permitId||"",revision:d.revision||0,history:d.history||[],target:d.target||d.payload?.target||""});
+   await applySharedPermitPayload({...d.payload,target:d.target||d.payload?.target});
+   setTimeout(()=>window.ensureRecipientSignatureDbUi?.(),80);
+   return;
+  }
+  if(location.hash.startsWith("#permit=")){const payload=JSON.parse(b64urlDecode(location.hash.slice(8)));await applySharedPermitPayload(payload)}
+ }catch(e){console.error(e);alert("공유된 작업허가서를 불러오지 못했습니다: "+e.message)}
 }
 
 /* ===== 반기 밀폐공간 비상대응 훈련 시나리오 ===== */
@@ -4033,6 +4054,106 @@ body.permit-recipient-mode #permitRoleApprovalFields input{min-height:48px!impor
  const b=document.getElementById('permitPrintBtn');if(b)b.onclick=window.printFullPermit;
  document.getElementById('permitUltimatePrintBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.printFullPermit()},true);
  window.addEventListener('beforeprint',()=>{if(document.body.classList.contains('safe-stage-permit'))document.body.classList.add('permit-print-all')});
+})();
+</script>
+
+
+<!-- ===== 2026-09-21 공유서명 DB 동기화 · 영구 누적 저장 ===== -->
+<style id="permitPersistentDbSync20260921">
+.permit-db-sync{margin-top:10px;border:1px solid #aebdca;border-radius:11px;background:#f7fafc;padding:10px 11px;color:#263645}
+.permit-db-sync-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.permit-db-sync-head b{font-size:12px}.permit-db-sync-head button{min-height:36px;border:1px solid #8ea4b7;background:#fff;border-radius:8px;padding:5px 9px;font-size:11px;font-weight:900;color:#23435e;cursor:pointer}.permit-db-sync-status{margin-top:5px;font-size:10.5px;line-height:1.5;color:#607386}.permit-db-history{display:grid;gap:6px;margin-top:8px}.permit-db-event{border-top:1px solid #dde5eb;padding-top:6px;font-size:10.5px;line-height:1.55;color:#445465}.permit-db-event strong{color:#176ec4}.permit-db-event time{display:block;color:#7b8897;font-size:9.5px;margin-top:2px}
+body.permit-recipient-mode #approvalWorkflow .approval-card .sign-pad{display:block!important;visibility:visible!important;border:2px solid #9da9b5!important;border-radius:11px!important;background:#fff!important;overflow:hidden!important;margin-top:9px!important;opacity:1!important;filter:none!important;pointer-events:auto!important}
+body.permit-recipient-mode #approvalWorkflow .approval-card .sign-pad canvas{display:block!important;visibility:visible!important;width:100%!important;height:220px!important;min-height:220px!important;background:#fff!important;touch-action:none!important;pointer-events:auto!important}
+body.permit-recipient-mode #approvalWorkflow .approval-card .sign-pad-tools{display:flex!important;visibility:visible!important;min-height:46px!important;padding:7px 9px!important;background:#f4f7fa!important;font-size:11px!important}
+body.permit-recipient-mode #approvalWorkflow .approval-card .signature-open-btn{display:none!important}
+.permit-recipient-db-save{display:block;width:100%;min-height:58px;margin-top:10px;border:0;border-radius:11px;background:#176ec4;color:#fff;font-size:16px;font-weight:950;cursor:pointer}.permit-recipient-db-save.saved{background:#168653}.permit-recipient-db-save:disabled{opacity:.55}
+.permit-recipient-db-note{margin-top:7px;padding:8px 10px;border-radius:9px;background:#edf5fb;color:#31516c;font-size:11px;line-height:1.55}
+@media(max-width:420px){body.permit-recipient-mode #approvalWorkflow .approval-card .sign-pad canvas{height:250px!important;min-height:250px!important}.permit-db-sync{padding:9px}.permit-db-sync-head{align-items:flex-start;flex-direction:column}.permit-db-sync-head button{width:100%;min-height:42px}}
+@media print{.permit-db-sync,.permit-recipient-db-save,.permit-recipient-db-note{display:none!important}}
+</style>
+<script id="permitPersistentDbSyncJS20260921">
+(function(){
+ 'use strict';
+ const DB_MAP_KEY='confinedSpacePermitDbMapV2';
+ let active={permitId:'',revision:0,shareId:'',target:'',history:[]},forceNew=false,syncBusy=false,recipientBusy=false,ownerSavePromise=null;
+ const q=(s,r=document)=>r.querySelector(s);
+ function endpoint(){return String(window.SAFE_AI_ENDPOINT||'').replace(/\/$/,'')}
+ function currentSpace(){try{return spaces.find(x=>x.id===Number(permitSelectedId))||null}catch(e){return null}}
+ function spaceKey(s=currentSpace()){return s?(s.manageNo||`space:${s.id}`):''}
+ function readMap(){try{const o=JSON.parse(localStorage.getItem(DB_MAP_KEY)||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}}
+ function writeMap(o){try{localStorage.setItem(DB_MAP_KEY,JSON.stringify(o))}catch(e){}}
+ function metaForCurrent(){
+  if(active.permitId)return {permitId:active.permitId,revision:active.revision||0};
+  if(forceNew)return {permitId:'',revision:0};
+  const k=spaceKey();if(!k)return {permitId:'',revision:0};
+  const m=readMap()[k]||{};return {permitId:String(m.permitId||''),revision:Number(m.revision||0)};
+ }
+ function remember(permitId,revision=0){
+  permitId=String(permitId||'');if(!permitId)return;
+  active.permitId=permitId;active.revision=Number(revision||active.revision||0);forceNew=false;
+  if(document.body.classList.contains('permit-recipient-mode'))return;
+  const k=spaceKey();if(!k)return;const m=readMap();m[k]={permitId,revision:active.revision,updatedAt:new Date().toISOString()};writeMap(m)
+ }
+ function setShareMeta(m={}){active={...active,...m,permitId:String(m.permitId||active.permitId||''),revision:Number(m.revision||active.revision||0),history:Array.isArray(m.history)?m.history:active.history||[]};renderHistory(active.history)}
+ window.getCurrentPermitDbMeta=metaForCurrent;
+ window.rememberPermitDbMeta=remember;
+ window.setActivePermitShareMeta=setShareMeta;
+ function payloadFromCurrent(target='owner'){
+  const s=currentSpace();if(!s)return null;let ctx={};try{ctx=workContextFor(s)||{}}catch(e){}
+  return {v:2,target,spaceId:s.id,manageNo:s.manageNo||'',workerGroup:(typeof step1WorkerGroup!=='undefined'?step1WorkerGroup:'')||(typeof fieldWorkerGroup!=='undefined'?fieldWorkerGroup:''),workDept:(typeof step1WorkDept!=='undefined'?step1WorkDept:'')||(typeof fieldWorkDept!=='undefined'?fieldWorkDept:'')||ctx.workDept||'',form:formObject(),savedAt:new Date().toISOString()}
+ }
+ function ensureHistoryBox(){
+  const host=q('#approvalStatus');if(!host)return null;let box=q('#permitDbSyncBox');if(box)return box;
+  box=document.createElement('div');box.id='permitDbSyncBox';box.className='permit-db-sync';box.innerHTML='<div class="permit-db-sync-head"><b>☁ 서명·작업허가서 DB</b><button type="button" id="permitDbRefreshBtn">서명내역 새로고침</button></div><div class="permit-db-sync-status" id="permitDbSyncStatus">DB 연결 대기</div><div class="permit-db-history" id="permitDbHistory"></div>';host.insertAdjacentElement('afterend',box);q('#permitDbRefreshBtn')?.addEventListener('click',()=>syncOwnerSignatures(false));return box
+ }
+ function fmtTime(v){if(!v)return '';try{return new Intl.DateTimeFormat('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))}catch(e){return String(v)}}
+ function eventLabel(e){const role=e?.role==='manage'?'작업관리부서':e?.role==='coop'?'협조부서':e?.role==='work'?'작업부서':'작업허가서';const action=e?.action==='signature'?'서명 완료':e?.action==='create'?'DB 최초 저장':e?.action==='share'?'공유 링크 생성':'저장';return `${role} · ${action}`}
+ function renderHistory(history){ensureHistoryBox();const list=q('#permitDbHistory'),st=q('#permitDbSyncStatus');if(!list)return;const arr=(Array.isArray(history)?history:[]).filter(x=>x&&['signature','create','share','save'].includes(x.action)).slice(-12).reverse();if(st&&active.permitId)st.textContent=`DB 문서 ${active.permitId.slice(0,8)}… · revision ${active.revision||0} · 서버에 계속 누적 저장`;list.innerHTML=arr.length?arr.map(e=>`<div class="permit-db-event"><strong>${eventLabel(e)}</strong>${e.signer?` · ${String(e.signer).replace(/[<>]/g,'')}`:''}<time>${fmtTime(e.at)}</time></div>`).join(''):'<div class="permit-db-event">아직 서버 서명 이력이 없습니다.</div>'}
+ async function post(body){const ep=endpoint();if(!ep)throw new Error('Cloudflare Worker 주소가 없습니다.');const res=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await res.json().catch(()=>({}));if(!res.ok)throw new Error(d?.error||`DB 요청 실패(${res.status})`);return d}
+ async function persistOwner(){
+  if(document.body.classList.contains('permit-recipient-mode'))return null;
+  if(ownerSavePromise)return ownerSavePromise;
+  const payload=payloadFromCurrent('owner');if(!payload)return null;const meta=metaForCurrent(),st=q('#permitDbSyncStatus');if(st)st.textContent='DB 저장 중…';
+  ownerSavePromise=(async()=>{try{const d=await post({mode:'permit_record_save',permitId:meta.permitId||'',payload});remember(d.permitId,d.revision);active.history=d.history||active.history||[];renderHistory(active.history);if(st)st.textContent=`✓ DB 저장 완료 · revision ${d.revision||0}`;return d}catch(e){if(st)st.textContent='⚠ DB 저장 실패 · 휴대폰 로컬 저장은 유지됨';console.warn(e);return null}finally{ownerSavePromise=null}})();
+  return ownerSavePromise;
+ }
+ window.awaitPermitDbReady=()=>ownerSavePromise||Promise.resolve();
+ function remoteSignatureFields(form={}){
+  const names=['workSignJson','workSignAt','manageSignJson','manageSignAt','coopSignJson','coopSignAt','workApproveDept','workApproveTitle','workApproveName','manageApproveDept','manageApproveTitle','manageApproveName','coopDept','coopTitle','coopName'];
+  names.forEach(name=>{const el=q(`#permitForm [name="${name}"]`)||q('#'+name);if(!el)return;const v=form[name];if(v!==undefined&&v!==null&&String(v)!=='')el.value=v});
+  try{loadSignPadsFromHidden();renderApprovalWorkflow();window.refreshPermitPage5RolePickers?.();window.updatePermitWizardStatus?.()}catch(e){}
+ }
+ async function syncOwnerSignatures(showAlert=false){
+  if(syncBusy||document.body.classList.contains('permit-recipient-mode'))return;const meta=metaForCurrent();if(!meta.permitId)return;syncBusy=true;const st=q('#permitDbSyncStatus');if(st)st.textContent='서명내역 확인 중…';
+  try{const d=await post({mode:'permit_record_get',permitId:meta.permitId});active.permitId=d.permitId||meta.permitId;active.revision=Number(d.revision||0);active.history=d.history||[];remoteSignatureFields(d.payload?.form||{});remember(active.permitId,active.revision);renderHistory(active.history);if(st)st.textContent=`✓ 최신 서명 반영 · revision ${active.revision}`;if(showAlert)alert('서버의 최신 서명내역을 반영했습니다.')}catch(e){if(st)st.textContent='⚠ 서버 서명내역을 불러오지 못했습니다.';console.warn(e)}finally{syncBusy=false}
+ }
+ window.syncPermitSignaturesFromDb=syncOwnerSignatures;
+ function recipientRole(){return document.body.dataset.permitShareTarget==='coop'?'coop':'manage'}
+ function recipientSigned(){const role=recipientRole();try{return JSON.parse(q('#'+role+'SignJson')?.value||'[]').some(p=>Array.isArray(p)&&p.length>1)}catch(e){return false}}
+ function ensureRecipientUi(){
+  if(!document.body.classList.contains('permit-recipient-mode'))return;ensureHistoryBox();const role=recipientRole(),card=q(role==='coop'?'#coopApprovalCard':'#manageApprovalCard');if(!card)return;
+  const canvas=q(role==='coop'?'#coopSignCanvas':'#manageSignCanvas');if(canvas){canvas.style.display='block';canvas.style.visibility='visible';try{signPads?.[role]?.load()}catch(e){}}
+  let btn=q('#permitRecipientDbSaveBtn');if(!btn){btn=document.createElement('button');btn.type='button';btn.id='permitRecipientDbSaveBtn';btn.className='permit-recipient-db-save';btn.textContent='✓ 서명 완료 · DB에 저장';card.insertAdjacentElement('afterend',btn);const note=document.createElement('div');note.className='permit-recipient-db-note';note.id='permitRecipientDbNote';note.textContent='서명하면 기존 공유자 화면에도 자동으로 반영됩니다. 서명 데이터와 작업허가서는 Cloudflare DB에 누적 보관됩니다.';btn.insertAdjacentElement('afterend',note);btn.addEventListener('click',()=>persistRecipientSignature(true))}
+  renderHistory(active.history||[])
+ }
+ window.ensureRecipientSignatureDbUi=ensureRecipientUi;
+ async function persistRecipientSignature(showAlert=false){
+  if(recipientBusy||!document.body.classList.contains('permit-recipient-mode'))return;if(!recipientSigned()){if(showAlert)alert('서명칸에 먼저 서명해주세요.');return}const shareId=new URLSearchParams(location.search).get('permitShare')||active.shareId;if(!shareId)return;recipientBusy=true;const btn=q('#permitRecipientDbSaveBtn'),note=q('#permitRecipientDbNote');if(btn){btn.disabled=true;btn.textContent='DB 저장 중…'}
+  try{const d=await post({mode:'permit_share_sign',shareId,form:formObject()});active.permitId=d.permitId||active.permitId;active.revision=Number(d.revision||active.revision||0);active.history=d.history||active.history||[];renderHistory(active.history);if(btn){btn.classList.add('saved');btn.textContent='✅ 서명 DB 저장 완료'};if(note)note.textContent='서명이 서버에 저장되었습니다. 기존 공유자의 작업허가서 화면에도 자동 동기화됩니다.';try{renderApprovalWorkflow()}catch(e){};if(showAlert)alert('서명이 DB에 저장되었습니다.')}catch(e){if(btn){btn.classList.remove('saved');btn.textContent='⚠ 저장 실패 · 다시 저장'};if(note)note.textContent='서버 저장에 실패했습니다. 네트워크를 확인한 뒤 다시 눌러주세요.';if(showAlert)alert('서명 DB 저장 실패: '+e.message)}finally{if(btn)btn.disabled=false;recipientBusy=false}
+ }
+ window.persistRecipientSignatureToDb=persistRecipientSignature;
+ document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.closest?.('#permitSaveBtn'))setTimeout(()=>persistOwner(),100);
+  if(t.closest?.('#permitNewBtn,#permitUltimateNewBtn')){forceNew=true;active={permitId:'',revision:0,shareId:'',target:'',history:[]};setTimeout(()=>renderHistory([]),50)}
+  if(t.closest?.('#signatureModalSave')&&document.body.classList.contains('permit-recipient-mode'))setTimeout(()=>persistRecipientSignature(false),160);
+ },true);
+ document.addEventListener('pointerup',e=>{if(!document.body.classList.contains('permit-recipient-mode'))return;const role=recipientRole(),id=role==='coop'?'coopSignCanvas':'manageSignCanvas';if(e.target?.id===id||e.target?.closest?.('#'+id))setTimeout(()=>persistRecipientSignature(false),220)},true);
+ const mo=new MutationObserver(()=>{ensureHistoryBox();if(document.body.classList.contains('permit-recipient-mode'))setTimeout(ensureRecipientUi,40);else if(document.body.classList.contains('safe-stage-permit'))setTimeout(()=>syncOwnerSignatures(false),180)});mo.observe(document.body,{attributes:true,attributeFilter:['class','data-permit-share-target']});
+ window.addEventListener('focus',()=>{if(document.body.classList.contains('safe-stage-permit')&&!document.body.classList.contains('permit-recipient-mode'))syncOwnerSignatures(false)});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.body.classList.contains('safe-stage-permit')&&!document.body.classList.contains('permit-recipient-mode'))syncOwnerSignatures(false)});
+ setInterval(()=>{if(document.body.classList.contains('safe-stage-permit')&&!document.body.classList.contains('permit-recipient-mode'))syncOwnerSignatures(false)},10000);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{ensureHistoryBox();ensureRecipientUi()},500));else setTimeout(()=>{ensureHistoryBox();ensureRecipientUi()},500);
 })();
 </script>
 </body>
