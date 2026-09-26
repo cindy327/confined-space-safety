@@ -1674,19 +1674,43 @@ function setupSignPad(role){const canvas=$("#"+role+"SignCanvas"),hidden=$("#"+s
 ["work","manage","coop"].forEach(setupSignPad);$$('[data-clear-sign]').forEach(b=>b.onclick=()=>signPads[b.dataset.clearSign]?.clear());
 function hasSign(role){const h=$("#"+signKey(role));if(!h?.value)return false;try{return(JSON.parse(h.value)||[]).some(p=>p.length>1)}catch(e){return false}}
 function currentPermitContext(){const s=spaces.find(x=>x.id===Number(permitSelectedId));return s?{s,ctx:workContextFor(s)}:null}
-function renderApprovalWorkflow(){const pc=currentPermitContext(),final=$("#finalPermitApproved"),label=$("#finalPermitLabel");if(!pc){if(final){final.disabled=true;final.checked=false}return}const {s,ctx}=pc,skipManage=ctx.group==="korail"||!ctx.manageDept;$("#workApprovalDept").textContent=ctx.workDept;$("#manageApprovalDept").textContent=skipManage?"해당 없음 · 공사 사업소 직접작업":ctx.manageDept;const coopDisplay=String(document.body.dataset.permitSharedCoopDept||$("#permitForm [name='coopDept']")?.value||ctx.coopDept||"협조부서").trim();$("#coopApprovalDept").textContent=coopDisplay;const w=hasSign("work"),m=skipManage||hasSign("manage"),c=hasSign("coop"),gasOK=gasOverallEval()==="ok";[["work",w],["manage",m],["coop",c]].forEach(([r,ok])=>{const card=$("#"+r+"ApprovalCard");if(card){card.classList.toggle("done",!!ok);card.classList.toggle("skip",r==="manage"&&skipManage)}const st=$("#"+r+"SignStatus");if(st)st.textContent=(r==="manage"&&skipManage)?"자동 생략":ok?"✓ 서명 완료":r==="work"?"손가락으로 서명":"공유 후 담당자 서명"});const bm=$("#shareToManageBtn"),bc=$("#shareToCoopBtn");if(bm){bm.hidden=skipManage;bm.disabled=!w}if(bc){bc.disabled=skipManage?!w:!hasSign("manage");bc.textContent=skipManage?"💬 협조부서에 바로 카카오톡 공유":"💬 협조부서에 카카오톡 공유"}const complete=w&&m&&c&&gasOK;if(final){final.disabled=!complete;if(!complete)final.checked=false}if(label)label.textContent=complete?"가스농도 측정과 필요한 승인·서명이 완료되었습니다. 최종 확인하세요.":`최종 확인 전 남은 항목: ${[!gasOK?"가스농도 적정 확인":"",!w?"작업부서 서명":"",!m?"작업관리부서 서명":"",!c?"협조부서 서명":""].filter(Boolean).join(" · ")}`;const stat=$("#approvalStatus");if(stat)stat.innerHTML=complete?"<b style='color:#11743f'>✅ 순차 승인 완료</b> · 최종 확인 후 저장하면 작업 전 신호등과 연동됩니다.":`현재: 작업부서 ${w?"✅":"⬜"} · 작업관리부서 ${skipManage?"➖ 생략":hasSign("manage")?"✅":"⬜"} · 협조부서 ${c?"✅":"⬜"} · 가스측정 ${gasOK?"✅":"⬜"}`}
+function renderApprovalWorkflow(){
+ const pc=currentPermitContext(),final=$("#finalPermitApproved"),label=$("#finalPermitLabel");
+ if(!pc){if(final){final.disabled=true;final.checked=false}return}
+ const {s,ctx}=pc;
+ const sharedManage=String(document.body.dataset.permitSharedManageDept||$("#permitForm [name='manageApproveDept']")?.value||ctx.manageDept||"").trim();
+ const recipientManage=document.body.classList.contains("permit-recipient-manage");
+ const skipManage=recipientManage?(!sharedManage||/해당 없음|확인 필요/.test(sharedManage)):(ctx.group==="korail"||!ctx.manageDept);
+ $("#workApprovalDept").textContent=ctx.workDept;
+ $("#manageApprovalDept").textContent=skipManage?"해당 없음 · 공사 사업소 직접작업":sharedManage;
+ const coopDisplay=String(document.body.dataset.permitSharedCoopDept||$("#permitForm [name='coopDept']")?.value||ctx.coopDept||"협조부서").trim();
+ $("#coopApprovalDept").textContent=coopDisplay;
+ const w=hasSign("work"),m=skipManage||hasSign("manage"),c=hasSign("coop"),gasOK=gasOverallEval()==="ok";
+ [["work",w],["manage",m],["coop",c]].forEach(([r,ok])=>{const card=$("#"+r+"ApprovalCard");if(card){card.classList.toggle("done",!!ok);card.classList.toggle("skip",r==="manage"&&skipManage)}const st=$("#"+r+"SignStatus");if(st)st.textContent=(r==="manage"&&skipManage)?"자동 생략":ok?"✓ 서명 완료":r==="work"?"손가락으로 서명":"공유 후 담당자 서명"});
+ const bm=$("#shareToManageBtn"),bc=$("#shareToCoopBtn");
+ if(bm){bm.hidden=skipManage;bm.disabled=!w}
+ if(bc){bc.disabled=skipManage?!w:!hasSign("manage");bc.textContent=skipManage?"💬 협조부서에 바로 카카오톡 공유":"💬 협조부서에 카카오톡 공유"}
+ const complete=w&&m&&c&&gasOK;
+ if(final){final.disabled=!complete;if(!complete)final.checked=false}
+ if(label)label.textContent=complete?"가스농도 측정과 필요한 승인·서명이 완료되었습니다. 최종 확인하세요.":`최종 확인 전 남은 항목: ${[!gasOK?"가스농도 적정 확인":"",!w?"작업부서 서명":"",!m?"작업관리부서 서명":"",!c?"협조부서 서명":""].filter(Boolean).join(" · ")}`;
+ const stat=$("#approvalStatus");if(stat)stat.innerHTML=complete?"<b style='color:#11743f'>✅ 순차 승인 완료</b> · 최종 확인 후 저장하면 작업 전 신호등과 연동됩니다.":`현재: 작업부서 ${w?"✅":"⬜"} · 작업관리부서 ${skipManage?"➖ 생략":hasSign("manage")?"✅":"⬜"} · 협조부서 ${c?"✅":"⬜"} · 가스측정 ${gasOK?"✅":"⬜"}`
+}
 function b64urlEncode(str){const bytes=new TextEncoder().encode(str);let bin="";for(const b of bytes)bin+=String.fromCharCode(b);return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"")}
 function b64urlDecode(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";const bin=atob(s),bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
 function permitSharePayload(target){
  const pc=currentPermitContext();if(!pc)return null;syncGasHidden();
- /* 협조부서 공유 시 수신자 단말에서 다시 역명을 추정하지 않도록 발신 시점의 부서/역 정보를 고정해서 보냅니다. */
+ /* 공유받은 단말이 부서명을 다시 추정하지 않도록 발신 시점의 작업관리부서/협조부서를 함께 고정합니다. */
  const coopInput=$("#permitForm [name='coopDept']");
+ const manageInput=$("#permitForm [name='manageApproveDept']");
  const derivedCoop=String(coopInput?.value||pc.ctx.coopDept||deriveCoopStation(pc.s)||'').trim();
+ const derivedManage=String(manageInput?.value||pc.ctx.manageDept||'').trim();
  if(coopInput&&!String(coopInput.value||'').trim()&&derivedCoop)coopInput.value=derivedCoop;
+ if(manageInput&&target==="manage"&&!String(manageInput.value||'').trim()&&derivedManage)manageInput.value=derivedManage;
  const form=formObject();
  if(!String(form.coopDept||'').trim()&&derivedCoop)form.coopDept=derivedCoop;
- return{v:3,target,spaceId:pc.s.id,manageNo:pc.s.manageNo,workerGroup:step1WorkerGroup||fieldWorkerGroup,workDept:step1WorkDept||fieldWorkDept,
-  context:{site:pc.s.site||'',detailName:pc.s.detailName||'',detailLocation:pc.s.detailLocation||'',manageNo:pc.s.manageNo||'',workDept:pc.ctx.workDept||'',manageDept:pc.ctx.manageDept||'',coopDept:form.coopDept||derivedCoop||''},
+ if(target==="manage"&&!String(form.manageApproveDept||'').trim()&&derivedManage)form.manageApproveDept=derivedManage;
+ return{v:4,target,spaceId:pc.s.id,manageNo:pc.s.manageNo,workerGroup:step1WorkerGroup||fieldWorkerGroup,workDept:step1WorkDept||fieldWorkDept,
+  context:{site:pc.s.site||'',detailName:pc.s.detailName||'',detailLocation:pc.s.detailLocation||'',manageNo:pc.s.manageNo||'',workDept:pc.ctx.workDept||'',manageDept:form.manageApproveDept||derivedManage||'',coopDept:form.coopDept||derivedCoop||''},
   form,sentAt:new Date().toISOString()}
 }
 async function kakaoReady(){
@@ -1738,8 +1762,9 @@ function focusPermitRecipientSignature(payload){
    let head=document.getElementById('permitRecipientSignatureHead');
    if(!head){head=document.createElement('div');head.id='permitRecipientSignatureHead';head.className='permit-recipient-head';const anchor=slide.querySelector('.permit-step-head');anchor?.insertAdjacentElement('afterend',head)}
    const pc=currentPermitContext();const ctx=pc?.ctx||{};const roleLabel=target==='manage'?'작업관리부서 승인·서명':'협조부서 확인·서명';
+   const sharedManage=String(document.body.dataset.permitSharedManageDept||document.querySelector('#permitForm [name="manageApproveDept"]')?.value||ctx.manageDept||'').trim();
    const sharedCoop=String(document.body.dataset.permitSharedCoopDept||document.querySelector('#permitForm [name="coopDept"]')?.value||ctx.coopDept||'').trim();
-   const dept=target==='manage'?(ctx.manageDept||'작업관리부서'):(sharedCoop||'협조부서');
+   const dept=target==='manage'?(sharedManage||'작업관리부서'):(sharedCoop||'협조부서');
    head.innerHTML=`<span>공유받은 작업허가서</span><strong>${roleLabel}</strong><small><b>작업개소</b> · ${esc(pc?.s?.site||'')} · ${esc(pc?.s?.detailName||'')}<br><b>${target==='coop'?'협조부서(역)':'작업관리부서'}</b> · ${esc(dept)}<br>${esc(dept)} 담당자는 아래에서 직책·성명을 확인한 뒤 서명만 완료하세요.</small>`;
  }
  const targetCard=document.getElementById(target==='manage'?'manageApprovalCard':'coopApprovalCard');
@@ -1751,16 +1776,19 @@ async function applySharedPermitPayload(payload){
  setWorkerContextForSpace(s,payload.workerGroup,payload.workDept);fieldSelectedId=selectedId=permitSelectedId=s.id;
  const localCtx=workContextFor(s);
  const form={...(payload.form||{})};
- /* 새 공유링크는 context.coopDept를 사용하고, 예전 링크는 허가서 작업장소/로컬 공간정보에서 역명을 복구합니다. */
+ /* 예전 링크도 최대한 복구하되, 새 링크는 context의 부서명을 최우선으로 사용합니다. */
  const stationFallback=extractStation(form.place||'')||extractStation(payload?.context?.site||'')||extractStation(payload?.context?.detailLocation||'')||deriveCoopStation(s);
  const sharedCoop=String(payload?.context?.coopDept||form.coopDept||stationFallback||localCtx.coopDept||'해당 역 확인 필요').trim();
+ const sharedManage=String(payload?.context?.manageDept||form.manageApproveDept||localCtx.manageDept||'작업관리부서 확인 필요').trim();
  if(!String(form.coopDept||'').trim()||/확인 필요/.test(String(form.coopDept||'')))form.coopDept=sharedCoop;
+ if(payload?.target==="manage"&&(!String(form.manageApproveDept||'').trim()||/확인 필요/.test(String(form.manageApproveDept||''))))form.manageApproveDept=sharedManage;
  document.body.dataset.permitSharedCoopDept=sharedCoop;
+ document.body.dataset.permitSharedManageDept=sharedManage;
  permitForms[permitKey(s)]=form;localStorage.setItem(PERMIT_KEY,JSON.stringify(permitForms));
  $("#permitSpaceSearch").value=`${s.site} · ${s.detailName} · ${s.manageNo}`;fillPermit(form);loadGasFromPermitObject(form);loadSignPadsFromHidden();showView("permit");
- const ctx=workContextFor(s),b=$("#shareImportBanner");if(b){b.classList.add("show");b.innerHTML=payload.target==="manage"?`💬 <b>작업관리부서 서명 요청</b> · ${esc(ctx.workDept)}에서 공유한 허가서입니다. 아래 작업관리부서 서명만 완료하면 됩니다.`:`💬 <b>협조부서 서명 요청</b> · <strong>${esc(sharedCoop)}</strong> 담당자 서명입니다. 앞선 승인내용은 그대로 유지되며 아래 협조부서 서명만 완료하면 됩니다.`}
- $("#permitSideStatus").innerHTML=`공유 허가서 불러옴 · <b>${esc(s.site)} · ${esc(s.manageNo)}</b> · 협조부서 <b>${esc(sharedCoop)}</b>`;
- [40,120,220,520,900].forEach(ms=>setTimeout(()=>{try{window.ensurePermitMobileEnhancements?.()}catch(e){}focusPermitRecipientSignature({...payload,form,context:{...(payload.context||{}),coopDept:sharedCoop}});window.ensureRecipientSignatureDbUi?.()},ms));
+ const ctx=workContextFor(s),b=$("#shareImportBanner");if(b){b.classList.add("show");b.innerHTML=payload.target==="manage"?`💬 <b>작업관리부서 서명 요청</b> · <strong>${esc(sharedManage)}</strong> 담당자 서명입니다. ${esc(ctx.workDept)}에서 공유한 허가서이며 아래 작업관리부서 서명만 완료하면 됩니다.`:`💬 <b>협조부서 서명 요청</b> · <strong>${esc(sharedCoop)}</strong> 담당자 서명입니다. 앞선 승인내용은 그대로 유지되며 아래 협조부서 서명만 완료하면 됩니다.`}
+ $("#permitSideStatus").innerHTML=payload.target==="manage"?`공유 허가서 불러옴 · <b>${esc(s.site)} · ${esc(s.manageNo)}</b> · 작업관리부서 <b>${esc(sharedManage)}</b>`:`공유 허가서 불러옴 · <b>${esc(s.site)} · ${esc(s.manageNo)}</b> · 협조부서 <b>${esc(sharedCoop)}</b>`;
+ [40,120,220,520,900,1500].forEach(ms=>setTimeout(()=>{try{window.ensurePermitMobileEnhancements?.()}catch(e){}try{window.refreshPermitPage5RolePickers?.()}catch(e){}focusPermitRecipientSignature({...payload,form,context:{...(payload.context||{}),manageDept:sharedManage,coopDept:sharedCoop}});window.ensureRecipientSignatureDbUi?.();if(payload?.target==="manage")window.reinforceManageRecipientSignature?.();else window.reinforceCoopRecipientSignature?.()},ms));
 }
 async function importPermitFromHash(){
  try{
@@ -2154,6 +2182,58 @@ body.tbm-one-question.safe-stage-permit > #tbmWizard{display:none!important}
 ${area.innerHTML}
 
 
+
+
+
+<!-- ===== 2026-09-26 작업관리부서 공유 서명 화면 최종 보정 ===== -->
+<style id="manageRecipientFinalFix20260926">
+body.permit-recipient-manage #manageApproveRoleCard{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;border:1px solid #c7d2dc!important}
+body.permit-recipient-manage #manageApproveRoleCard.no-manage-dept{background:#fff!important;border-color:#c7d2dc!important;color:#111!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-no-manage-note{display:none!important}
+body.permit-recipient-manage #manageApproveRoleCard input{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;color:#111!important;cursor:text!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-role-picker{display:flex!important;visibility:visible!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-role-choice{display:inline-flex!important;visibility:visible!important;align-items:center!important;justify-content:center!important}
+body.permit-recipient-manage #manageApprovalCard{display:block!important;visibility:visible!important;opacity:1!important}
+body.permit-recipient-manage #manageApprovalCard .sign-pad{display:block!important;visibility:visible!important;min-height:300px!important;background:#fff!important;border:2px solid #176ec4!important;border-radius:12px!important;overflow:visible!important;opacity:1!important;pointer-events:auto!important}
+body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{display:block!important;visibility:visible!important;width:100%!important;height:240px!important;min-height:240px!important;background:#fff!important;touch-action:none!important;pointer-events:auto!important;opacity:1!important}
+body.permit-recipient-manage #manageApprovalCard .sign-pad-tools{display:flex!important;visibility:visible!important;opacity:1!important}
+body.permit-recipient-manage #manageApprovalCard .signature-open-btn{display:block!important;visibility:visible!important;width:100%!important;min-height:58px!important;opacity:1!important;pointer-events:auto!important}
+.permit-recipient-manage-card{margin:0 0 10px;padding:12px 13px;border:2px solid #176ec4;border-radius:12px;background:#eef6ff;color:#173f5b}
+.permit-recipient-manage-card b{display:block;font-size:11px;color:#176ec4;margin-bottom:4px}.permit-recipient-manage-card strong{display:block;font-size:20px;line-height:1.25}.permit-recipient-manage-card span{display:block;margin-top:5px;font-size:12px;color:#52687a;line-height:1.55}
+@media(max-width:420px){body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{height:260px!important;min-height:260px!important}.permit-recipient-manage-card strong{font-size:18px}}
+</style>
+<script id="manageRecipientFinalFixJS20260926">
+(function(){
+ 'use strict';
+ function esc3(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function dept(){return String(document.body.dataset.permitSharedManageDept||document.querySelector('#permitForm [name="manageApproveDept"]')?.value||document.getElementById('manageApprovalDept')?.textContent||'').trim()}
+ function reinforce(){
+  if(!document.body.classList.contains('permit-recipient-manage'))return;
+  const slide=document.querySelector('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
+  const card=document.getElementById('manageApprovalCard'),roleCard=document.getElementById('manageApproveRoleCard');if(!slide||!card)return;
+  slide.classList.add('mobile-active');
+  card.style.setProperty('display','block','important');card.style.setProperty('visibility','visible','important');
+  const md=dept();if(md)document.body.dataset.permitSharedManageDept=md;
+  const deptLabel=document.getElementById('manageApprovalDept');if(deptLabel&&md)deptLabel.textContent=md;
+  const deptInput=document.querySelector('#permitForm [name="manageApproveDept"]');if(deptInput){deptInput.disabled=false;deptInput.removeAttribute('aria-disabled');if(md&&!String(deptInput.value||'').trim())deptInput.value=md}
+  ['manageApproveTitle','manageApproveName'].forEach(name=>{const el=document.querySelector('#permitForm [name="'+name+'"]');if(el){el.disabled=false;el.removeAttribute('aria-disabled')}});
+  if(roleCard){roleCard.classList.remove('no-manage-dept');roleCard.style.setProperty('display','block','important');roleCard.querySelectorAll('button,input').forEach(el=>{el.disabled=false;el.removeAttribute('aria-disabled')})}
+  const noNote=document.getElementById('manageApproveNoDeptNote');if(noNote)noNote.hidden=true;
+  let info=document.getElementById('permitRecipientManageCard');
+  if(!info){info=document.createElement('div');info.id='permitRecipientManageCard';info.className='permit-recipient-manage-card';card.insertAdjacentElement('beforebegin',info)}
+  info.innerHTML='<b>🏢 서명할 작업관리부서</b><strong>'+esc3(md||'작업관리부서 확인 필요')+'</strong><span>직책·성명을 확인한 뒤 아래 흰색 서명칸에 직접 서명하거나 「✍ 크게 서명하기」를 누르세요.</span>';
+  const canvas=document.getElementById('manageSignCanvas');if(canvas){canvas.style.setProperty('display','block','important');canvas.style.setProperty('visibility','visible','important');canvas.style.setProperty('pointer-events','auto','important')}
+  const signPad=card.querySelector('.sign-pad');if(signPad){signPad.style.setProperty('display','block','important');signPad.style.setProperty('visibility','visible','important')}
+  const big=card.querySelector('.signature-open-btn');if(big){big.disabled=false;big.style.setProperty('display','block','important');big.style.setProperty('visibility','visible','important');if(!/서명 완료/.test(big.textContent||''))big.textContent='✍ 크게 서명하기'}
+  try{window.ensurePermitMobileEnhancements?.()}catch(e){}
+  try{window.ensureRecipientSignatureDbUi?.()}catch(e){}
+ }
+ const mo=new MutationObserver(()=>setTimeout(reinforce,20));mo.observe(document.body,{attributes:true,attributeFilter:['class','data-permit-share-target','data-permit-shared-manage-dept']});
+ document.addEventListener('DOMContentLoaded',()=>[50,180,450,900,1600].forEach(ms=>setTimeout(reinforce,ms)));
+ window.addEventListener('pageshow',()=>setTimeout(reinforce,80));
+ window.reinforceManageRecipientSignature=reinforce;
+})();
+</script>
 
 </body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},250)}
 if($("#drillLoadBtn"))$("#drillLoadBtn").onclick=chooseDrillFromInput;
@@ -3824,14 +3904,17 @@ body.safe-stage-permit #permitAiPanel[hidden],body.safe-stage-permit #permitAliv
    const pc=permitContext();
    const card=q('#manageApproveRoleCard'),note=q('#manageApproveNoDeptNote');
    if(!card)return;
-   const noDept=!!pc&&(pc.ctx.group==='korail'||!String(pc.ctx.manageDept||'').trim());
+   const recipientManage=document.body.classList.contains('permit-recipient-manage');
+   const sharedManage=String(document.body.dataset.permitSharedManageDept||field('manageApproveDept')?.value||'').trim();
+   const noDept=recipientManage?(!sharedManage||/확인 필요|해당 없음/.test(sharedManage)):(!!pc&&(pc.ctx.group==='korail'||!String(pc.ctx.manageDept||'').trim()));
    card.classList.toggle('no-manage-dept',noDept);
    if(note)note.hidden=!noDept;
    ['manageApproveDept','manageApproveTitle','manageApproveName'].forEach(name=>{const el=field(name);if(!el)return;if(noDept){el.value='';el.disabled=true;el.setAttribute('aria-disabled','true')}else{el.disabled=false;el.removeAttribute('aria-disabled')}});
+   if(recipientManage&&!noDept){const dept=field('manageApproveDept');if(dept&&!String(dept.value||'').trim())dept.value=sharedManage}
    const approvalCard=q('#manageApprovalCard'),sig=approvalCard?.querySelector('.signature-open-btn'),clear=approvalCard?.querySelector('[data-clear-sign="manage"]'),canvas=q('#manageSignCanvas');
-   if(sig){sig.disabled=noDept;if(noDept)sig.textContent='작업관리부서 없음 · 서명 생략'}
+   if(sig){sig.disabled=noDept;if(noDept)sig.textContent='작업관리부서 없음 · 서명 생략';else if(!hasSign?.('manage'))sig.textContent='✍ 크게 서명하기'}
    if(clear)clear.disabled=noDept;
-   if(canvas)canvas.style.pointerEvents=noDept?'none':'';
+   if(canvas)canvas.style.pointerEvents=noDept?'none':'auto';
    renderPicker('manageApproveTitle');
  }
  function refresh(){Object.keys(configs).forEach(renderPicker);setManageDeptLock()}
@@ -4210,6 +4293,167 @@ body.permit-recipient-coop #coopApprovalCard .signature-open-btn{display:block!i
  document.addEventListener('DOMContentLoaded',()=>[50,180,450,900,1600].forEach(ms=>setTimeout(reinforce,ms)));
  window.addEventListener('pageshow',()=>setTimeout(reinforce,80));
  window.reinforceCoopRecipientSignature=reinforce;
+})();
+</script>
+
+
+<!-- ===== 2026-09-26 작업관리부서 공유 서명 화면 최종 보정 ===== -->
+<style id="manageRecipientFinalFix20260926">
+body.permit-recipient-manage #manageApproveRoleCard{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;border:1px solid #c7d2dc!important}
+body.permit-recipient-manage #manageApproveRoleCard.no-manage-dept{background:#fff!important;border-color:#c7d2dc!important;color:#111!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-no-manage-note{display:none!important}
+body.permit-recipient-manage #manageApproveRoleCard input{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;color:#111!important;cursor:text!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-role-picker{display:flex!important;visibility:visible!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-role-choice{display:inline-flex!important;visibility:visible!important;align-items:center!important;justify-content:center!important}
+body.permit-recipient-manage #manageApprovalCard{display:block!important;visibility:visible!important;opacity:1!important}
+body.permit-recipient-manage #manageApprovalCard .sign-pad{display:block!important;visibility:visible!important;min-height:300px!important;background:#fff!important;border:2px solid #176ec4!important;border-radius:12px!important;overflow:visible!important;opacity:1!important;pointer-events:auto!important}
+body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{display:block!important;visibility:visible!important;width:100%!important;height:240px!important;min-height:240px!important;background:#fff!important;touch-action:none!important;pointer-events:auto!important;opacity:1!important}
+body.permit-recipient-manage #manageApprovalCard .sign-pad-tools{display:flex!important;visibility:visible!important;opacity:1!important}
+body.permit-recipient-manage #manageApprovalCard .signature-open-btn{display:block!important;visibility:visible!important;width:100%!important;min-height:58px!important;opacity:1!important;pointer-events:auto!important}
+.permit-recipient-manage-card{margin:0 0 10px;padding:12px 13px;border:2px solid #176ec4;border-radius:12px;background:#eef6ff;color:#173f5b}
+.permit-recipient-manage-card b{display:block;font-size:11px;color:#176ec4;margin-bottom:4px}.permit-recipient-manage-card strong{display:block;font-size:20px;line-height:1.25}.permit-recipient-manage-card span{display:block;margin-top:5px;font-size:12px;color:#52687a;line-height:1.55}
+@media(max-width:420px){body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{height:260px!important;min-height:260px!important}.permit-recipient-manage-card strong{font-size:18px}}
+</style>
+<script id="manageRecipientFinalFixJS20260926">
+(function(){
+ 'use strict';
+ function esc3(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function dept(){return String(document.body.dataset.permitSharedManageDept||document.querySelector('#permitForm [name="manageApproveDept"]')?.value||document.getElementById('manageApprovalDept')?.textContent||'').trim()}
+ function reinforce(){
+  if(!document.body.classList.contains('permit-recipient-manage'))return;
+  const slide=document.querySelector('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
+  const card=document.getElementById('manageApprovalCard'),roleCard=document.getElementById('manageApproveRoleCard');if(!slide||!card)return;
+  slide.classList.add('mobile-active');
+  card.style.setProperty('display','block','important');card.style.setProperty('visibility','visible','important');
+  const md=dept();if(md)document.body.dataset.permitSharedManageDept=md;
+  const deptLabel=document.getElementById('manageApprovalDept');if(deptLabel&&md)deptLabel.textContent=md;
+  const deptInput=document.querySelector('#permitForm [name="manageApproveDept"]');if(deptInput){deptInput.disabled=false;deptInput.removeAttribute('aria-disabled');if(md&&!String(deptInput.value||'').trim())deptInput.value=md}
+  ['manageApproveTitle','manageApproveName'].forEach(name=>{const el=document.querySelector('#permitForm [name="'+name+'"]');if(el){el.disabled=false;el.removeAttribute('aria-disabled')}});
+  if(roleCard){roleCard.classList.remove('no-manage-dept');roleCard.style.setProperty('display','block','important');roleCard.querySelectorAll('button,input').forEach(el=>{el.disabled=false;el.removeAttribute('aria-disabled')})}
+  const noNote=document.getElementById('manageApproveNoDeptNote');if(noNote)noNote.hidden=true;
+  let info=document.getElementById('permitRecipientManageCard');
+  if(!info){info=document.createElement('div');info.id='permitRecipientManageCard';info.className='permit-recipient-manage-card';card.insertAdjacentElement('beforebegin',info)}
+  info.innerHTML='<b>🏢 서명할 작업관리부서</b><strong>'+esc3(md||'작업관리부서 확인 필요')+'</strong><span>직책·성명을 확인한 뒤 아래 흰색 서명칸에 직접 서명하거나 「✍ 크게 서명하기」를 누르세요.</span>';
+  const canvas=document.getElementById('manageSignCanvas');if(canvas){canvas.style.setProperty('display','block','important');canvas.style.setProperty('visibility','visible','important');canvas.style.setProperty('pointer-events','auto','important')}
+  const signPad=card.querySelector('.sign-pad');if(signPad){signPad.style.setProperty('display','block','important');signPad.style.setProperty('visibility','visible','important')}
+  const big=card.querySelector('.signature-open-btn');if(big){big.disabled=false;big.style.setProperty('display','block','important');big.style.setProperty('visibility','visible','important');if(!/서명 완료/.test(big.textContent||''))big.textContent='✍ 크게 서명하기'}
+  try{window.ensurePermitMobileEnhancements?.()}catch(e){}
+  try{window.ensureRecipientSignatureDbUi?.()}catch(e){}
+ }
+ const mo=new MutationObserver(()=>setTimeout(reinforce,20));mo.observe(document.body,{attributes:true,attributeFilter:['class','data-permit-share-target','data-permit-shared-manage-dept']});
+ document.addEventListener('DOMContentLoaded',()=>[50,180,450,900,1600].forEach(ms=>setTimeout(reinforce,ms)));
+ window.addEventListener('pageshow',()=>setTimeout(reinforce,80));
+ window.reinforceManageRecipientSignature=reinforce;
+})();
+</script>
+
+
+
+<!-- ===== 2026-09-26 작업관리부서 카카오톡 수신 서명 최종 강제 보정 ===== -->
+<style id="manageRecipientGuaranteedSignature20260926">
+body.permit-recipient-manage #view-permit,
+body.permit-recipient-manage #permitForm,
+body.permit-recipient-manage #permitWizardTrack,
+body.permit-recipient-manage #permitWizardTrack .permit-wizard-slide[data-step="4"],
+body.permit-recipient-manage #approvalWorkflow,
+body.permit-recipient-manage #manageApprovalCard,
+body.permit-recipient-manage #manageApprovalCard .sign-pad{
+  display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;max-height:none!important;overflow:visible!important
+}
+body.permit-recipient-manage #permitWizardTrack .permit-wizard-slide[data-step="4"]{position:relative!important;transform:none!important;min-height:0!important}
+body.permit-recipient-manage #manageApprovalCard{border:2px solid #176ec4!important;background:#fff!important;color:#111!important;padding:13px!important}
+body.permit-recipient-manage #manageApprovalCard .sign-pad{min-height:290px!important;border:2px solid #176ec4!important;background:#fff!important;border-radius:12px!important;pointer-events:auto!important}
+body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{
+  display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;height:220px!important;min-height:220px!important;background:#fff!important;pointer-events:auto!important;touch-action:none!important
+}
+body.permit-recipient-manage #manageApprovalCard .sign-pad-tools{display:flex!important;visibility:visible!important;opacity:1!important;min-height:42px!important}
+body.permit-recipient-manage #manageApprovalCard .signature-open-btn{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;min-height:58px!important;margin:8px 0 0!important;background:#176ec4!important;color:#fff!important;border:0!important;border-radius:11px!important;font-size:16px!important;font-weight:950!important;pointer-events:auto!important}
+body.permit-recipient-manage #manageApproveRoleCard{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;color:#111!important}
+body.permit-recipient-manage #manageApproveRoleCard input{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;background:#fff!important;color:#111!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-role-picker{display:flex!important;visibility:visible!important;flex-wrap:wrap!important}
+body.permit-recipient-manage #manageApproveRoleCard .permit-role-choice{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+#manageRecipientQuickSignCard{display:none}
+body.permit-recipient-manage #manageRecipientQuickSignCard{display:block!important;margin:0 0 10px;padding:14px;border:2px solid #176ec4;border-radius:14px;background:#eaf4ff;color:#173f5b}
+#manageRecipientQuickSignCard b{display:block;font-size:11px;color:#176ec4;margin-bottom:4px}
+#manageRecipientQuickSignCard strong{display:block;font-size:20px;line-height:1.3;color:#102f49}
+#manageRecipientQuickSignCard span{display:block;margin-top:5px;font-size:12px;line-height:1.55;color:#52687a}
+#manageRecipientQuickSignBtn{width:100%;min-height:62px;margin-top:10px;border:0;border-radius:12px;background:#176ec4;color:#fff;font-size:17px;font-weight:950;cursor:pointer}
+@media(max-width:420px){
+ body.permit-recipient-manage #manageApprovalCard #manageSignCanvas{height:250px!important;min-height:250px!important}
+ #manageRecipientQuickSignCard strong{font-size:18px}
+}
+</style>
+<script id="manageRecipientGuaranteedSignatureJS20260926">
+(function(){
+ 'use strict';
+ let autoOpened=false;
+ function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function manageDept(){
+   return String(
+     document.body.dataset.permitSharedManageDept||
+     document.querySelector('#permitForm [name="manageApproveDept"]')?.value||
+     document.getElementById('manageApprovalDept')?.textContent||
+     '작업관리부서'
+   ).trim();
+ }
+ function signed(){
+   try{return JSON.parse(document.getElementById('manageSignJson')?.value||'[]').some(p=>Array.isArray(p)&&p.length>1)}catch(e){return false}
+ }
+ function makeQuickCard(slide){
+   let box=document.getElementById('manageRecipientQuickSignCard');
+   if(!box){
+     box=document.createElement('div');box.id='manageRecipientQuickSignCard';
+     const anchor=slide.querySelector('.permit-step-head');
+     if(anchor)anchor.insertAdjacentElement('afterend',box);else slide.insertAdjacentElement('afterbegin',box);
+   }
+   const md=manageDept();
+   box.innerHTML='<b>🏢 작업관리부서 서명 요청</b><strong>'+esc(md)+'</strong><span>직책과 성명을 확인한 뒤 바로 서명하세요. 다른 페이지를 작성할 필요가 없습니다.</span><button type="button" id="manageRecipientQuickSignBtn">✍ 지금 서명하기</button>';
+   box.querySelector('#manageRecipientQuickSignBtn')?.addEventListener('click',()=>{
+     const btn=document.querySelector('#manageApprovalCard .signature-open-btn');
+     if(btn){btn.disabled=false;btn.click();}
+     else document.getElementById('manageSignCanvas')?.scrollIntoView({behavior:'smooth',block:'center'});
+   });
+ }
+ function reinforce(){
+   if(!document.body.classList.contains('permit-recipient-manage'))return;
+   const slide=document.querySelector('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
+   const card=document.getElementById('manageApprovalCard');
+   if(!slide||!card)return;
+   slide.classList.add('mobile-active');
+   [slide,card,card.querySelector('.sign-pad')].filter(Boolean).forEach(el=>{
+     el.style.setProperty('display','block','important');
+     el.style.setProperty('visibility','visible','important');
+     el.style.setProperty('opacity','1','important');
+   });
+   const md=manageDept();
+   if(md)document.body.dataset.permitSharedManageDept=md;
+   const deptLabel=document.getElementById('manageApprovalDept');if(deptLabel)deptLabel.textContent=md;
+   const deptInput=document.querySelector('#permitForm [name="manageApproveDept"]');
+   if(deptInput){deptInput.disabled=false;deptInput.removeAttribute('aria-disabled');if(!String(deptInput.value||'').trim())deptInput.value=md}
+   ['manageApproveTitle','manageApproveName'].forEach(name=>{const el=document.querySelector('#permitForm [name="'+name+'"]');if(el){el.disabled=false;el.removeAttribute('aria-disabled')}});
+   const roleCard=document.getElementById('manageApproveRoleCard');
+   if(roleCard){roleCard.classList.remove('no-manage-dept');roleCard.style.setProperty('display','block','important');roleCard.querySelectorAll('button,input').forEach(el=>{el.disabled=false;el.removeAttribute('aria-disabled')})}
+   const note=document.getElementById('manageApproveNoDeptNote');if(note)note.hidden=true;
+   const canvas=document.getElementById('manageSignCanvas');if(canvas){canvas.style.setProperty('display','block','important');canvas.style.setProperty('visibility','visible','important');canvas.style.setProperty('pointer-events','auto','important')}
+   const tools=card.querySelector('.sign-pad-tools');if(tools){tools.style.setProperty('display','flex','important');tools.style.setProperty('visibility','visible','important')}
+   let big=card.querySelector('.signature-open-btn');
+   if(big){big.disabled=false;big.style.setProperty('display','block','important');big.style.setProperty('visibility','visible','important');if(!signed())big.textContent='✍ 크게 서명하기'}
+   makeQuickCard(slide);
+   try{window.ensureRecipientSignatureDbUi?.()}catch(e){}
+   try{window.refreshPermitPage5RolePickers?.()}catch(e){}
+   /* 수신자는 링크를 열자마자 서명창으로 바로 진입할 수 있게 1회 자동 오픈 */
+   if(!autoOpened&&!signed()&&big){
+     autoOpened=true;
+     setTimeout(()=>{try{big.click()}catch(e){}},450);
+   }
+ }
+ document.addEventListener('DOMContentLoaded',()=>[60,180,420,850,1500,2600].forEach(ms=>setTimeout(reinforce,ms)));
+ window.addEventListener('pageshow',()=>setTimeout(reinforce,80));
+ window.addEventListener('focus',()=>setTimeout(reinforce,80));
+ const mo=new MutationObserver(()=>setTimeout(reinforce,30));
+ mo.observe(document.body,{attributes:true,attributeFilter:['class','data-permit-share-target','data-permit-shared-manage-dept']});
+ document.addEventListener('click',e=>{if(e.target.closest?.('#signatureModalSave'))setTimeout(reinforce,120)},true);
+ window.reinforceManageRecipientSignature=reinforce;
 })();
 </script>
 </body>
