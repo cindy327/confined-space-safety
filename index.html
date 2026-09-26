@@ -4227,7 +4227,7 @@ body.permit-recipient-coop #coopApprovalCard .signature-open-btn{display:block!i
  function esc2(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
  function station(){return String(document.body.dataset.permitSharedCoopDept||document.querySelector('#permitForm [name="coopDept"]')?.value||document.getElementById('coopApprovalDept')?.textContent||'').trim()}
  function reinforce(){
-  if(!document.body.classList.contains('permit-recipient-coop'))return;
+  if(!(new URLSearchParams(location.search).get('permitShare')&&document.body.classList.contains('permit-recipient-mode')&&document.body.classList.contains('permit-recipient-coop')&&document.body.dataset.permitShareTarget==='coop'&&document.body.classList.contains('safe-stage-permit')))return;
   const slide=document.querySelector('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
   const card=document.getElementById('coopApprovalCard');if(!slide||!card)return;
   slide.classList.add('mobile-active');card.style.setProperty('display','block','important');card.style.setProperty('visibility','visible','important');
@@ -4271,7 +4271,7 @@ body.permit-recipient-manage #manageApprovalCard .signature-open-btn{display:blo
  function esc3(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
  function dept(){return String(document.body.dataset.permitSharedManageDept||document.querySelector('#permitForm [name="manageApproveDept"]')?.value||document.getElementById('manageApprovalDept')?.textContent||'').trim()}
  function reinforce(){
-  if(!document.body.classList.contains('permit-recipient-manage'))return;
+  if(!(new URLSearchParams(location.search).get('permitShare')&&document.body.classList.contains('permit-recipient-mode')&&document.body.classList.contains('permit-recipient-manage')&&document.body.dataset.permitShareTarget==='manage'&&document.body.classList.contains('safe-stage-permit')))return;
   const slide=document.querySelector('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
   const card=document.getElementById('manageApprovalCard'),roleCard=document.getElementById('manageApproveRoleCard');if(!slide||!card)return;
   slide.classList.add('mobile-active');
@@ -4366,7 +4366,7 @@ body.permit-recipient-manage #manageRecipientQuickSignCard{display:block!importa
    });
  }
  function reinforce(){
-   if(!document.body.classList.contains('permit-recipient-manage'))return;
+   if(!(new URLSearchParams(location.search).get('permitShare')&&document.body.classList.contains('permit-recipient-mode')&&document.body.classList.contains('permit-recipient-manage')&&document.body.dataset.permitShareTarget==='manage'&&document.body.classList.contains('safe-stage-permit')))return;
    const slide=document.querySelector('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
    const card=document.getElementById('manageApprovalCard');
    if(!slide||!card)return;
@@ -4392,11 +4392,8 @@ body.permit-recipient-manage #manageRecipientQuickSignCard{display:block!importa
    makeQuickCard(slide);
    try{window.ensureRecipientSignatureDbUi?.()}catch(e){}
    try{window.refreshPermitPage5RolePickers?.()}catch(e){}
-   /* 수신자는 링크를 열자마자 서명창으로 바로 진입할 수 있게 1회 자동 오픈 */
-   if(!autoOpened&&!signed()&&big){
-     autoOpened=true;
-     setTimeout(()=>{try{big.click()}catch(e){}},450);
-   }
+   /* 서명창은 자동으로 띄우지 않습니다. 수신자 화면에서 서명칸과 '크게 서명하기' 버튼만 확실히 표시합니다.
+      일반 1단계 장소선택 화면과 서명 모달이 충돌하지 않도록 사용자 터치로만 엽니다. */
  }
  document.addEventListener('DOMContentLoaded',()=>[60,180,420,850,1500,2600].forEach(ms=>setTimeout(reinforce,ms)));
  window.addEventListener('pageshow',()=>setTimeout(reinforce,80));
@@ -4407,5 +4404,46 @@ body.permit-recipient-manage #manageRecipientQuickSignCard{display:block!importa
  window.reinforceManageRecipientSignature=reinforce;
 })();
 </script>
+
+<!-- ===== 2026-09-26 STEP1 ↔ 공유서명 완전 분리 보정 ===== -->
+<script id="recipientStageIsolationFix20260926">
+(function(){
+ 'use strict';
+ function closeSignatureModal(){
+   const m=document.getElementById('signatureModal');
+   if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true')}
+ }
+ function clearRecipientUi(){
+   const b=document.body;
+   if(!b)return;
+   b.classList.remove('permit-recipient-mode','permit-recipient-manage','permit-recipient-coop');
+   delete b.dataset.permitShareTarget;
+   delete b.dataset.permitSharedManageDept;
+   delete b.dataset.permitSharedCoopDept;
+   closeSignatureModal();
+   ['permitRecipientSignatureHead','permitRecipientManageCard','manageRecipientQuickSignCard','permitRecipientStationCard','permitRecipientDbSaveBtn','permitRecipientDbNote'].forEach(id=>document.getElementById(id)?.remove());
+ }
+ function leaveShareUrl(){
+   try{
+     const u=new URL(location.href);
+     if(!u.searchParams.has('permitShare'))return;
+     u.searchParams.delete('permitShare');
+     const q=u.searchParams.toString();
+     history.replaceState(history.state,'',u.pathname+(q?'?'+q:'')+u.hash);
+   }catch(e){}
+ }
+ function enterNormalStageFlow(){clearRecipientUi();leaveShareUrl()}
+ function inWizardTarget(t){return !!t?.closest?.('#tbmWizard,#flowHomeCard,#spaceFirstPanel')}
+ document.addEventListener('pointerdown',e=>{if(inWizardTarget(e.target))enterNormalStageFlow()},true);
+ document.addEventListener('focusin',e=>{if(inWizardTarget(e.target))enterNormalStageFlow()},true);
+ document.addEventListener('click',e=>{
+   if(e.target?.closest?.('#homeSpaceBtn,#bottomSpaceBtn,#tbmStageBack,#safeStageBack,[data-tbm-screen="0"],[data-tbm-screen="1"],[data-tbm-screen="2"],#step1WorkerGroups,#step1DeptBlock,#step1SiteBlock,#step1SpacePicker'))enterNormalStageFlow();
+ },true);
+ function startup(){if(!new URLSearchParams(location.search).has('permitShare'))clearRecipientUi()}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startup,{once:true});else startup();
+ window.clearPermitRecipientForNormalFlow=enterNormalStageFlow;
+})();
+</script>
+
 </body>
 </html>
