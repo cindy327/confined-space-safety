@@ -4468,6 +4468,7 @@ body.permit-recipient-manage #manageRecipientQuickSignCard{display:block!importa
 .permit-pdf-export-host .worker-lines{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}.permit-pdf-export-host .worker-sign-row{display:grid!important;grid-template-columns:120px 1fr!important;gap:6px!important}.permit-pdf-export-host .worker-mini-pad,.permit-pdf-export-host .sign-pad{display:block!important;background:#fff!important;border:1px solid #999!important}.permit-pdf-export-host canvas{display:block!important;visibility:visible!important;width:100%!important;height:74px!important;background:#fff!important}.permit-pdf-export-host .worker-mini-tools,.permit-pdf-export-host .sign-pad-tools{display:none!important}
 .permit-pdf-export-host #permitRoleApprovalFields{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}.permit-pdf-export-host #permitRoleApprovalFields .permit-sign.span2{grid-column:1/-1!important}.permit-pdf-export-host .approval-flow-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px!important}.permit-pdf-export-host .approval-card{display:block!important;visibility:visible!important;opacity:1!important;background:#fff!important;color:#111!important}
 .permit-pdf-export-summary{margin:0 0 12px;padding:8px 10px;border:1px solid #777;border-radius:5px;font-size:10px;line-height:1.5;color:#111;background:#fff}
+.permit-pdf-step-banner{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin:0 0 10px!important;padding:8px 10px!important;border-bottom:2px solid #111!important;background:#fff!important;color:#111!important}.permit-pdf-step-banner strong{font-size:17px!important}.permit-pdf-step-banner span{font-size:11px!important;font-weight:900!important;color:#333!important;white-space:nowrap!important}
 @media(max-width:760px){.permit-role-ai-box{padding:10px}.permit-role-ai-run{min-height:56px;font-size:14px}}
 @media print{.pdf-share-progress{display:none!important}}
 </style>
@@ -4497,12 +4498,101 @@ document.addEventListener('click',e=>{if(e.target?.closest?.('#gasBulkApplyBtn,[
 function progress(show,text){const p=q('#permitPdfShareProgress'),t=q('#permitPdfShareProgressText');if(t&&text)t.textContent=text;if(p)p.hidden=!show}
 function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
 async function html2pdfReady(){if(window.html2pdf)return true;for(const src of ['https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js','https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js']){try{await loadScript(src);if(window.html2pdf)return true}catch(e){}}return false}
+async function pdfRenderDepsReady(){
+  if(window.html2canvas&&(window.jspdf?.jsPDF||window.jsPDF))return true;
+  await html2pdfReady();
+  if(window.html2canvas&&(window.jspdf?.jsPDF||window.jsPDF))return true;
+  if(!window.html2canvas){for(const src of ['https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js','https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js']){try{await loadScript(src);if(window.html2canvas)break}catch(e){}}}
+  if(!(window.jspdf?.jsPDF||window.jsPDF)){for(const src of ['https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js','https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js']){try{await loadScript(src);if(window.jspdf?.jsPDF||window.jsPDF)break}catch(e){}}}
+  return !!(window.html2canvas&&(window.jspdf?.jsPDF||window.jsPDF));
+}
 function syncControls(src,clone){const a=qa('input,textarea,select',src),b=qa('input,textarea,select',clone);a.forEach((el,i)=>{const c=b[i];if(!c)return;if(el.type==='checkbox'||el.type==='radio')c.checked=el.checked;else{c.value=el.value;if(c.tagName==='TEXTAREA')c.textContent=el.value}})}
 function copyCanvas(src,clone){const a=qa('canvas',src),b=qa('canvas',clone);a.forEach((cv,i)=>{const cc=b[i];if(!cc)return;try{cc.width=cv.width||600;cc.height=cv.height||180;cc.getContext('2d').drawImage(cv,0,0)}catch(e){}})}
-function buildPdf(){ensureRoleRecord();try{syncGasHidden();syncWorkerSignsHidden();loadSignPadsFromHidden();renderAllWorkerSigns()}catch(e){}const src=q('#permitForm');if(!src)throw new Error('작업허가서를 찾을 수 없습니다.');const host=document.createElement('div');host.className='permit-pdf-export-host';const clone=src.cloneNode(true);host.appendChild(clone);document.body.appendChild(host);syncControls(src,clone);copyCanvas(src,clone);const sum=document.createElement('div');sum.className='permit-pdf-export-summary';sum.textContent=`작업개소: ${q('#permitSpaceSearch')?.value||'미선택'} | 저장·출력시각: ${new Date().toLocaleString('ko-KR')}`;const title=clone.querySelector('.permit-title');(title||clone).insertAdjacentElement(title?'afterend':'afterbegin',sum);return{host,clone}}
+function buildPdf(){
+  ensureRoleRecord();
+  try{syncGasHidden();syncWorkerSignsHidden();loadSignPadsFromHidden();renderAllWorkerSigns()}catch(e){}
+  const src=q('#permitForm');
+  if(!src)throw new Error('작업허가서를 찾을 수 없습니다.');
+  const sourceSlides=qa('#permitWizardTrack .permit-wizard-slide',src);
+  if(sourceSlides.length!==5)throw new Error(`작업허가서 1~5페이지를 준비하지 못했습니다. 현재 ${sourceSlides.length}개 단계만 확인됩니다.`);
+  const host=document.createElement('div');host.className='permit-pdf-export-host';
+  const clone=src.cloneNode(true);host.appendChild(clone);document.body.appendChild(host);
+  syncControls(src,clone);copyCanvas(src,clone);
+  const slides=qa('#permitWizardTrack .permit-wizard-slide',clone);
+  if(slides.length!==5){host.remove();throw new Error(`PDF 복사본에 5개 페이지가 모두 생성되지 않았습니다. 현재 ${slides.length}개입니다.`)}
+  const stepNames=['① 기본정보','② 가스농도 측정','③ 안전조치','④ 입장·퇴장','⑤ 승인·공유'];
+  slides.forEach((slide,i)=>{
+    slide.style.setProperty('display','block','important');
+    slide.style.setProperty('visibility','visible','important');
+    slide.style.setProperty('opacity','1','important');
+    slide.style.setProperty('position','static','important');
+    slide.style.setProperty('transform','none','important');
+    slide.style.setProperty('width','100%','important');
+    slide.style.setProperty('min-width','0','important');
+    slide.style.setProperty('height','auto','important');
+    slide.style.setProperty('overflow','visible','important');
+    const head=document.createElement('div');head.className='permit-pdf-step-banner';head.innerHTML=`<strong>밀폐공간작업 출입 허가서</strong><span>${stepNames[i]} · ${i+1}/5</span>`;
+    slide.prepend(head);
+    if(i===0){const sum=document.createElement('div');sum.className='permit-pdf-export-summary';sum.textContent=`작업개소: ${q('#permitSpaceSearch')?.value||'미선택'} | 저장·출력시각: ${new Date().toLocaleString('ko-KR')}`;head.insertAdjacentElement('afterend',sum)}
+  });
+  return{host,clone,slides};
+}
+async function waitPdfLayout(root){
+  try{await document.fonts?.ready}catch(e){}
+  const imgs=qa('img',root).filter(x=>!x.complete);
+  if(imgs.length)await Promise.race([Promise.all(imgs.map(img=>new Promise(r=>{img.addEventListener('load',r,{once:true});img.addEventListener('error',r,{once:true})}))),new Promise(r=>setTimeout(r,1800))]);
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+}
+async function renderFiveStepPdf(made){
+  if(!(await pdfRenderDepsReady()))throw new Error('PDF 렌더링 모듈을 불러오지 못했습니다.');
+  await waitPdfLayout(made.host);
+  const JsPDF=window.jspdf?.jsPDF||window.jsPDF;
+  const pdf=new JsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
+  const pageW=210,pageH=297,marginX=6,marginY=6,contentW=pageW-marginX*2,contentH=pageH-marginY*2;
+  let firstPhysicalPage=true;
+  for(let step=0;step<5;step++){
+    const slide=made.slides[step];
+    progress(true,`${step+1}/5 페이지를 PDF로 변환하고 있습니다.`);
+    const canvas=await window.html2canvas(slide,{scale:1.45,useCORS:true,backgroundColor:'#fff',scrollX:0,scrollY:0,logging:false,windowWidth:794,onclone:d=>{const el=d.querySelector(`.permit-wizard-slide[data-step=\"${step}\"]`);if(el){el.style.display='block';el.style.visibility='visible';el.style.opacity='1';el.style.position='static';el.style.transform='none';el.style.width='100%';el.style.height='auto';el.style.overflow='visible'}}});
+    if(!canvas.width||!canvas.height)throw new Error(`${step+1}페이지 화면을 PDF로 변환하지 못했습니다.`);
+    const mmPerPx=contentW/canvas.width;
+    const maxSlicePx=Math.max(1,Math.floor(contentH/mmPerPx));
+    let y=0,part=0;
+    while(y<canvas.height){
+      if(!firstPhysicalPage)pdf.addPage('a4','portrait');
+      firstPhysicalPage=false;
+      const h=Math.min(maxSlicePx,canvas.height-y);
+      const piece=document.createElement('canvas');piece.width=canvas.width;piece.height=h;
+      const ctx=piece.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,piece.width,piece.height);ctx.drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
+      const img=piece.toDataURL('image/jpeg',.96),imgH=h*mmPerPx;
+      pdf.addImage(img,'JPEG',marginX,marginY,contentW,imgH,undefined,'FAST');
+      if(part>0){pdf.setFontSize(7);pdf.setTextColor(100);pdf.text(`${step+1}/5 계속`,pageW-marginX-2,pageH-2,{align:'right'})}
+      y+=h;part++;
+    }
+  }
+  return pdf.output('blob');
+}
 function pdfName(){const site=clean(q('#permitSpaceSearch')?.value||'작업허가서').replace(/[\\/:*?"<>|·]+/g,'_').slice(0,45);return `KORAIL_밀폐공간작업허가서_${site}_${new Date().toISOString().slice(0,10)}.pdf`}
 async function finalSave(){if(typeof savePermit==='function')savePermit();if(typeof window.persistPermitOwnerNow==='function')await window.persistPermitOwnerNow();else if(typeof window.awaitPermitDbReady==='function')await window.awaitPermitDbReady()}
-window.exportPermitPdfOrPrint=async function(){if(document.body.classList.contains('permit-recipient-mode')){alert('공유받은 서명 화면에서는 서명 완료 후 원 작성자가 최종 PDF를 저장·공유합니다.');return}let made=null;progress(true,'1~5페이지 전체 내용과 서명을 최종 저장하고 있습니다.');try{await finalSave();progress(true,'PDF 생성 모듈을 준비하고 있습니다.');if(!(await html2pdfReady())){progress(false);alert('PDF 생성 모듈을 불러오지 못했습니다. 인쇄/PDF 화면으로 전환합니다.');window.printFullPermit?.();return}progress(true,'1~5페이지 전체를 PDF 파일로 생성하고 있습니다.');made=buildPdf();const blob=await window.html2pdf().set({margin:[6,6,6,6],filename:pdfName(),image:{type:'jpeg',quality:.96},html2canvas:{scale:1.35,useCORS:true,backgroundColor:'#fff',scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],after:'.permit-wizard-slide'}}).from(made.clone).toPdf().output('blob');const file=new File([blob],pdfName(),{type:'application/pdf'});progress(false);if(navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({title:'KORAIL 밀폐공간작업 출입 허가서',text:'최종 저장된 작업허가서 PDF입니다.',files:[file]});return}catch(e){if(e?.name==='AbortError')return}}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);alert('PDF 파일을 저장했습니다. 다운로드 파일에서 카카오톡 등으로 공유하세요.')}catch(e){progress(false);console.error(e);alert('PDF 저장·공유 중 오류가 발생했습니다. 인쇄/PDF로 전환합니다.');try{window.printFullPermit?.()}catch(_){}}finally{made?.host?.remove()}};
+window.exportPermitPdfOrPrint=async function(){
+  if(document.body.classList.contains('permit-recipient-mode')){alert('공유받은 서명 화면에서는 서명 완료 후 원 작성자가 최종 PDF를 저장·공유합니다.');return}
+  let made=null;
+  progress(true,'1~5페이지 전체 내용과 서명을 최종 저장하고 있습니다.');
+  try{
+    await finalSave();
+    progress(true,'1~5페이지 전체를 PDF로 준비하고 있습니다.');
+    made=buildPdf();
+    const blob=await renderFiveStepPdf(made);
+    const file=new File([blob],pdfName(),{type:'application/pdf'});
+    progress(false);
+    if(navigator.share&&navigator.canShare?.({files:[file]})){
+      try{await navigator.share({title:'KORAIL 밀폐공간작업 출입 허가서',text:'1~5페이지 전체가 포함된 최종 작업허가서 PDF입니다.',files:[file]});return}catch(e){if(e?.name==='AbortError')return}
+    }
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);alert('작업허가서 1~5페이지 전체 PDF를 저장했습니다. 다운로드 파일에서 카카오톡 등으로 공유하세요.');
+  }catch(e){
+    progress(false);console.error(e);alert(`PDF 저장·공유 중 오류가 발생했습니다.\n${e?.message||e}\n인쇄/PDF 화면으로 전환합니다.`);try{window.printFullPermit?.()}catch(_){}
+  }finally{made?.host?.remove()}
+};
 function init(){ensureRoleUi();ensureRoleRecord();const p=q('#permitPrintBtn'),u=q('#permitUltimatePrintBtn');if(p)p.textContent='📄 PDF 저장·공유';if(u)u.textContent='📄 PDF 저장·공유';const h=q('#permitStartHeartStart');if(h)h.textContent='🤖 역할 확인 + 🫀 알람 시작'}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,350),{once:true});else setTimeout(init,350);
 })();
