@@ -4456,6 +4456,7 @@ body.permit-recipient-manage #manageRecipientQuickSignCard{display:block!importa
 .permit-role-ai-result{display:none;margin-top:9px;border-radius:10px;border:1px solid #34506a;background:#0d1620;padding:10px 11px;color:#dce9f5;font-size:12px;line-height:1.65;white-space:pre-wrap}.permit-role-ai-result.show{display:block}
 .permit-role-confirm-record{margin:9px 0;border:1px solid #87a9c4;border-radius:10px;background:#f1f8fd;color:#173d59;padding:9px 10px;font-size:10.5px;line-height:1.55}.permit-role-confirm-record b{display:block;color:#0d5c96;font-size:11.5px;margin-bottom:3px}
 .pdf-share-progress{position:fixed;z-index:70000;left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,calc(100vw - 28px));border:1px solid #3d4e63;border-radius:16px;background:#101923;color:#fff;padding:17px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)}.pdf-share-progress[hidden]{display:none!important}.pdf-share-progress b{display:block;font-size:17px}.pdf-share-progress span{display:block;margin-top:6px;color:#b5c1d0;font-size:12px;line-height:1.5}
+.pdf-kakao-share-sheet{position:fixed;inset:0;z-index:70020;background:rgba(0,0,0,.70);display:flex;align-items:flex-end;justify-content:center;padding:16px}.pdf-kakao-share-sheet[hidden]{display:none!important}.pdf-kakao-share-card{width:min(520px,100%);border:1px solid #3b4757;border-radius:20px;background:#151d29;color:#fff;padding:16px;box-shadow:0 24px 80px rgba(0,0,0,.55)}.pdf-kakao-share-card h3{margin:0;font-size:20px}.pdf-kakao-share-card p{margin:6px 0 13px;color:#b5c1d0;font-size:12px;line-height:1.6}.pdf-kakao-file{margin:0 0 12px;padding:10px 11px;border:1px solid #34445a;border-radius:11px;background:#0f1722;color:#dce5ef;font-size:11px;font-weight:800;line-height:1.45;word-break:break-all}.pdf-kakao-share-main{width:100%;min-height:58px;border:0;border-radius:13px;background:#fee500;color:#191919;font-size:16px;font-weight:1000;cursor:pointer}.pdf-kakao-share-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.pdf-kakao-share-actions button{min-height:48px;border-radius:11px;font-size:13px;font-weight:900;cursor:pointer}.pdf-kakao-download{border:1px solid #49617b;background:#172638;color:#dfeeff}.pdf-kakao-close{border:1px solid #4a5564;background:#252e3a;color:#dce4ee}.pdf-kakao-share-status{min-height:19px;margin-top:9px;color:#9fd8b8;font-size:11px;line-height:1.55}.pdf-kakao-share-status.error{color:#ffb0ad}.pdf-kakao-share-note{margin-top:8px;color:#8796a9;font-size:10.5px;line-height:1.5}@media(max-width:560px){.pdf-kakao-share-sheet{padding:8px}.pdf-kakao-share-card{border-radius:20px 20px 12px 12px;padding:14px}.pdf-kakao-share-main{min-height:62px;font-size:16px}}
 .permit-pdf-export-host{position:fixed!important;left:-12000px!important;top:0!important;width:794px!important;background:#fff!important;color:#111!important;pointer-events:none!important;z-index:-1!important}
 .permit-pdf-export-host .permit-form{display:block!important;width:760px!important;max-width:760px!important;margin:0!important;padding:16px!important;background:#fff!important;color:#111!important;border:0!important}
 .permit-pdf-export-host .permit-wizard-track{display:block!important;width:100%!important;height:auto!important;overflow:visible!important;transform:none!important}
@@ -4470,14 +4471,29 @@ body.permit-recipient-manage #manageRecipientQuickSignCard{display:block!importa
 .permit-pdf-export-summary{margin:0 0 12px;padding:8px 10px;border:1px solid #777;border-radius:5px;font-size:10px;line-height:1.5;color:#111;background:#fff}
 .permit-pdf-step-banner{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin:0 0 10px!important;padding:8px 10px!important;border-bottom:2px solid #111!important;background:#fff!important;color:#111!important}.permit-pdf-step-banner strong{font-size:17px!important}.permit-pdf-step-banner span{font-size:11px!important;font-weight:900!important;color:#333!important;white-space:nowrap!important}
 @media(max-width:760px){.permit-role-ai-box{padding:10px}.permit-role-ai-run{min-height:56px;font-size:14px}}
-@media print{.pdf-share-progress{display:none!important}}
+@media print{.pdf-share-progress,.pdf-kakao-share-sheet{display:none!important}}
 </style>
 <div id="permitPdfShareProgress" class="pdf-share-progress" hidden><b>📄 작업허가서 PDF 준비 중</b><span id="permitPdfShareProgressText">1~5페이지 전체 내용을 최종 저장하고 있습니다.</span></div>
+<div id="permitPdfKakaoShareSheet" class="pdf-kakao-share-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="permitPdfKakaoShareTitle">
+  <div class="pdf-kakao-share-card">
+    <h3 id="permitPdfKakaoShareTitle">📄 PDF 생성 완료</h3>
+    <p>1~5페이지 전체 작업허가서가 준비되었습니다. 아래 버튼을 누르면 <b>PDF 파일이 첨부된 휴대폰 공유창</b>이 열립니다.</p>
+    <div id="permitPdfKakaoFileName" class="pdf-kakao-file">작업허가서.pdf</div>
+    <button type="button" id="permitPdfKakaoShareBtn" class="pdf-kakao-share-main">💬 카카오톡으로 PDF 공유</button>
+    <div class="pdf-kakao-share-actions">
+      <button type="button" id="permitPdfDownloadBtn" class="pdf-kakao-download">📥 PDF 저장</button>
+      <button type="button" id="permitPdfShareCloseBtn" class="pdf-kakao-close">닫기</button>
+    </div>
+    <div id="permitPdfKakaoShareStatus" class="pdf-kakao-share-status"></div>
+    <div class="pdf-kakao-share-note">※ 웹브라우저 보안상 카카오톡만 강제로 선택할 수는 없습니다. 갤럭시 공유창이 열리면 <b>카카오톡</b>을 선택하면 PDF 파일이 그대로 첨부됩니다.</div>
+  </div>
+</div>
 <script id="permitRoleGasPdfEnhanceJS20260926">
 (function(){
 'use strict';
 const q=(s,r=document)=>r.querySelector(s), qa=(s,r=document)=>[...r.querySelectorAll(s)];
 let lastGasVoiceSignature='';
+let preparedPdfFile=null,preparedPdfBlob=null,preparedPdfUrl='';
 function html(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function clean(v){return String(v||'').trim().replace(/\s+/g,' ')}
 function speak(text){text=String(text||'').trim();if(!text||!('speechSynthesis' in window))return Promise.resolve(false);return new Promise(resolve=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=.94;u.pitch=1;u.volume=1;u.onend=()=>resolve(true);u.onerror=()=>resolve(false);speechSynthesis.speak(u)}catch(e){resolve(false)}})}
@@ -4496,6 +4512,34 @@ function maybeGasVoice(){if(!gasReady())return;const sig=gasSig();if(!sig||sig==
 document.addEventListener('change',e=>{if(e.target?.matches?.('[data-gas-read],#gasMeasurer,#gasMeasuredAt,#gasDevice,#gasDeviceCheck'))setTimeout(maybeGasVoice,260)},true);
 document.addEventListener('click',e=>{if(e.target?.closest?.('#gasBulkApplyBtn,[data-gas-confirm],[data-gas-point],#gasSelectAllBtn'))setTimeout(maybeGasVoice,420);if(e.target?.closest?.('[data-permit-step="4"],#permitWizardNext'))setTimeout(ensureRoleRecord,100)},true);
 function progress(show,text){const p=q('#permitPdfShareProgress'),t=q('#permitPdfShareProgressText');if(t&&text)t.textContent=text;if(p)p.hidden=!show}
+function setPdfShareStatus(text,isError=false){const el=q('#permitPdfKakaoShareStatus');if(!el)return;el.textContent=String(text||'');el.classList.toggle('error',!!isError)}
+function closePdfShareSheet(){const sheet=q('#permitPdfKakaoShareSheet');if(sheet)sheet.hidden=true}
+function preparePdfShare(file,blob){
+  if(preparedPdfUrl){try{URL.revokeObjectURL(preparedPdfUrl)}catch(e){}}
+  preparedPdfFile=file;preparedPdfBlob=blob;preparedPdfUrl=URL.createObjectURL(blob);
+  const name=q('#permitPdfKakaoFileName');if(name)name.textContent=file.name;
+  setPdfShareStatus('PDF 준비 완료 · 카카오톡 공유 버튼을 눌러주세요.');
+  const sheet=q('#permitPdfKakaoShareSheet');if(sheet)sheet.hidden=false;
+}
+async function sharePreparedPdf(){
+  if(!preparedPdfFile){setPdfShareStatus('공유할 PDF가 없습니다. PDF를 다시 생성해주세요.',true);return}
+  if(!navigator.share){setPdfShareStatus('이 브라우저는 PDF 파일 직접 공유를 지원하지 않습니다. PDF 저장 후 카카오톡에서 파일을 첨부해주세요.',true);return}
+  const data={title:'KORAIL 밀폐공간작업 출입 허가서',text:'1~5페이지 전체가 포함된 최종 작업허가서 PDF입니다.',files:[preparedPdfFile]};
+  try{
+    if(typeof navigator.canShare==='function'&&!navigator.canShare({files:[preparedPdfFile]}))throw new Error('이 브라우저에서 PDF 파일 공유를 지원하지 않습니다.');
+    setPdfShareStatus('휴대폰 공유창을 여는 중입니다. 카카오톡을 선택하세요.');
+    await navigator.share(data);
+    setPdfShareStatus('공유가 완료되었습니다.');
+    setTimeout(closePdfShareSheet,700);
+  }catch(e){
+    if(e?.name==='AbortError'){setPdfShareStatus('공유를 취소했습니다. 다시 누르면 공유창이 열립니다.');return}
+    console.error(e);setPdfShareStatus(`PDF 직접 공유를 열지 못했습니다. ${e?.message||e}`,true);
+  }
+}
+function downloadPreparedPdf(){
+  if(!preparedPdfBlob||!preparedPdfFile){setPdfShareStatus('저장할 PDF가 없습니다.',true);return}
+  const a=document.createElement('a');a.href=preparedPdfUrl;a.download=preparedPdfFile.name;document.body.appendChild(a);a.click();a.remove();setPdfShareStatus('PDF 파일을 저장했습니다.');
+}
 function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
 async function html2pdfReady(){if(window.html2pdf)return true;for(const src of ['https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js','https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js']){try{await loadScript(src);if(window.html2pdf)return true}catch(e){}}return false}
 async function pdfRenderDepsReady(){
@@ -4585,16 +4629,85 @@ window.exportPermitPdfOrPrint=async function(){
     const blob=await renderFiveStepPdf(made);
     const file=new File([blob],pdfName(),{type:'application/pdf'});
     progress(false);
-    if(navigator.share&&navigator.canShare?.({files:[file]})){
-      try{await navigator.share({title:'KORAIL 밀폐공간작업 출입 허가서',text:'1~5페이지 전체가 포함된 최종 작업허가서 PDF입니다.',files:[file]});return}catch(e){if(e?.name==='AbortError')return}
-    }
-    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);alert('작업허가서 1~5페이지 전체 PDF를 저장했습니다. 다운로드 파일에서 카카오톡 등으로 공유하세요.');
+    preparePdfShare(file,blob);
   }catch(e){
     progress(false);console.error(e);alert(`PDF 저장·공유 중 오류가 발생했습니다.\n${e?.message||e}\n인쇄/PDF 화면으로 전환합니다.`);try{window.printFullPermit?.()}catch(_){}
   }finally{made?.host?.remove()}
 };
-function init(){ensureRoleUi();ensureRoleRecord();const p=q('#permitPrintBtn'),u=q('#permitUltimatePrintBtn');if(p)p.textContent='📄 PDF 저장·공유';if(u)u.textContent='📄 PDF 저장·공유';const h=q('#permitStartHeartStart');if(h)h.textContent='🤖 역할 확인 + 🫀 알람 시작'}
+function init(){
+  ensureRoleUi();ensureRoleRecord();
+  const p=q('#permitPrintBtn'),u=q('#permitUltimatePrintBtn');if(p)p.textContent='📄 PDF 저장·공유';if(u)u.textContent='📄 PDF 저장·공유';
+  const h=q('#permitStartHeartStart');if(h)h.textContent='🤖 역할 확인 + 🫀 알람 시작';
+  q('#permitPdfKakaoShareBtn')?.addEventListener('click',sharePreparedPdf);
+  q('#permitPdfDownloadBtn')?.addEventListener('click',downloadPreparedPdf);
+  q('#permitPdfShareCloseBtn')?.addEventListener('click',closePdfShareSheet);
+  q('#permitPdfKakaoShareSheet')?.addEventListener('click',e=>{if(e.target?.id==='permitPdfKakaoShareSheet')closePdfShareSheet()});
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,350),{once:true});else setTimeout(init,350);
+})();
+</script>
+
+
+<!-- ===== 2026-09-27 서명칸 터치 → 큰 서명창 즉시 열기 ===== -->
+<style id="signatureDirectTapStyle20260927">
+#view-permit .sign-pad,#view-permit .worker-mini-pad{cursor:pointer;touch-action:manipulation}
+#view-permit .sign-pad:not(.readonly):active,#view-permit .worker-mini-pad:not(.readonly):active{outline:3px solid rgba(23,110,196,.20);outline-offset:1px}
+.signature-direct-help{margin:6px 0 0;padding:7px 9px;border-radius:8px;background:#eaf4ff;border:1px solid #9fc5e8;color:#0b5898;font-size:11px;font-weight:900;line-height:1.4;text-align:center}
+@media(max-width:760px){.signature-direct-help{font-size:12px;min-height:38px;display:flex;align-items:center;justify-content:center}}
+@media print{.signature-direct-help{display:none!important}}
+</style>
+<script id="signatureDirectTap20260927">
+(function(){
+ 'use strict';
+ const PAD_SELECTOR='#view-permit .sign-pad, #view-permit .worker-mini-pad';
+ function openFromPad(pad){
+   if(!pad)return false;
+   const btn=pad.querySelector('.signature-open-btn');
+   if(!btn||btn.disabled||btn.getAttribute('aria-disabled')==='true')return false;
+   if(document.getElementById('signatureModal')?.classList.contains('open'))return true;
+   btn.click();
+   return true;
+ }
+ function decorate(root=document){
+   root.querySelectorAll?.(PAD_SELECTOR).forEach(pad=>{
+     if(pad.dataset.directSignatureReady==='1')return;
+     pad.dataset.directSignatureReady='1';
+     const btn=pad.querySelector('.signature-open-btn');
+     if(!btn||btn.disabled||pad.classList.contains('readonly'))return;
+     if(!pad.querySelector('.signature-direct-help')){
+       const tip=document.createElement('div');
+       tip.className='signature-direct-help';
+       tip.textContent='👆 서명칸을 누르면 큰 서명 화면이 바로 열립니다.';
+       const tools=pad.querySelector('.sign-pad-tools,.worker-mini-tools');
+       if(tools)tools.insertAdjacentElement('afterend',tip); else pad.prepend(tip);
+     }
+   });
+ }
+ /* 캔버스에서 작은 서명을 시작하기 전에 큰 서명창으로 전환 */
+ document.addEventListener('pointerdown',function(e){
+   const pad=e.target.closest?.(PAD_SELECTOR);
+   if(!pad)return;
+   if(e.target.closest('button,input,select,textarea,a,label'))return;
+   const btn=pad.querySelector('.signature-open-btn');
+   if(!btn||btn.disabled||btn.getAttribute('aria-disabled')==='true'||pad.classList.contains('readonly'))return;
+   e.preventDefault();
+   e.stopImmediatePropagation();
+   setTimeout(()=>openFromPad(pad),0);
+ },true);
+ /* 상태문구/빈 영역을 마우스로 클릭한 경우도 동일 */
+ document.addEventListener('click',function(e){
+   const pad=e.target.closest?.(PAD_SELECTOR);
+   if(!pad)return;
+   if(e.target.closest('button,input,select,textarea,a,label'))return;
+   e.preventDefault();
+   e.stopImmediatePropagation();
+   openFromPad(pad);
+ },true);
+ function run(){decorate(document)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+ const mo=new MutationObserver(muts=>{for(const m of muts){for(const n of m.addedNodes){if(n.nodeType===1){decorate(n);if(n.matches?.(PAD_SELECTOR))decorate(n.parentElement||document)}}}});
+ mo.observe(document.documentElement,{childList:true,subtree:true});
+ window.refreshDirectSignatureTap=run;
 })();
 </script>
 
