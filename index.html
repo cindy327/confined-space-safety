@@ -4711,5 +4711,152 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+
+<!-- ===== 2026-09-27 공유 수신자 고정 서명화면 + PDF 카카오톡 바로가기 ===== -->
+<style id="recipientFixedSignAndPdfKakao20260927">
+body.permit-recipient-mode.recipient-sign-fixed{
+  position:fixed!important;inset:0!important;width:100%!important;height:100dvh!important;
+  overflow:hidden!important;overscroll-behavior:none!important;background:#e9eef3!important
+}
+body.permit-recipient-mode.recipient-sign-fixed #view-permit{
+  position:fixed!important;inset:0!important;z-index:4500!important;width:100%!important;max-width:none!important;
+  height:100dvh!important;min-height:100dvh!important;margin:0!important;padding:0!important;
+  overflow:hidden!important;background:#e9eef3!important
+}
+body.permit-recipient-mode.recipient-sign-fixed #view-permit .permit-layout,
+body.permit-recipient-mode.recipient-sign-fixed #view-permit .permit-form,
+body.permit-recipient-mode.recipient-sign-fixed #view-permit .permit-wizard-track{
+  display:block!important;position:static!important;width:100%!important;max-width:none!important;height:100%!important;
+  min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;transform:none!important;
+  scroll-snap-type:none!important
+}
+body.permit-recipient-mode.recipient-sign-fixed #view-permit .permit-wizard-slide[data-step="4"]{
+  display:block!important;position:absolute!important;inset:0!important;width:100%!important;min-width:0!important;
+  height:100dvh!important;min-height:0!important;margin:0!important;padding:0 10px 24px!important;
+  overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;
+  scroll-snap-align:none!important;scroll-snap-stop:normal!important;transform:none!important;border-radius:0!important;
+  background:#eef3f7!important;color:#111!important;-webkit-overflow-scrolling:touch
+}
+body.permit-recipient-mode.recipient-sign-fixed #view-permit .permit-wizard-slide[data-step="4"]::-webkit-scrollbar{width:0;height:0}
+body.permit-recipient-mode.recipient-sign-fixed #permitRoleBriefingRecord{display:none!important}
+body.permit-recipient-mode.recipient-sign-fixed #permitDbSyncBox{display:none!important}
+body.permit-recipient-mode.recipient-sign-fixed #approvalWorkflow{margin:10px 0 0!important;padding:10px!important;background:#fff!important}
+body.permit-recipient-mode.recipient-sign-fixed #approvalWorkflow>h3{display:none!important}
+body.permit-recipient-mode.recipient-sign-fixed #approvalWorkflow .approval-share-actions{display:none!important}
+body.permit-recipient-mode.recipient-sign-fixed #approvalStatus{margin:8px 0 0!important}
+body.permit-recipient-mode.recipient-sign-fixed .permit-recipient-db-save{
+  position:sticky!important;bottom:8px!important;z-index:35!important;min-height:60px!important;margin:12px 0 0!important;
+  box-shadow:0 8px 28px rgba(23,110,196,.28)!important
+}
+body.permit-recipient-mode.recipient-sign-fixed .permit-recipient-db-note{margin-bottom:12px!important}
+#recipientFixedSignHeader{
+  position:sticky;top:0;z-index:50;margin:0 -10px 12px;padding:calc(10px + env(safe-area-inset-top)) 14px 12px;
+  background:rgba(12,17,25,.98);color:#fff;border-bottom:1px solid #334257;box-shadow:0 6px 20px rgba(0,0,0,.20)
+}
+#recipientFixedSignHeader .rf-badge{font-size:10px;font-weight:950;color:#7fc1ff;letter-spacing:.03em}
+#recipientFixedSignHeader strong{display:block;margin-top:3px;font-size:19px;line-height:1.25;letter-spacing:-.03em}
+#recipientFixedSignHeader span{display:block;margin-top:4px;color:#b6c2d1;font-size:11.5px;line-height:1.45}
+#recipientFixedSignHeader .rf-lock{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:5px 8px;border-radius:999px;background:#17324d;color:#b9ddff;font-size:10px;font-weight:900}
+body.permit-recipient-mode.recipient-sign-fixed #permitRoleApprovalFields{margin:0!important;padding:0!important}
+body.permit-recipient-mode.recipient-sign-fixed #permitRoleApprovalFields .permit-role-card{box-shadow:none!important}
+body.permit-recipient-mode.recipient-sign-fixed #approvalWorkflow .approval-card{box-shadow:none!important}
+body.permit-recipient-mode.recipient-sign-fixed .signature-direct-help{margin-bottom:8px!important}
+
+#permitUltimatePdfKakaoBtn{display:none}
+body.safe-stage-permit:not(.permit-recipient-mode) #permitUltimatePdfKakaoBtn{
+  display:block!important;border-color:#d1b600!important;background:#fee500!important;color:#171717!important;font-weight:1000!important
+}
+#permitUltimatePdfKakaoBtn.busy{opacity:.6!important;cursor:wait!important}
+@media(min-width:901px){
+  body.safe-stage-permit:not(.permit-recipient-mode) #permitUltimateTopBar{
+    grid-template-columns:auto minmax(210px,1fr) repeat(7,auto)!important
+  }
+  #permitUltimatePdfKakaoBtn{font-size:12px!important;padding:0 10px!important}
+}
+@media(max-width:900px){
+  body.safe-stage-permit:not(.permit-recipient-mode) #permitUltimateTopBar{grid-template-rows:46px 44px 44px 48px!important}
+  #permitUltimatePdfKakaoBtn{grid-column:1/7!important;grid-row:4!important;min-height:48px!important;font-size:14px!important}
+  body.safe-stage-permit:not(.permit-recipient-mode) #view-permit{padding-top:216px!important}
+  body.safe-stage-permit:not(.permit-recipient-mode) #permitAiPanel,
+  body.safe-stage-permit:not(.permit-recipient-mode) #permitAlivePanel{top:211px!important;max-height:calc(100dvh - 224px)!important}
+}
+@media(max-width:560px){
+  body.safe-stage-permit:not(.permit-recipient-mode) #permitUltimateTopBar{grid-template-rows:44px 42px 44px 48px!important}
+  #permitUltimatePdfKakaoBtn{min-height:48px!important;font-size:13.5px!important}
+  body.safe-stage-permit:not(.permit-recipient-mode) #view-permit{padding-top:207px!important}
+  body.safe-stage-permit:not(.permit-recipient-mode) #permitAiPanel,
+  body.safe-stage-permit:not(.permit-recipient-mode) #permitAlivePanel{top:202px!important;max-height:calc(100dvh - 214px)!important}
+}
+@media print{#recipientFixedSignHeader,#permitUltimatePdfKakaoBtn{display:none!important}}
+</style>
+<script id="recipientFixedSignAndPdfKakaoJS20260927">
+(function(){
+ 'use strict';
+ const q=(s,r=document)=>r.querySelector(s);
+ function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function shareTarget(){return document.body.dataset.permitShareTarget==='coop'?'coop':document.body.dataset.permitShareTarget==='manage'?'manage':''}
+ function recipientDept(role){
+   if(role==='coop')return String(document.body.dataset.permitSharedCoopDept||q('#permitForm [name="coopDept"]')?.value||q('#coopApprovalDept')?.textContent||'협조부서').trim();
+   return String(document.body.dataset.permitSharedManageDept||q('#permitForm [name="manageApproveDept"]')?.value||q('#manageApprovalDept')?.textContent||'작업관리부서').trim();
+ }
+ function ensureFixedHeader(slide,role){
+   let h=q('#recipientFixedSignHeader');
+   if(!h){h=document.createElement('div');h.id='recipientFixedSignHeader';slide.insertAdjacentElement('afterbegin',h)}
+   const dept=recipientDept(role), title=role==='coop'?'협조부서 확인 서명':'작업관리부서 승인 서명';
+   h.innerHTML=`<div class="rf-badge">${role==='coop'?'🚉 협조부서':'🏢 작업관리부서'} · 서명 전용</div><strong>${esc(dept)}</strong><span>${title}만 진행하면 됩니다. 직책과 성명을 확인한 뒤 서명칸을 누르세요.</span><div class="rf-lock">🔒 다른 단계로 이동하지 않는 고정 화면</div>`;
+ }
+ function lockRecipient(){
+   const role=shareTarget(),hasShare=new URLSearchParams(location.search).has('permitShare');
+   if(!hasShare||!role||!document.body.classList.contains('permit-recipient-mode')){
+     document.body.classList.remove('recipient-sign-fixed');
+     q('#recipientFixedSignHeader')?.remove();
+     return;
+   }
+   document.body.classList.add('recipient-sign-fixed');
+   const slide=q('#permitWizardTrack .permit-wizard-slide[data-step="4"]');
+   if(!slide)return;
+   ensureFixedHeader(slide,role);
+   slide.classList.add('mobile-active');
+   try{window.ensureRecipientSignatureDbUi?.()}catch(e){}
+   const card=q(role==='coop'?'#coopApprovalCard':'#manageApprovalCard');
+   const roleCard=q(role==='coop'?'#coopRoleCard':'#manageApproveRoleCard')||q(`#permitRoleApprovalFields [data-permit-role-card="${role==='coop'?'coop':'manageApprove'}"]`);
+   [roleCard,card].filter(Boolean).forEach(el=>{el.style.setProperty('display','block','important');el.style.setProperty('visibility','visible','important');el.style.setProperty('opacity','1','important')});
+   const canvas=q(role==='coop'?'#coopSignCanvas':'#manageSignCanvas');
+   if(canvas){canvas.style.setProperty('display','block','important');canvas.style.setProperty('visibility','visible','important');canvas.style.setProperty('pointer-events','auto','important')}
+   setTimeout(()=>{try{window.refreshDirectSignatureTap?.()}catch(e){}},40);
+ }
+ function installPdfButton(){
+   const bar=q('#permitUltimateTopBar');if(!bar)return null;
+   let b=q('#permitUltimatePdfKakaoBtn');
+   if(!b){b=document.createElement('button');b.type='button';b.id='permitUltimatePdfKakaoBtn';b.className='put-btn';b.textContent='💬 PDF 카카오톡 공유';bar.appendChild(b)}
+   if(b.dataset.ready==='1')return b;
+   b.dataset.ready='1';
+   b.addEventListener('click',async()=>{
+     if(b.classList.contains('busy'))return;
+     const sheet=q('#permitPdfKakaoShareSheet'),share=q('#permitPdfKakaoShareBtn');
+     if(sheet&&!sheet.hidden&&share){share.click();return}
+     b.classList.add('busy');b.disabled=true;const old=b.textContent;b.textContent='📄 1~5페이지 PDF 만드는 중…';
+     try{
+       if(typeof window.exportPermitPdfOrPrint!=='function')throw new Error('PDF 생성 기능을 찾을 수 없습니다.');
+       await window.exportPermitPdfOrPrint();
+       const s=q('#permitPdfKakaoShareSheet');
+       if(s&&!s.hidden)setTimeout(()=>q('#permitPdfKakaoShareBtn')?.focus({preventScroll:true}),80);
+     }catch(e){console.error(e);alert('PDF 준비 중 오류가 발생했습니다. '+(e?.message||e))}
+     finally{b.classList.remove('busy');b.disabled=false;b.textContent=old}
+   });
+   return b;
+ }
+ function run(){lockRecipient();installPdfButton()}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,250),{once:true});else setTimeout(run,250);
+ window.addEventListener('pageshow',()=>setTimeout(run,80));
+ window.addEventListener('focus',()=>setTimeout(run,80));
+ const mo=new MutationObserver(()=>setTimeout(run,20));
+ mo.observe(document.body,{attributes:true,attributeFilter:['class','data-permit-share-target','data-permit-shared-manage-dept','data-permit-shared-coop-dept']});
+ document.addEventListener('click',e=>{if(e.target.closest?.('#signatureModalSave,#permitRecipientDbSaveBtn'))setTimeout(lockRecipient,120)},true);
+ window.lockPermitRecipientSignatureScreen=lockRecipient;
+})();
+</script>
+
 </body>
 </html>
